@@ -169,9 +169,9 @@ export function usePyodideWorker() {
 
   const clearOutput = useCallback(() => setOutput(""), []);
 
-  /** Start downloading a lab's packages in the background, before the first run. */
-  const preload = useCallback((packages?: string[]) => {
-    if (packages?.length) workerRef.current?.postMessage({ type: "preload", packages });
+  /** Start downloading a lab's packages and datasets in the background, before the first run. */
+  const preload = useCallback((packages?: string[], files?: Record<string, string>) => {
+    if (packages?.length || files) workerRef.current?.postMessage({ type: "preload", packages, files });
   }, []);
 
   return { status, output, running, loadingPackages, run, check, preload, clearOutput };

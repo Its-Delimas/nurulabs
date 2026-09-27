@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { trackLabs, tracks } from "@/lib/curriculum";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -15,19 +14,15 @@ const fadeUp = {
   }),
 };
 
-// Only count what learners can take today, and shared labs once.
-const openLabs = [...new Map(tracks.filter((t) => t.status === "active").flatMap(trackLabs).map((l) => [l.slug, l])).values()];
-const liveLabs = openLabs.length;
-const activities = openLabs.reduce((n, l) => n + l.steps.length, 0);
+/** Counts come from the server (app/page.tsx) so lab content never ships to the landing page. */
+export default function Hero({ liveLabs, activities }: { liveLabs: number; activities: number }) {
+  const stats = [
+    { value: "Free", label: "Every track, every lab. No fees." },
+    { value: String(liveLabs), label: "Hands-on labs live today" },
+    { value: `${activities}+`, label: "Lessons, interactives and exercises" },
+    { value: "0", label: "Installs — Python runs in your browser" },
+  ];
 
-const stats = [
-  { value: "Free", label: "Every track, every lab. No fees." },
-  { value: String(liveLabs), label: "Hands-on labs live today" },
-  { value: `${activities}+`, label: "Lessons, interactives and exercises" },
-  { value: "0", label: "Installs — Python runs in your browser" },
-];
-
-export default function Hero() {
   return (
     <section className="overflow-hidden bg-cream pt-[68px] text-ink md:pt-0">
       <div className="grid md:min-h-[88vh] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

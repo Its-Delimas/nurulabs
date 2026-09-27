@@ -1,10 +1,10 @@
 import type { Lab } from "../types";
-import { CLINICS_CSV, COUNTY_POPULATION_CSV, VISITS_CSV } from "../data/clinics";
+import { dataFile } from "../data/paths";
 
 const CLINIC_FILES = {
-  "visits.csv": VISITS_CSV,
-  "clinics.csv": CLINICS_CSV,
-  "county_population.csv": COUNTY_POPULATION_CSV,
+  "visits.csv": dataFile("visits.csv"),
+  "clinics.csv": dataFile("clinics.csv"),
+  "county_population.csv": dataFile("county-population.csv"),
 };
 
 const READ = `import numpy as np

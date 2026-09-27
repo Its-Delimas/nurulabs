@@ -1,7 +1,7 @@
 import type { Lab } from "../types";
-import { MAIZE_PRICES_CSV } from "../data/prices";
+import { dataFile } from "../data/paths";
 
-const FILES = { "prices.csv": MAIZE_PRICES_CSV };
+const FILES = { "prices.csv": dataFile("maize-prices.csv") };
 
 const SERIES = (market: string) => `import numpy as np
 import pandas as pd

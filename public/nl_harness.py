@@ -73,6 +73,8 @@ def _nl_prepare(packages):
         import sklearn.model_selection  # noqa: F401
         import sklearn.pipeline  # noqa: F401
         import sklearn.preprocessing  # noqa: F401
+    if "scipy" in packages:
+        import scipy.stats  # noqa: F401  (slow first import; do it while loading)
     if "xgboost" in packages:
         import xgboost  # noqa: F401
     if "pandas" in packages:

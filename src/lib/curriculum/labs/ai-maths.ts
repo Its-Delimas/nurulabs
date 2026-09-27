@@ -1,5 +1,5 @@
 import type { Lab } from "../types";
-import { FARMS_CSV } from "../data/farms";
+import { dataFile } from "../data/paths";
 
 export const mathVectors: Lab = {
   slug: "math-vectors",
@@ -11,7 +11,7 @@ export const mathVectors: Lab = {
   minutes: 35,
   kind: "lab",
   packages: ["numpy", "pandas"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Represent an example as a vector of features",
     "Compute predictions with dot products and matrix multiplication",

@@ -53,8 +53,8 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
   const { preload, status } = python;
   // Fetch this lab's libraries while the learner reads the first lesson.
   useEffect(() => {
-    if (status === "ready") preload(lab.packages);
-  }, [status, preload, lab.packages]);
+    if (status === "ready") preload(lab.packages, lab.files);
+  }, [status, preload, lab.packages, lab.files]);
   const step = lab.steps[index];
   const stepDone = done.has(step.id);
   // Concepts are complete as soon as they're read.

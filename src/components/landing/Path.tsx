@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ClipboardCheck, Flag, Hammer } from "lucide-react";
-import { trackLabs, tracks } from "@/lib/curriculum";
+import { tracks } from "@/lib/curriculum/tracks";
 
-export default function Path() {
+/** Lab counts per track come from the server (app/page.tsx), keeping lab content out of this bundle. */
+export default function Path({ labCounts }: { labCounts: Record<string, number> }) {
   const [python, ai, ...soon] = tracks;
 
   return (
@@ -43,7 +44,7 @@ export default function Path() {
 
         <div className="mt-14 grid gap-5 md:grid-cols-2">
           {[python, ai].map((track, i) => {
-            const labs = trackLabs(track);
+            const labCount = labCounts[track.slug] ?? 0;
             const milestones = track.modules.filter((m) => m.milestone);
             return (
               <motion.article
@@ -64,8 +65,7 @@ export default function Path() {
                 )}
                 <div className="flex flex-1 flex-col p-7">
                   <p className="text-xs font-semibold text-ink/45">
-                    {track.level} · {labs.length} lab{labs.length === 1 ? "" : "s"} live
-                    {i === 1 && " · more being built"}
+                    {track.level} · {labCount} lab{labCount === 1 ? "" : "s"}
                   </p>
                   <h3 className="mt-2 font-display text-2xl font-semibold text-ink">{track.name}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-ink/60">{track.description}</p>

@@ -91,7 +91,13 @@ export type WidgetId =
   | "date-formats"
   | "histogram-bins"
   | "anscombe-quartet"
-  | "chart-makeover";
+  | "chart-makeover"
+  | "sampling-distribution"
+  | "ci-coverage"
+  | "p-hacking"
+  | "ab-simulator"
+  | "confounder-explorer"
+  | "did-explorer";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

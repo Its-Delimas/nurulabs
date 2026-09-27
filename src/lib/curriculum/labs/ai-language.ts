@@ -1,7 +1,7 @@
 import type { Lab } from "../types";
-import { REVIEWS_CSV } from "../data/reviews";
+import { dataFile } from "../data/paths";
 
-const REVIEWS = { "reviews.csv": REVIEWS_CSV };
+const REVIEWS = { "reviews.csv": dataFile("reviews.csv") };
 
 const LOAD = `import re
 import numpy as np

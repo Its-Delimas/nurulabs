@@ -1,71 +1,84 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Eye, FlaskConical } from "lucide-react";
 import type { ExperimentStep, WidgetId } from "@/lib/curriculum/types";
 import RichText from "../RichText";
-import VariableBoxes from "../widgets/VariableBoxes";
-import DecisionThreshold from "../widgets/DecisionThreshold";
-import ListExplorer from "../widgets/ListExplorer";
-import LoopStepper from "../widgets/LoopStepper";
-import FunctionMachine from "../widgets/FunctionMachine";
-import DictLookup from "../widgets/DictLookup";
-import CsvRows from "../widgets/CsvRows";
-import LineFit from "../widgets/LineFit";
-import StringMethods from "../widgets/StringMethods";
-import ComprehensionBuilder from "../widgets/ComprehensionBuilder";
-import TryExcept from "../widgets/TryExcept";
-import JsonExplorer from "../widgets/JsonExplorer";
-import ClassBlueprint from "../widgets/ClassBlueprint";
-import BugHunt from "../widgets/BugHunt";
-import ArrayOps from "../widgets/ArrayOps";
-import DataFrameOps from "../widgets/DataFrameOps";
-import ChartChooser from "../widgets/ChartChooser";
-import CorrelationExplorer from "../widgets/CorrelationExplorer";
-import VectorDot from "../widgets/VectorDot";
-import DistributionExplorer from "../widgets/DistributionExplorer";
-import BayesGrid from "../widgets/BayesGrid";
-import GradientDescent from "../widgets/GradientDescent";
-import TrainingLoop from "../widgets/TrainingLoop";
-import OverfitPoly from "../widgets/OverfitPoly";
-import KFold from "../widgets/KFold";
-import SigmoidBoundary from "../widgets/SigmoidBoundary";
-import ThresholdMatrix from "../widgets/ThresholdMatrix";
-import KnnClassifier from "../widgets/KnnClassifier";
-import TreeBuilder from "../widgets/TreeBuilder";
-import BoostingSteps from "../widgets/BoostingSteps";
-import EncodingDemo from "../widgets/EncodingDemo";
-import FeatureCrafter from "../widgets/FeatureCrafter";
-import LeakageDetector from "../widgets/LeakageDetector";
-import KMeansStepper from "../widgets/KMeansStepper";
-import PcaProjector from "../widgets/PcaProjector";
-import AnomalyExplorer from "../widgets/AnomalyExplorer";
-import SeasonalDecomposer from "../widgets/SeasonalDecomposer";
-import ForecastPlayground from "../widgets/ForecastPlayground";
-import NeuronPlayground from "../widgets/NeuronPlayground";
-import BackpropFlow from "../widgets/BackpropFlow";
-import NNPlayground from "../widgets/NNPlayground";
-import ConvFilter from "../widgets/ConvFilter";
-import TokenizerExplorer from "../widgets/TokenizerExplorer";
-import TfidfExplorer from "../widgets/TfidfExplorer";
-import WordWeights from "../widgets/WordWeights";
-import EmbeddingMap from "../widgets/EmbeddingMap";
-import AttentionHeatmap from "../widgets/AttentionHeatmap";
-import TemperatureSampler from "../widgets/TemperatureSampler";
-import FairnessThreshold from "../widgets/FairnessThreshold";
-import WhatIfExplainer from "../widgets/WhatIfExplainer";
-import ReidentifyExplorer from "../widgets/ReidentifyExplorer";
-import DriftMonitor from "../widgets/DriftMonitor";
-import RateExplorer from "../widgets/RateExplorer";
-import CleaningSteps from "../widgets/CleaningSteps";
-import JoinExplorer from "../widgets/JoinExplorer";
-import DateFormats from "../widgets/DateFormats";
-import HistogramBins from "../widgets/HistogramBins";
-import AnscombeQuartet from "../widgets/AnscombeQuartet";
-import ChartMakeover from "../widgets/ChartMakeover";
 
-const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>> = {
+// Each widget is its own chunk, loaded only when its experiment is shown —
+// several carry a dataset, and learners shouldn't download them all up front.
+// Browser-only: they're interactive, and some start from random samples.
+type WidgetProps = { onInteract: () => void };
+const loading = () => <div className="h-64 animate-pulse rounded-2xl bg-ink/5" />;
+const VariableBoxes = dynamic<WidgetProps>(() => import("../widgets/VariableBoxes"), { loading, ssr: false });
+const DecisionThreshold = dynamic<WidgetProps>(() => import("../widgets/DecisionThreshold"), { loading, ssr: false });
+const ListExplorer = dynamic<WidgetProps>(() => import("../widgets/ListExplorer"), { loading, ssr: false });
+const LoopStepper = dynamic<WidgetProps>(() => import("../widgets/LoopStepper"), { loading, ssr: false });
+const FunctionMachine = dynamic<WidgetProps>(() => import("../widgets/FunctionMachine"), { loading, ssr: false });
+const DictLookup = dynamic<WidgetProps>(() => import("../widgets/DictLookup"), { loading, ssr: false });
+const CsvRows = dynamic<WidgetProps>(() => import("../widgets/CsvRows"), { loading, ssr: false });
+const LineFit = dynamic<WidgetProps>(() => import("../widgets/LineFit"), { loading, ssr: false });
+const StringMethods = dynamic<WidgetProps>(() => import("../widgets/StringMethods"), { loading, ssr: false });
+const ComprehensionBuilder = dynamic<WidgetProps>(() => import("../widgets/ComprehensionBuilder"), { loading, ssr: false });
+const TryExcept = dynamic<WidgetProps>(() => import("../widgets/TryExcept"), { loading, ssr: false });
+const JsonExplorer = dynamic<WidgetProps>(() => import("../widgets/JsonExplorer"), { loading, ssr: false });
+const ClassBlueprint = dynamic<WidgetProps>(() => import("../widgets/ClassBlueprint"), { loading, ssr: false });
+const BugHunt = dynamic<WidgetProps>(() => import("../widgets/BugHunt"), { loading, ssr: false });
+const ArrayOps = dynamic<WidgetProps>(() => import("../widgets/ArrayOps"), { loading, ssr: false });
+const DataFrameOps = dynamic<WidgetProps>(() => import("../widgets/DataFrameOps"), { loading, ssr: false });
+const ChartChooser = dynamic<WidgetProps>(() => import("../widgets/ChartChooser"), { loading, ssr: false });
+const CorrelationExplorer = dynamic<WidgetProps>(() => import("../widgets/CorrelationExplorer"), { loading, ssr: false });
+const VectorDot = dynamic<WidgetProps>(() => import("../widgets/VectorDot"), { loading, ssr: false });
+const DistributionExplorer = dynamic<WidgetProps>(() => import("../widgets/DistributionExplorer"), { loading, ssr: false });
+const BayesGrid = dynamic<WidgetProps>(() => import("../widgets/BayesGrid"), { loading, ssr: false });
+const GradientDescent = dynamic<WidgetProps>(() => import("../widgets/GradientDescent"), { loading, ssr: false });
+const TrainingLoop = dynamic<WidgetProps>(() => import("../widgets/TrainingLoop"), { loading, ssr: false });
+const OverfitPoly = dynamic<WidgetProps>(() => import("../widgets/OverfitPoly"), { loading, ssr: false });
+const KFold = dynamic<WidgetProps>(() => import("../widgets/KFold"), { loading, ssr: false });
+const SigmoidBoundary = dynamic<WidgetProps>(() => import("../widgets/SigmoidBoundary"), { loading, ssr: false });
+const ThresholdMatrix = dynamic<WidgetProps>(() => import("../widgets/ThresholdMatrix"), { loading, ssr: false });
+const KnnClassifier = dynamic<WidgetProps>(() => import("../widgets/KnnClassifier"), { loading, ssr: false });
+const TreeBuilder = dynamic<WidgetProps>(() => import("../widgets/TreeBuilder"), { loading, ssr: false });
+const BoostingSteps = dynamic<WidgetProps>(() => import("../widgets/BoostingSteps"), { loading, ssr: false });
+const EncodingDemo = dynamic<WidgetProps>(() => import("../widgets/EncodingDemo"), { loading, ssr: false });
+const FeatureCrafter = dynamic<WidgetProps>(() => import("../widgets/FeatureCrafter"), { loading, ssr: false });
+const LeakageDetector = dynamic<WidgetProps>(() => import("../widgets/LeakageDetector"), { loading, ssr: false });
+const KMeansStepper = dynamic<WidgetProps>(() => import("../widgets/KMeansStepper"), { loading, ssr: false });
+const PcaProjector = dynamic<WidgetProps>(() => import("../widgets/PcaProjector"), { loading, ssr: false });
+const AnomalyExplorer = dynamic<WidgetProps>(() => import("../widgets/AnomalyExplorer"), { loading, ssr: false });
+const SeasonalDecomposer = dynamic<WidgetProps>(() => import("../widgets/SeasonalDecomposer"), { loading, ssr: false });
+const ForecastPlayground = dynamic<WidgetProps>(() => import("../widgets/ForecastPlayground"), { loading, ssr: false });
+const NeuronPlayground = dynamic<WidgetProps>(() => import("../widgets/NeuronPlayground"), { loading, ssr: false });
+const BackpropFlow = dynamic<WidgetProps>(() => import("../widgets/BackpropFlow"), { loading, ssr: false });
+const NNPlayground = dynamic<WidgetProps>(() => import("../widgets/NNPlayground"), { loading, ssr: false });
+const ConvFilter = dynamic<WidgetProps>(() => import("../widgets/ConvFilter"), { loading, ssr: false });
+const TokenizerExplorer = dynamic<WidgetProps>(() => import("../widgets/TokenizerExplorer"), { loading, ssr: false });
+const TfidfExplorer = dynamic<WidgetProps>(() => import("../widgets/TfidfExplorer"), { loading, ssr: false });
+const WordWeights = dynamic<WidgetProps>(() => import("../widgets/WordWeights"), { loading, ssr: false });
+const EmbeddingMap = dynamic<WidgetProps>(() => import("../widgets/EmbeddingMap"), { loading, ssr: false });
+const AttentionHeatmap = dynamic<WidgetProps>(() => import("../widgets/AttentionHeatmap"), { loading, ssr: false });
+const TemperatureSampler = dynamic<WidgetProps>(() => import("../widgets/TemperatureSampler"), { loading, ssr: false });
+const FairnessThreshold = dynamic<WidgetProps>(() => import("../widgets/FairnessThreshold"), { loading, ssr: false });
+const WhatIfExplainer = dynamic<WidgetProps>(() => import("../widgets/WhatIfExplainer"), { loading, ssr: false });
+const ReidentifyExplorer = dynamic<WidgetProps>(() => import("../widgets/ReidentifyExplorer"), { loading, ssr: false });
+const DriftMonitor = dynamic<WidgetProps>(() => import("../widgets/DriftMonitor"), { loading, ssr: false });
+const RateExplorer = dynamic<WidgetProps>(() => import("../widgets/RateExplorer"), { loading, ssr: false });
+const CleaningSteps = dynamic<WidgetProps>(() => import("../widgets/CleaningSteps"), { loading, ssr: false });
+const JoinExplorer = dynamic<WidgetProps>(() => import("../widgets/JoinExplorer"), { loading, ssr: false });
+const DateFormats = dynamic<WidgetProps>(() => import("../widgets/DateFormats"), { loading, ssr: false });
+const HistogramBins = dynamic<WidgetProps>(() => import("../widgets/HistogramBins"), { loading, ssr: false });
+const AnscombeQuartet = dynamic<WidgetProps>(() => import("../widgets/AnscombeQuartet"), { loading, ssr: false });
+const ChartMakeover = dynamic<WidgetProps>(() => import("../widgets/ChartMakeover"), { loading, ssr: false });
+const SamplingDistribution = dynamic<WidgetProps>(() => import("../widgets/SamplingDistribution"), { loading, ssr: false });
+const CiCoverage = dynamic<WidgetProps>(() => import("../widgets/CiCoverage"), { loading, ssr: false });
+const PHacking = dynamic<WidgetProps>(() => import("../widgets/PHacking"), { loading, ssr: false });
+const AbSimulator = dynamic<WidgetProps>(() => import("../widgets/AbSimulator"), { loading, ssr: false });
+const ConfounderExplorer = dynamic<WidgetProps>(() => import("../widgets/ConfounderExplorer"), { loading, ssr: false });
+const DidExplorer = dynamic<WidgetProps>(() => import("../widgets/DidExplorer"), { loading, ssr: false });
+
+const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
   "decision-threshold": DecisionThreshold,
   "list-explorer": ListExplorer,
@@ -125,6 +138,12 @@ const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>>
   "histogram-bins": HistogramBins,
   "anscombe-quartet": AnscombeQuartet,
   "chart-makeover": ChartMakeover,
+  "sampling-distribution": SamplingDistribution,
+  "ci-coverage": CiCoverage,
+  "p-hacking": PHacking,
+  "ab-simulator": AbSimulator,
+  "confounder-explorer": ConfounderExplorer,
+  "did-explorer": DidExplorer,
 };
 
 /** How much play before the takeaway is revealed. */

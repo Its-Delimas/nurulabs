@@ -33,7 +33,11 @@ async function prepare(packages = []) {
 }
 
 function run(code, files) {
-  for (const [name, content] of Object.entries(files ?? {})) py.FS.writeFile(name, content);
+  for (const [name, source] of Object.entries(files ?? {})) {
+    // Datasets are published under /data/ (see scripts/export-data.mjs).
+    const content = source.startsWith("/data/") ? readFileSync(path.join(root, "public", source)) : source;
+    py.FS.writeFile(name, content);
+  }
   out = [];
   const ns = py.toPy({});
   const err = py.globals.get("_nl_run")(code, ns);

@@ -34,10 +34,24 @@ function getPyodide() {
 
 let lastNamespace = null;
 
-function writeFiles(pyodide, files) {
+// Lab datasets are published under /data/ and downloaded on first use;
+// anything else in a lab's files is the file's content itself.
+const fileCache = new Map();
+
+async function fileContent(source) {
+  if (!source.startsWith("/data/")) return source;
+  if (!fileCache.has(source)) {
+    const res = await fetch(source);
+    if (!res.ok) throw new Error(`Couldn't download the dataset ${source} (HTTP ${res.status}).`);
+    fileCache.set(source, await res.text());
+  }
+  return fileCache.get(source);
+}
+
+async function writeFiles(pyodide, files) {
   if (!files) return;
-  for (const [name, content] of Object.entries(files)) {
-    pyodide.FS.writeFile(name, content);
+  for (const [name, source] of Object.entries(files)) {
+    pyodide.FS.writeFile(name, await fileContent(source));
   }
 }
 
@@ -65,6 +79,8 @@ self.onmessage = async (event) => {
   }
 
   if (type === "preload") {
+    // Start downloading the lab's datasets while its packages load.
+    for (const source of Object.values(files || {})) fileContent(source).catch(() => {});
     try {
       await ensurePackages(await getPyodide(), packages);
     } catch {
@@ -79,7 +95,7 @@ self.onmessage = async (event) => {
       await ensurePackages(pyodide, packages);
       // Fresh files and globals per run: a re-run never sees state
       // left over from a previous or different run.
-      writeFiles(pyodide, files);
+      await writeFiles(pyodide, files);
       const ns = pyodide.toPy({});
       stdoutLines = [];
       postMessage({ type: "run-start", runId });

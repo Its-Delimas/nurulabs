@@ -1,9 +1,8 @@
 import type { Lab } from "../types";
-import { LOANS_CSV } from "../data/loans";
-import { CLINICS_CSV, COUNTY_POPULATION_CSV, VISITS_CSV } from "../data/clinics";
+import { dataFile } from "../data/paths";
 
-const LOANS = { "loans.csv": LOANS_CSV };
-const CLINIC_FILES = { "visits.csv": VISITS_CSV, "clinics.csv": CLINICS_CSV, "county_population.csv": COUNTY_POPULATION_CSV };
+const LOANS = { "loans.csv": dataFile("loans.csv") };
+const CLINIC_FILES = { "visits.csv": dataFile("visits.csv"), "clinics.csv": dataFile("clinics.csv"), "county_population.csv": dataFile("county-population.csv") };
 
 const LOAD_LOANS = `import numpy as np
 import pandas as pd

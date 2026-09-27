@@ -1,5 +1,5 @@
 import type { Lab } from "../types";
-import { FARMS_CSV } from "../data/farms";
+import { dataFile } from "../data/paths";
 
 const LOAD_CLEAN = `import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ export const gdScratch: Lab = {
   minutes: 40,
   kind: "lab",
   packages: ["numpy", "pandas", "matplotlib"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Compute the gradients of mean squared error",
     "Write a full training loop and plot its loss curve",
@@ -443,7 +443,7 @@ export const crossValidation: Lab = {
   minutes: 40,
   kind: "lab",
   packages: ["numpy", "pandas", "scikit-learn"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Explain why a single split is unreliable",
     "Run k-fold cross-validation by hand and with scikit-learn",

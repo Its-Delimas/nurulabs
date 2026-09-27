@@ -1,5 +1,5 @@
 import type { Lab } from "../types";
-import { FARMS_CSV } from "../data/farms";
+import { dataFile } from "../data/paths";
 
 const PD = '__import__("pandas").read_csv("farms.csv")';
 
@@ -221,7 +221,7 @@ export const pdDataFrames: Lab = {
   minutes: 40,
   kind: "lab",
   packages: ["pandas"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Load a CSV into a DataFrame and inspect it",
     "Select, filter, sort and group rows",
@@ -427,7 +427,7 @@ export const vizBasics: Lab = {
   minutes: 40,
   kind: "lab",
   packages: ["pandas", "matplotlib"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Choose the right chart for the question being asked",
     "Draw scatter, bar, line and histogram charts with matplotlib",
@@ -634,7 +634,7 @@ export const edaLab: Lab = {
   minutes: 45,
   kind: "lab",
   packages: ["pandas", "matplotlib"],
-  files: { "farms.csv": FARMS_CSV },
+  files: { "farms.csv": dataFile("farms.csv") },
   skills: [
     "Summarise a dataset with describe and value_counts",
     "Find outliers with the IQR rule",

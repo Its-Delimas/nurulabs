@@ -332,25 +332,21 @@ export const tracks: Track[] = [
         slug: "ds-inference",
         title: "Statistics & inference",
         summary: "How sure can you be? Sampling, uncertainty and tests — building on the shared Statistics and Probability labs.",
-        labs: [],
-        planned: [
-          { title: "Samples & populations", summary: "Why a survey of 1,000 people can describe millions." },
-          { title: "Confidence intervals & the bootstrap", summary: "Putting honest error bars on any estimate." },
-          { title: "Hypothesis tests", summary: "p-values, what they do and don’t mean, and p-hacking." },
-          { title: "Capstone: school results investigation", summary: "Did a county’s exam results really improve, or is it noise?" },
-        ],
+        labs: ["math-stats", "math-probability", "ds-sampling", "ds-confidence", "ds-hypothesis", "school-results"],
+        milestone: {
+          title: "Numbers with honest error bars",
+          description: "You can say how sure an estimate is, test whether a difference is real, and spot regression to the mean before it fools a decision-maker.",
+        },
       },
       {
         slug: "ds-causal",
         title: "Experiments & causal thinking",
-        summary: "Telling “causes” from “goes along with”.",
-        labs: [],
-        planned: [
-          { title: "A/B tests", summary: "Designing, sizing and reading a randomised experiment." },
-          { title: "Confounding", summary: "Why ice-cream sales don’t cause drowning." },
-          { title: "Causal inference from observational data", summary: "Regression adjustment and natural experiments." },
-          { title: "Capstone: SMS reminder experiment", summary: "Design and analyse an A/B test of a mobile-money savings reminder." },
-        ],
+        summary: "Telling \"causes\" from \"goes along with\" — with experiments when you can, and careful comparisons when you can't.",
+        labs: ["ds-ab-tests", "ds-confounding", "ds-did", "sms-experiment"],
+        milestone: {
+          title: "Cause, not just correlation",
+          description: "You can design and analyse an A/B test, adjust for confounders, and evaluate a policy with difference-in-differences.",
+        },
       },
       {
         slug: "ds-real-data",

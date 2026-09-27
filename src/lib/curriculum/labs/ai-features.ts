@@ -1,7 +1,7 @@
 import type { Lab } from "../types";
-import { CROPS_CSV } from "../data/crops";
+import { dataFile } from "../data/paths";
 
-const FILES = { "crops.csv": CROPS_CSV };
+const FILES = { "crops.csv": dataFile("crops.csv") };
 const LOAD = `import numpy as np
 import pandas as pd
 

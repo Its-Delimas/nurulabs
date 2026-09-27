@@ -1,5 +1,5 @@
 import type { Lab } from "../types";
-import { CROPS_CSV } from "../data/crops";
+import { dataFile } from "../data/paths";
 
 /** Shared setup: early-warning features known before symptoms appear. */
 const PREP = `import numpy as np
@@ -21,7 +21,7 @@ cv = StratifiedKFold(5, shuffle=True, random_state=0)
 
 const M = '__import__("sklearn.metrics", fromlist=["x"])';
 const MS = '__import__("sklearn.model_selection", fromlist=["x"])';
-const FILES = { "crops.csv": CROPS_CSV };
+const FILES = { "crops.csv": dataFile("crops.csv") };
 
 export const logistic: Lab = {
   slug: "logistic",
