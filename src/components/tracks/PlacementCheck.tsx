@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, ClipboardCheck, RotateCcw, X } from "lucide-react";
 import type { Track } from "@/lib/curriculum/types";
-import { getLab, passedPlacement, tracksUnlockedBy } from "@/lib/curriculum";
+import { getLab, labNumber, passedPlacement, tracksUnlockedBy } from "@/lib/curriculum";
 import { recordPlacement, useProgress } from "@/lib/progress";
 import PythonCode from "@/components/lab/PythonCode";
 import RichText from "@/components/lab/RichText";
@@ -175,7 +175,7 @@ export default function PlacementCheck({ track }: { track: Track }) {
                 {!ok && (
                   <p className="mt-1 text-ink/55">
                     Answer: <code className="font-mono whitespace-pre-wrap text-ink">{q.options[q.answer]}</code>
-                    {lab && <> · covered in Lab {lab.number}: {lab.title}</>}
+                    {lab && <> · covered in Lab {labNumber(lab.slug, track)}: {lab.title}</>}
                   </p>
                 )}
               </div>

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Clock, Flag, Target } from "lucide-react";
 import type { Lab } from "@/lib/curriculum/types";
 import { moduleOfLab, trackOfLab } from "@/lib/curriculum";
+import { useProgress } from "@/lib/progress";
 import Logo from "@/components/landing/Logo";
 import { stepMeta } from "./StepRail";
 
@@ -19,8 +20,9 @@ export default function LabOverview({
   done: Set<string>;
   onStart: () => void;
 }) {
-  const track = trackOfLab(lab.slug);
-  const mod = moduleOfLab(lab.slug);
+  const progress = useProgress();
+  const track = trackOfLab(lab.slug, progress);
+  const mod = moduleOfLab(lab.slug, progress);
   const started = done.size > 0;
 
   return (

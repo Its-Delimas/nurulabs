@@ -299,37 +299,45 @@ export const tracks: Track[] = [
     cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
     modules: [
       {
-        slug: "ds-wrangling",
-        title: "Asking questions & wrangling data",
-        summary: "Turn a vague question into an analysis, and messy data into a tidy table.",
-        labs: [],
-        planned: [
-          { title: "Framing a data question", summary: "From “what’s going on?” to a question data can answer." },
-          { title: "Cleaning real-world data", summary: "Missing values, duplicates, typos and inconsistent units." },
-          { title: "Joining & reshaping", summary: "Merges, pivots and long vs wide tables." },
-          { title: "Dates, text & categories", summary: "The column types that cause the most bugs." },
-        ],
+        slug: "ds-scientific",
+        title: "Scientific Python",
+        summary: "NumPy, pandas and matplotlib — the toolkit every analysis is built on. Shared with the AI & ML track.",
+        labs: ["np-arrays", "pd-dataframes", "viz-basics", "eda"],
+        milestone: {
+          title: "From raw CSV to first insight",
+          description: "You can load, summarise and chart a dataset — and say what it does and doesn't show.",
+        },
       },
       {
-        slug: "ds-exploration",
-        title: "Exploration & visualisation",
-        summary: "See the shape of your data before you trust any number.",
-        labs: [],
-        planned: [
-          { title: "Distributions & outliers", summary: "Histograms, box plots and what “typical” means." },
-          { title: "Relationships", summary: "Scatter plots, correlation and the traps in both." },
-          { title: "Designing clear charts", summary: "Choosing the right chart and removing everything else." },
-        ],
+        slug: "ds-wrangling",
+        title: "Wrangling real-world data",
+        summary: "Turn a vague question into an answerable one, and messy multi-table records into data you can trust.",
+        labs: ["ds-question", "ds-cleaning", "ds-joins", "ds-dates", "clinic-cleanup"],
+        milestone: {
+          title: "Clean data you can defend",
+          description: "You can frame a precise question, clean messy records with logged rules, join and reshape tables safely, and parse dates without silent errors.",
+        },
+      },
+      {
+        slug: "ds-visual",
+        title: "Visual storytelling",
+        summary: "See the shape of the data, find real relationships, and design charts that make the point honestly.",
+        labs: ["ds-distributions", "ds-relationships", "ds-chart-design"],
+        milestone: {
+          title: "Charts that tell the truth",
+          description: "You can describe distributions, read relationships without being fooled by them, and design clear, honest charts.",
+        },
       },
       {
         slug: "ds-inference",
         title: "Statistics & inference",
-        summary: "How sure can you be? Sampling, uncertainty and tests.",
+        summary: "How sure can you be? Sampling, uncertainty and tests — building on the shared Statistics and Probability labs.",
         labs: [],
         planned: [
           { title: "Samples & populations", summary: "Why a survey of 1,000 people can describe millions." },
           { title: "Confidence intervals & the bootstrap", summary: "Putting honest error bars on any estimate." },
           { title: "Hypothesis tests", summary: "p-values, what they do and don’t mean, and p-hacking." },
+          { title: "Capstone: school results investigation", summary: "Did a county’s exam results really improve, or is it noise?" },
         ],
       },
       {
@@ -341,6 +349,7 @@ export const tracks: Track[] = [
           { title: "A/B tests", summary: "Designing, sizing and reading a randomised experiment." },
           { title: "Confounding", summary: "Why ice-cream sales don’t cause drowning." },
           { title: "Causal inference from observational data", summary: "Regression adjustment and natural experiments." },
+          { title: "Capstone: SMS reminder experiment", summary: "Design and analyse an A/B test of a mobile-money savings reminder." },
         ],
       },
       {
@@ -353,6 +362,7 @@ export const tracks: Track[] = [
           { title: "Survey data & weights", summary: "Household surveys and why raw averages mislead." },
           { title: "Maps & geospatial basics", summary: "Counties, coordinates and choropleth maps." },
           { title: "Open data", summary: "National statistics offices, the World Bank and other public sources." },
+          { title: "Capstone: household survey estimate", summary: "Estimate a county indicator from weighted survey data." },
         ],
       },
       {

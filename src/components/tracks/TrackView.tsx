@@ -12,6 +12,8 @@ import {
   isLabDone,
   isModuleDone,
   labAccess,
+  labLabel,
+  labNumber,
   moduleLabs,
   trackLabs,
   trackStats,
@@ -146,7 +148,7 @@ export default function TrackView({ track }: { track: Track }) {
 
                 <ul>
                   {labs.map((lab) => (
-                    <LabRow key={lab.slug} lab={lab} progress={progress} workable={workable} isNext={workable && next?.slug === lab.slug} />
+                    <LabRow key={lab.slug} lab={lab} track={track} progress={progress} workable={workable} isNext={workable && next?.slug === lab.slug} />
                   ))}
                   {mod.planned?.map((p) => (
                     <li key={p.title} className="flex items-center gap-4 border-t border-ink/5 px-6 py-4">
@@ -193,11 +195,13 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function LabRow({
   lab,
+  track,
   progress,
   workable,
   isNext,
 }: {
   lab: Lab;
+  track: Track;
   progress: Progress | null;
   workable: boolean;
   isNext: boolean;
@@ -216,11 +220,11 @@ function LabRow({
             done ? "bg-lime-deep text-paper" : isNext ? "bg-lime text-onlime" : canOpen ? "bg-cream text-ink/60" : "bg-cream text-ink/30"
           }`}
         >
-          {done ? <Check size={14} strokeWidth={3} /> : !canOpen ? <Lock size={12} /> : isProject ? <Flag size={13} /> : lab.number}
+          {done ? <Check size={14} strokeWidth={3} /> : !canOpen ? <Lock size={12} /> : isProject ? <Flag size={13} /> : labNumber(lab.slug, track)}
         </span>
         <button type="button" onClick={() => setOpen((o) => !o)} className="min-w-0 flex-1 text-left">
           <p className="text-xs text-ink/40">
-            {isProject ? "Project" : `Lab ${lab.number}`} · {lab.subject}
+            {labLabel(lab, track)} · {lab.subject}
           </p>
           <p className="truncate font-display text-base font-semibold text-ink">{lab.title}</p>
         </button>

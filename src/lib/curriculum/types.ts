@@ -84,7 +84,14 @@ export type WidgetId =
   | "fairness-threshold"
   | "whatif-explainer"
   | "reidentify-explorer"
-  | "drift-monitor";
+  | "drift-monitor"
+  | "rate-explorer"
+  | "cleaning-steps"
+  | "join-explorer"
+  | "date-formats"
+  | "histogram-bins"
+  | "anscombe-quartet"
+  | "chart-makeover";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";
@@ -109,8 +116,9 @@ export interface CodeCheck {
    * `_stdout` holds printed output, `_source` the code, and
    * `_with(name=value)` re-runs the code with that variable changed and
    * returns the resulting namespace — for testing logic on other inputs.
-   * `_charts` lists each matplotlib chart drawn: title, xlabel, ylabel,
-   * and counts of lines, bars and scatter points.
+   * `_charts` lists each matplotlib chart (one entry per axes): title,
+   * xlabel, ylabel, counts of lines, bars, scatter points and text labels,
+   * bar_heights / bar_widths, bar_colors (distinct bar colours), xlim, ylim.
    */
   expr: string;
   label: string;

@@ -25,12 +25,38 @@ export function trackLabs(track: Track): Lab[] {
   return track.modules.flatMap(moduleLabs);
 }
 
-export function trackOfLab(slug: string): Track | undefined {
-  return tracks.find((t) => t.modules.some((m) => m.labs.includes(slug)));
+/** Every track whose syllabus includes this lab — foundation labs are shared between tracks. */
+export function tracksOfLab(slug: string): Track[] {
+  return tracks.filter((t) => t.modules.some((m) => m.labs.includes(slug)));
 }
 
-export function moduleOfLab(slug: string): { module: Module; index: number } | undefined {
-  const track = trackOfLab(slug);
+/**
+ * The track a lab is being taken in: the learner's enrolled track when it
+ * includes the lab, otherwise the first live track that does.
+ */
+export function trackOfLab(slug: string, progress: Progress | null = null): Track | undefined {
+  const all = tracksOfLab(slug);
+  const enrolled = enrolledTrack(progress);
+  return all.find((t) => t.slug === enrolled?.slug) ?? all.find((t) => t.status === "active") ?? all[0];
+}
+
+/** "01", "02"… for labs and "P1", "P2"… for projects, by position within the track. */
+export function labNumber(slug: string, track: Track | undefined): string {
+  const lab = labsBySlug.get(slug);
+  if (!track || !lab) return lab?.number ?? "";
+  const same = trackLabs(track).filter((l) => (l.kind === "project") === (lab.kind === "project"));
+  const i = same.findIndex((l) => l.slug === slug);
+  if (i < 0) return lab.number;
+  return lab.kind === "project" ? `P${i + 1}` : String(i + 1).padStart(2, "0");
+}
+
+/** "Lab 07" or "Project" — how a lab is labelled within a track. */
+export function labLabel(lab: Lab, track: Track | undefined): string {
+  return lab.kind === "project" ? "Project" : `Lab ${labNumber(lab.slug, track)}`;
+}
+
+export function moduleOfLab(slug: string, progress: Progress | null = null): { module: Module; index: number } | undefined {
+  const track = trackOfLab(slug, progress);
   if (!track) return undefined;
   const index = track.modules.findIndex((m) => m.labs.includes(slug));
   return { module: track.modules[index], index };
@@ -99,7 +125,7 @@ export function enrollment(track: Track, progress: Progress | null):
 /** A track's labs are workable while enrolled in it, and open for review once finished or placed out of. */
 export function canWorkOnTrack(track: Track, progress: Progress | null) {
   return (
-    (!!progress?.preview && track.status === "active") ||
+    !!progress?.preview ||
     enrolledTrack(progress)?.slug === track.slug ||
     trackStats(track, progress).complete ||
     passedPlacement(track, progress)
@@ -111,21 +137,34 @@ export type LabAccess =
   | { open: false; reason: "not-enrolled"; track: Track }
   | { open: false; reason: "order"; first: Lab };
 
-/** A lab is open when its track is workable and every lab before it is done. */
+/**
+ * A lab is open when a track that includes it is workable and every lab
+ * before it on that track is done. Shared labs can be opened from any of
+ * their tracks; the reason given when closed comes from the learner's track.
+ */
 export function labAccess(slug: string, progress: Progress | null): LabAccess {
-  const track = trackOfLab(slug);
-  if (!track) return { open: true };
-  if (!canWorkOnTrack(track, progress)) return { open: false, reason: "not-enrolled", track };
-  if (progress?.preview) return { open: true };
-  const labs = trackLabs(track);
-  const idx = labs.findIndex((l) => l.slug === slug);
-  const firstUndone = labs.slice(0, idx).find((l) => !isLabDone(progress, l.slug));
-  return firstUndone ? { open: false, reason: "order", first: firstUndone } : { open: true };
+  const preferred = trackOfLab(slug, progress);
+  if (!preferred) return { open: true };
+  const candidates = [preferred, ...tracksOfLab(slug).filter((t) => t !== preferred)];
+  let closed: Exclude<LabAccess, { open: true }> | undefined;
+  for (const track of candidates) {
+    if (!canWorkOnTrack(track, progress)) {
+      closed ??= { open: false, reason: "not-enrolled", track };
+      continue;
+    }
+    if (progress?.preview) return { open: true };
+    const labs = trackLabs(track);
+    const idx = labs.findIndex((l) => l.slug === slug);
+    const firstUndone = labs.slice(0, idx).find((l) => !isLabDone(progress, l.slug));
+    if (!firstUndone) return { open: true };
+    if (!closed || closed.reason === "not-enrolled") closed = { open: false, reason: "order", first: firstUndone };
+  }
+  return closed!;
 }
 
 /** The lab after this one on its track's path, if any. */
-export function nextLabAfter(slug: string): Lab | undefined {
-  const track = trackOfLab(slug);
+export function nextLabAfter(slug: string, progress: Progress | null = null): Lab | undefined {
+  const track = trackOfLab(slug, progress);
   if (!track) return undefined;
   const labs = trackLabs(track);
   const idx = labs.findIndex((l) => l.slug === slug);

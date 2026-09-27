@@ -83,14 +83,22 @@ def _nl_prepare(packages):
 
 
 def _nl_describe(ax):
-    """What a chart contains, so checks can test it: title, labels, marks."""
+    """What a chart contains, so checks can test it: title, labels, marks,
+    bar sizes and colours, and the axis ranges."""
+    rects = [p for p in ax.patches if type(p).__name__ == "Rectangle"]
     return {
         "title": ax.get_title(),
         "xlabel": ax.get_xlabel(),
         "ylabel": ax.get_ylabel(),
         "lines": len(ax.get_lines()),
-        "bars": sum(1 for p in ax.patches if type(p).__name__ == "Rectangle"),
+        "bars": len(rects),
         "points": sum(len(c.get_offsets()) for c in ax.collections if hasattr(c, "get_offsets")),
+        "bar_heights": [round(float(p.get_height()), 6) for p in rects],
+        "bar_widths": [round(float(p.get_width()), 6) for p in rects],
+        "bar_colors": len({tuple(round(float(x), 3) for x in p.get_facecolor()) for p in rects}),
+        "xlim": [float(x) for x in ax.get_xlim()],
+        "ylim": [float(x) for x in ax.get_ylim()],
+        "texts": len(ax.texts),
     }
 
 

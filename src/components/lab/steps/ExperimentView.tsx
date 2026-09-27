@@ -57,6 +57,13 @@ import FairnessThreshold from "../widgets/FairnessThreshold";
 import WhatIfExplainer from "../widgets/WhatIfExplainer";
 import ReidentifyExplorer from "../widgets/ReidentifyExplorer";
 import DriftMonitor from "../widgets/DriftMonitor";
+import RateExplorer from "../widgets/RateExplorer";
+import CleaningSteps from "../widgets/CleaningSteps";
+import JoinExplorer from "../widgets/JoinExplorer";
+import DateFormats from "../widgets/DateFormats";
+import HistogramBins from "../widgets/HistogramBins";
+import AnscombeQuartet from "../widgets/AnscombeQuartet";
+import ChartMakeover from "../widgets/ChartMakeover";
 
 const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>> = {
   "variable-boxes": VariableBoxes,
@@ -111,6 +118,13 @@ const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>>
   "whatif-explainer": WhatIfExplainer,
   "reidentify-explorer": ReidentifyExplorer,
   "drift-monitor": DriftMonitor,
+  "rate-explorer": RateExplorer,
+  "cleaning-steps": CleaningSteps,
+  "join-explorer": JoinExplorer,
+  "date-formats": DateFormats,
+  "histogram-bins": HistogramBins,
+  "anscombe-quartet": AnscombeQuartet,
+  "chart-makeover": ChartMakeover,
 };
 
 /** How much play before the takeaway is revealed. */

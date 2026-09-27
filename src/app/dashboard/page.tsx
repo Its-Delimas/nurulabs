@@ -14,6 +14,8 @@ import {
   enrolledTrack,
   isLabDone,
   isModuleDone,
+  labLabel,
+  labNumber,
   moduleLabs,
   trackLabs,
   trackStats,
@@ -114,7 +116,7 @@ function ContinueCard({ track, progress }: { track: Track; progress: Progress })
     >
       <div className="p-7 md:p-8">
         <p className="eyebrow text-lime-deep">
-          {started ? "Continue" : "Up next"} · Module {mi + 1} · {lab.kind === "project" ? "Project" : `Lab ${lab.number}`}
+          {started ? "Continue" : "Up next"} · Module {mi + 1} · {labLabel(lab, track)}
         </p>
         <h2 className="mt-3 font-display text-3xl font-semibold leading-tight">{lab.title}</h2>
         <p className="mt-2 max-w-md text-sm leading-relaxed text-ink/60">{lab.summary}</p>
@@ -148,7 +150,7 @@ function ContinueCard({ track, progress }: { track: Track; progress: Progress })
           href={`/labs/${lab.slug}`}
           className="mt-7 inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime"
         >
-          {started ? "Resume lab" : lab.kind === "project" ? "Start project" : `Start lab ${lab.number}`}
+          {started ? "Resume lab" : lab.kind === "project" ? "Start project" : `Start lab ${labNumber(lab.slug, track)}`}
           <ArrowRight size={16} />
         </Link>
       </div>

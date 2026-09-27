@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { allLabs } from "@/lib/curriculum/labs";
+import { trackLabs, tracks } from "@/lib/curriculum";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -15,8 +15,10 @@ const fadeUp = {
   }),
 };
 
-const liveLabs = allLabs.length;
-const activities = allLabs.reduce((n, l) => n + l.steps.length, 0);
+// Only count what learners can take today, and shared labs once.
+const openLabs = [...new Map(tracks.filter((t) => t.status === "active").flatMap(trackLabs).map((l) => [l.slug, l])).values()];
+const liveLabs = openLabs.length;
+const activities = openLabs.reduce((n, l) => n + l.steps.length, 0);
 
 const stats = [
   { value: "Free", label: "Every track, every lab. No fees." },

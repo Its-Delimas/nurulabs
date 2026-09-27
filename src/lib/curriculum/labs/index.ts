@@ -15,6 +15,8 @@ import { timeSeriesLabs } from "./ai-timeseries";
 import { neuralLabs } from "./ai-neural";
 import { languageLabs } from "./ai-language";
 import { responsibleLabs } from "./ai-responsible";
+import { wranglingLabs } from "./ds-wrangling";
+import { visualLabs } from "./ds-visual";
 
 export const pythonLabs: Lab[] = [
   pyValues,
@@ -33,4 +35,4 @@ export const pythonLabs: Lab[] = [
   pyProjectMarket,
 ];
 
-export const allLabs: Lab[] = [...pythonLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs];
+export const allLabs: Lab[] = [...pythonLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs, ...wranglingLabs, ...visualLabs];

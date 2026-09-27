@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Lock, X } from "lucide-react";
 import type { Lab } from "@/lib/curriculum/types";
-import { enrolledTrack, labAccess, trackOfLab, type LabAccess } from "@/lib/curriculum";
+import { enrolledTrack, labAccess, labLabel, trackOfLab, type LabAccess } from "@/lib/curriculum";
 import {
   markLabComplete,
   markStepComplete,
@@ -40,7 +40,7 @@ export default function LabPlayer({ lab }: { lab: Lab }) {
 function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
   const saved = progress.labs[lab.slug];
   const done = new Set(saved?.steps ?? []);
-  const track = trackOfLab(lab.slug);
+  const track = trackOfLab(lab.slug, progress);
 
   // Resume at the first unfinished step.
   const firstOpen = lab.steps.findIndex((s) => !done.has(s.id));
@@ -103,7 +103,7 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
           <Logo withWordmark={false} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs text-ink/45">
-              {track?.name} · {lab.kind === "project" ? "Project" : `Lab ${lab.number}`}
+              {track?.name} · {labLabel(lab, track)}
             </p>
             <p className="truncate font-display text-sm font-semibold text-ink">{lab.title}</p>
           </div>
@@ -211,7 +211,7 @@ function LockedLab({
   access: Exclude<LabAccess, { open: true }>;
   progress: Progress;
 }) {
-  const track = trackOfLab(lab.slug);
+  const track = trackOfLab(lab.slug, progress);
   const current = enrolledTrack(progress);
   return (
     <div className="flex min-h-screen flex-col bg-cream">

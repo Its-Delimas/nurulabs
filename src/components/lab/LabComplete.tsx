@@ -4,17 +4,18 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Flag, Trophy, Unlock } from "lucide-react";
 import type { Lab } from "@/lib/curriculum/types";
-import { isModuleDone, moduleOfLab, nextLabAfter, trackOfLab, tracksUnlockedBy } from "@/lib/curriculum";
+import { isModuleDone, labNumber, moduleOfLab, nextLabAfter, trackOfLab, tracksUnlockedBy } from "@/lib/curriculum";
 import { getProgress } from "@/lib/progress";
 import Logo from "@/components/landing/Logo";
 
 export default function LabComplete({ lab }: { lab: Lab }) {
-  const track = trackOfLab(lab.slug);
-  const next = nextLabAfter(lab.slug);
+  const progress = getProgress();
+  const track = trackOfLab(lab.slug, progress);
+  const next = nextLabAfter(lab.slug, progress);
   // Finishing a track's last lab unlocks the tracks that require it.
   const unlocked = !next && track ? tracksUnlockedBy(track).filter((t) => t.status === "active") : [];
-  const mod = moduleOfLab(lab.slug);
-  const milestone = mod && isModuleDone(mod.module, getProgress()) ? mod.module.milestone : undefined;
+  const mod = moduleOfLab(lab.slug, progress);
+  const milestone = mod && isModuleDone(mod.module, progress) ? mod.module.milestone : undefined;
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
@@ -33,7 +34,7 @@ export default function LabComplete({ lab }: { lab: Lab }) {
         </motion.span>
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <p className="eyebrow mt-8 text-lime-deep">
-            {lab.kind === "project" ? "Project shipped" : `Lab ${lab.number} complete`}
+            {lab.kind === "project" ? "Project shipped" : `Lab ${labNumber(lab.slug, track)} complete`}
           </p>
           <h1 className="mt-3 font-display text-4xl font-semibold leading-tight md:text-5xl">
             {lab.title}

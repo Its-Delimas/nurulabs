@@ -13,7 +13,8 @@ reflection in their own words.
 | --- | --- | --- |
 | Python for AI | Beginner | 13 labs + capstone project, live (complete) |
 | AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 10 modules live (39 labs + 6 capstones, from NumPy to neural networks, LLMs and responsible AI) |
-| Data Science, Data Engineering | Intermediate | Coming soon — planned syllabi published (6 and 5 modules) |
+| Data Science | Intermediate | Being built — modules 1–3 written (shares its first module with AI & ML), not yet open for enrollment |
+| Data Engineering | Intermediate | Coming soon — planned syllabus published |
 
 Experienced learners can take the Python placement check
 (`/placement/python-for-ai`) to go straight to AI & ML.
@@ -80,7 +81,11 @@ editing a lab. It needs internet access the first time to fetch packages.
 
 ### Previewing locked labs
 
-Labs normally unlock in order after enrolling. To review any lab directly, open `/preview` and turn on preview mode: it opens every lab of every live track in that browser without touching progress.
+Labs normally unlock in order after enrolling. To review any lab directly, open `/preview` and turn on preview mode: it opens every built lab — including tracks not yet open for enrollment — in that browser, without touching progress.
+
+### Shared labs
+
+A lab can appear in more than one track's syllabus (Data Science reuses AI & ML's Scientific Python module). Progress is stored per lab, so finishing it in one track counts in the other. Lab numbers, the "next lab" and unlock order follow whichever track the learner is enrolled in.
 
 ## Photos
 
