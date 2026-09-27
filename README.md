@@ -72,16 +72,15 @@ history, to escalate hints.
 npm run validate:labs
 ```
 
-### Previewing locked labs
-
-Labs normally unlock in order after enrolling. To review any lab directly, open `/preview` and turn on preview mode: it opens every lab of every live track in that browser without touching progress.
-
-
 This runs every lab in the real Pyodide runtime (in Node, with the same
 harness as the browser): every code step's starter code must fail its checks
 and its solution must pass them, every quiz answer must match real output,
 and every reflection's model answer must cover its ideas. Run it after
 editing a lab. It needs internet access the first time to fetch packages.
+
+### Previewing locked labs
+
+Labs normally unlock in order after enrolling. To review any lab directly, open `/preview` and turn on preview mode: it opens every lab of every live track in that browser without touching progress.
 
 ## Photos
 
