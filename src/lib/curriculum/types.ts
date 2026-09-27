@@ -80,7 +80,11 @@ export type WidgetId =
   | "word-weights"
   | "embedding-map"
   | "attention-heatmap"
-  | "temperature-sampler";
+  | "temperature-sampler"
+  | "fairness-threshold"
+  | "whatif-explainer"
+  | "reidentify-explorer"
+  | "drift-monitor";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

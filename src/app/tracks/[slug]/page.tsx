@@ -5,7 +5,7 @@ import TrackView from "@/components/tracks/TrackView";
 import { getTrack, tracks } from "@/lib/curriculum";
 
 export function generateStaticParams() {
-  return tracks.filter((t) => t.status === "active").map((t) => ({ slug: t.slug }));
+  return tracks.map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/tracks/[slug]">): Promise<Metadata> {
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/tracks/[slug]">):
 export default async function TrackPage({ params }: PageProps<"/tracks/[slug]">) {
   const { slug } = await params;
   const track = getTrack(slug);
-  if (!track || track.status !== "active") notFound();
+  if (!track) notFound();
   return (
     <AppShell>
       <TrackView track={track} />

@@ -106,10 +106,10 @@ export default function Path() {
 
         <div className="mt-5 flex flex-wrap gap-3">
           {soon.map((t) => (
-            <span key={t.slug} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-ink/15 px-4 py-2.5 text-sm text-ink/45">
+            <Link key={t.slug} href={`/tracks/${t.slug}`} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-ink/15 px-4 py-2.5 text-sm text-ink/45 hover:border-ink/30 hover:text-ink/70">
               <Hammer size={14} />
-              {t.name} — being built
-            </span>
+              {t.name} — being built · see the plan
+            </Link>
           ))}
         </div>
       </div>

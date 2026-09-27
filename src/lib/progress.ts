@@ -21,6 +21,8 @@ export interface Progress {
   enrolled?: { track: string; at: string };
   /** Tracks the learner tested out of with a placement check, by slug. */
   placements?: Record<string, string>;
+  /** Reviewer preview: every lab of every live track is open, whatever the enrollment. */
+  preview?: boolean;
 }
 
 const STORAGE_KEY = "nurulabs:progress:v2";
@@ -93,6 +95,11 @@ function update(fn: (p: Progress) => Progress) {
 
 function labOf(p: Progress, slug: string): LabProgress {
   return p.labs[slug] ?? { steps: [] };
+}
+
+/** Turn reviewer preview on or off (see /preview). Progress itself is untouched. */
+export function setPreview(on: boolean) {
+  update((p) => ({ ...p, preview: on || undefined }));
 }
 
 export function markStepComplete(labSlug: string, stepId: string) {

@@ -106,14 +106,12 @@ export default function TrackCatalog() {
 
                 <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
                   <EnrollAction track={track} progress={progress} />
-                  {!soon && (
-                    <Link
-                      href={`/tracks/${track.slug}`}
-                      className={`text-sm font-semibold underline-offset-4 hover:underline text-ink/60`}
-                    >
-                      View syllabus
-                    </Link>
-                  )}
+                  <Link
+                    href={`/tracks/${track.slug}`}
+                    className={`text-sm font-semibold underline-offset-4 hover:underline text-ink/60`}
+                  >
+                    {soon ? `See the planned syllabus (${track.modules.length} modules)` : "View syllabus"}
+                  </Link>
                 </div>
               </div>
             </motion.article>

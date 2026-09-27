@@ -12,8 +12,8 @@ reflection in their own words.
 | Track | Level | Status |
 | --- | --- | --- |
 | Python for AI | Beginner | 13 labs + capstone project, live (complete) |
-| AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); modules 1–9 live (35 labs + 5 capstones, including neural networks and language models), Responsible AI planned |
-| Data Science, Data Engineering | — | Planned |
+| AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 10 modules live (39 labs + 6 capstones, from NumPy to neural networks, LLMs and responsible AI) |
+| Data Science, Data Engineering | Intermediate | Coming soon — planned syllabi published (6 and 5 modules) |
 
 Experienced learners can take the Python placement check
 (`/placement/python-for-ai`) to go straight to AI & ML.
@@ -71,6 +71,11 @@ history, to escalate hints.
 ```bash
 npm run validate:labs
 ```
+
+### Previewing locked labs
+
+Labs normally unlock in order after enrolling. To review any lab directly, open `/preview` and turn on preview mode: it opens every lab of every live track in that browser without touching progress.
+
 
 This runs every lab in the real Pyodide runtime (in Node, with the same
 harness as the browser): every code step's starter code must fail its checks

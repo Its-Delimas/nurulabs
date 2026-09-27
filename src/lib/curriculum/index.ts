@@ -99,6 +99,7 @@ export function enrollment(track: Track, progress: Progress | null):
 /** A track's labs are workable while enrolled in it, and open for review once finished or placed out of. */
 export function canWorkOnTrack(track: Track, progress: Progress | null) {
   return (
+    (!!progress?.preview && track.status === "active") ||
     enrolledTrack(progress)?.slug === track.slug ||
     trackStats(track, progress).complete ||
     passedPlacement(track, progress)
@@ -115,6 +116,7 @@ export function labAccess(slug: string, progress: Progress | null): LabAccess {
   const track = trackOfLab(slug);
   if (!track) return { open: true };
   if (!canWorkOnTrack(track, progress)) return { open: false, reason: "not-enrolled", track };
+  if (progress?.preview) return { open: true };
   const labs = trackLabs(track);
   const idx = labs.findIndex((l) => l.slug === slug);
   const firstUndone = labs.slice(0, idx).find((l) => !isLabDone(progress, l.slug));

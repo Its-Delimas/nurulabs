@@ -53,6 +53,10 @@ import WordWeights from "../widgets/WordWeights";
 import EmbeddingMap from "../widgets/EmbeddingMap";
 import AttentionHeatmap from "../widgets/AttentionHeatmap";
 import TemperatureSampler from "../widgets/TemperatureSampler";
+import FairnessThreshold from "../widgets/FairnessThreshold";
+import WhatIfExplainer from "../widgets/WhatIfExplainer";
+import ReidentifyExplorer from "../widgets/ReidentifyExplorer";
+import DriftMonitor from "../widgets/DriftMonitor";
 
 const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>> = {
   "variable-boxes": VariableBoxes,
@@ -103,6 +107,10 @@ const widgets: Record<WidgetId, React.ComponentType<{ onInteract: () => void }>>
   "embedding-map": EmbeddingMap,
   "attention-heatmap": AttentionHeatmap,
   "temperature-sampler": TemperatureSampler,
+  "fairness-threshold": FairnessThreshold,
+  "whatif-explainer": WhatIfExplainer,
+  "reidentify-explorer": ReidentifyExplorer,
+  "drift-monitor": DriftMonitor,
 };
 
 /** How much play before the takeaway is revealed. */

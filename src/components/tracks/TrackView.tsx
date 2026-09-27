@@ -30,6 +30,8 @@ export default function TrackView({ track }: { track: Track }) {
   const milestones = track.modules.filter((m) => m.milestone);
   const next = stats.next;
   const nextStarted = next && progress?.labs[next.slug]?.steps.length;
+  const soon = track.status === "coming-soon";
+  const plannedCount = track.modules.reduce((n, m) => n + (m.planned?.length ?? 0), 0);
 
   return (
     <div>
@@ -37,17 +39,31 @@ export default function TrackView({ track }: { track: Track }) {
       <section className="grid overflow-hidden rounded-[28px] bg-paper text-ink ring-1 ring-ink/10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="p-7 md:p-10">
           <p className="eyebrow text-lime-deep">
-            {isEnrolled ? "Your track" : "Track syllabus"} · {track.level}
+            {isEnrolled ? "Your track" : soon ? "Planned syllabus" : "Track syllabus"} · {track.level}
           </p>
           <h1 className="mt-3 font-display text-4xl font-semibold leading-tight tracking-tight">{track.name}</h1>
           <p className="mt-4 max-w-xl leading-relaxed text-ink/60">{track.description}</p>
 
           <dl className="mt-7 flex flex-wrap gap-x-8 gap-y-3 text-sm">
-            <Stat label="Labs" value={String(stats.total)} />
-            <Stat label="Milestones" value={String(milestones.length)} />
-            <Stat label="Hands-on" value={`~${Math.max(1, Math.round(minutes / 60))} hrs`} />
+            {soon ? (
+              <>
+                <Stat label="Modules planned" value={String(track.modules.length)} />
+                <Stat label="Lessons planned" value={String(plannedCount)} />
+              </>
+            ) : (
+              <>
+                <Stat label="Labs" value={String(stats.total)} />
+                <Stat label="Milestones" value={String(milestones.length)} />
+                <Stat label="Hands-on" value={`~${Math.max(1, Math.round(minutes / 60))} hrs`} />
+              </>
+            )}
             {workable && <Stat label="Complete" value={progress ? `${stats.percent}%` : "—"} />}
           </dl>
+          {soon && (
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/55">
+              This is the plan for the track. Labs are being written now, and this page fills in as they go live.
+            </p>
+          )}
 
           {workable && (
             <div className="mt-6 max-w-sm">

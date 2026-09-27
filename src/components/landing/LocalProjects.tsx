@@ -2,45 +2,22 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Leaf, Car, Smartphone, CloudRain, MessageSquareText, Images } from "lucide-react";
+import { Leaf, Car, Smartphone, Scale, MessageSquareText, Images } from "lucide-react";
 
 const mosaic = [
-  { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky", caption: "AI & ML Lab 01", sub: "Predict maize yield from rainfall" },
-  { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya", caption: "Python capstone", sub: "Where and when to sell maize" },
-  { src: "/images/nairobi-skyline.jpg", alt: "Nairobi's skyline at golden hour", caption: "On the roadmap", sub: "Forecast Nairobi traffic" },
+  { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky", caption: "AI & ML Lab 09", sub: "Predict maize yield from rainfall" },
+  { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya", caption: "AI & ML capstone", sub: "Forecast market prices, with honest error bars" },
+  { src: "/images/nairobi-skyline.jpg", alt: "Nairobi's skyline at golden hour", caption: "AI & ML capstone", sub: "Audit a lending model for fairness" },
 ];
 
+// Capstones that are live today, then what's still on the roadmap.
 const projects = [
-  {
-    icon: Leaf,
-    title: "Crop disease classification",
-    body: "Identify disease in cassava and maize leaves from photos taken on a phone.",
-  },
-  {
-    icon: Car,
-    title: "Nairobi traffic prediction",
-    body: "Forecast congestion on major routes using historical trip data.",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile-money anomaly detection",
-    body: "Flag unusual M-Pesa transaction patterns that might indicate fraud.",
-  },
-  {
-    icon: CloudRain,
-    title: "Rainfall prediction",
-    body: "Model seasonal rainfall from county-level weather station data.",
-  },
-  {
-    icon: MessageSquareText,
-    title: "Kenyan-language NLP",
-    body: "Build text models that actually understand Swahili and Sheng.",
-  },
-  {
-    icon: Images,
-    title: "Local image classification",
-    body: "Train a classifier on datasets built from local, not generic stock, images.",
-  },
+  { icon: Leaf, live: true, title: "Blight early warning", body: "Flag farms at risk of crop disease before it spreads, and plan extension visits." },
+  { icon: Smartphone, live: true, title: "Mobile-money fraud watch", body: "Find suspicious transactions with no fraud labels, using anomaly detection." },
+  { icon: MessageSquareText, live: true, title: "Swahili & English feedback assistant", body: "Flag unhappy customers, find what they complain about, and draft grounded replies." },
+  { icon: Scale, live: true, title: "Responsible lending audit", body: "Measure and reduce a credit model's bias against rural applicants, then publish a model card." },
+  { icon: Images, live: false, title: "Crop disease from photos", body: "Identify disease in cassava and maize leaves from pictures taken on a phone." },
+  { icon: Car, live: false, title: "Nairobi traffic prediction", body: "Forecast congestion on major routes from historical trip data." },
 ];
 
 export default function LocalProjects() {
@@ -96,12 +73,11 @@ export default function LocalProjects() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="mt-5 max-w-2xl text-ink/55"
         >
-          The labs live today already use local data — Nakuru farms, Kisumu
-          maize prices, Garissa heatwaves. As the AI &amp; ML track grows,
-          these are the projects we&apos;re building next — problems that
-          matter to Kenyan and African students, not another dataset of iris
-          flowers or Titanic passengers. They&apos;re the plan, not the
-          product yet.
+          The labs use data about places you know — Nakuru farms, Kisumu
+          maize prices, mobile-money customers, reviews in Swahili and
+          English. Each module ends in a capstone for a realistic local
+          client. The datasets are illustrative, built to behave like the
+          real thing; a few more projects are still on the roadmap.
         </motion.p>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
@@ -118,14 +94,14 @@ export default function LocalProjects() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper text-ink/50">
                   <project.icon size={18} />
                 </div>
-                <span className="rounded-md bg-paper px-2 py-0.5 text-[11px] font-semibold text-ink/40">
-                  Planned
+                <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${project.live ? "bg-lime-soft text-lime-deep" : "bg-cream text-ink/40"}`}>
+                  {project.live ? "Live capstone" : "Planned"}
                 </span>
               </div>
-              <h3 className="mt-4 font-display text-base font-semibold text-ink/70">
+              <h3 className={`mt-4 font-display text-base font-semibold ${project.live ? "text-ink" : "text-ink/60"}`}>
                 {project.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink/45">
+              <p className={`mt-2 text-sm leading-relaxed ${project.live ? "text-ink/60" : "text-ink/45"}`}>
                 {project.body}
               </p>
             </motion.div>
