@@ -5,6 +5,7 @@ import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
 import { pyStrings, pyToolkit, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
+import { pythonToolsLabs } from "./python-tools";
 import { scientificLabs } from "./ai-scientific";
 import { mathsLabs } from "./ai-maths";
 import { learningLabs } from "./ai-learning";
@@ -40,4 +41,4 @@ export const pythonLabs: Lab[] = [
   pyProjectMarket,
 ];
 
-export const allLabs: Lab[] = [...pythonLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs, ...aiToolsLabs, ...wranglingLabs, ...visualLabs, ...inferenceLabs, ...causalLabs, ...toolsLabs, ...communicationLabs];
+export const allLabs: Lab[] = [...pythonLabs, ...pythonToolsLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs, ...aiToolsLabs, ...wranglingLabs, ...visualLabs, ...inferenceLabs, ...causalLabs, ...toolsLabs, ...communicationLabs];

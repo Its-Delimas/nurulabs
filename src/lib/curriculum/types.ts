@@ -106,7 +106,11 @@ export type WidgetId =
   | "dashboard-builder"
   | "hf-pipeline"
   | "pytorch-numpy"
-  | "seed-explorer";
+  | "seed-explorer"
+  | "terminal-sim"
+  | "venv-explorer"
+  | "git-simulator"
+  | "notebook-order";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

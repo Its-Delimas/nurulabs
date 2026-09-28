@@ -11,7 +11,7 @@ reflection in their own words.
 
 | Track | Level | Status |
 | --- | --- | --- |
-| Python for AI | Beginner | 13 labs + capstone project, live (complete) |
+| Python for AI | Beginner | 17 labs + 2 projects, live — from first variables to working like a developer: terminal, pip & virtual environments, Jupyter/Colab, Git & GitHub |
 | AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 11 modules live (42 labs + 6 capstones, from NumPy to neural networks, LLMs, responsible AI and the practitioner's toolkit: Hugging Face, PyTorch, Colab and experiment tracking) |
 | Data Science | Intermediate | Requires Python for AI (or its placement check); all 7 modules live — wrangling, statistics, experiments, Excel, SQL, surveys, maps and communication — ending with a real World Bank data capstone |
 | Data Engineering | Intermediate | Coming soon — planned syllabus published |

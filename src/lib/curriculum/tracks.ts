@@ -58,20 +58,19 @@ export const tracks: Track[] = [
         summary: "Put it all together on a real question with messy data.",
         labs: ["py-project-market"],
         milestone: {
-          title: "Python for AI — complete",
-          description: "You've taken messy data to a defensible recommendation. You're ready for machine learning.",
+          title: "Your first data project",
+          description: "You've taken messy data all the way to a defensible recommendation.",
         },
       },
       {
-        slug: "py-scientific",
-        title: "Scientific Python",
-        summary: "The libraries data scientists use every day.",
-        labs: [],
-        planned: [
-          { title: "Arrays with NumPy", summary: "Fast maths on whole columns at once." },
-          { title: "DataFrames with pandas", summary: "Load, filter and group tables in a few lines." },
-          { title: "Plotting your data", summary: "See the pattern before you model it." },
-        ],
+        slug: "py-toolkit-module",
+        title: "Your developer toolkit",
+        summary: "Leave the browser: Python on your own computer, packages and virtual environments, notebooks, Git and GitHub.",
+        labs: ["py-local", "py-packages", "py-notebooks", "py-git", "py-ship-project"],
+        milestone: {
+          title: "Python for AI — complete",
+          description: "You can run Python on your own machine, manage packages and notebooks like a developer, and have a tested project on your GitHub. You're ready for AI & ML or Data Science.",
+        },
       },
     ],
     placement: [

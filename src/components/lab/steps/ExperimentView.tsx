@@ -86,6 +86,10 @@ const DashboardBuilder = dynamic<WidgetProps>(() => import("../widgets/Dashboard
 const HfPipeline = dynamic<WidgetProps>(() => import("../widgets/HfPipeline"), { loading, ssr: false });
 const PytorchNumpy = dynamic<WidgetProps>(() => import("../widgets/PytorchNumpy"), { loading, ssr: false });
 const SeedExplorer = dynamic<WidgetProps>(() => import("../widgets/SeedExplorer"), { loading, ssr: false });
+const TerminalSim = dynamic<WidgetProps>(() => import("../widgets/TerminalSim"), { loading, ssr: false });
+const VenvExplorer = dynamic<WidgetProps>(() => import("../widgets/VenvExplorer"), { loading, ssr: false });
+const GitSimulator = dynamic<WidgetProps>(() => import("../widgets/GitSimulator"), { loading, ssr: false });
+const NotebookOrder = dynamic<WidgetProps>(() => import("../widgets/NotebookOrder"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -162,6 +166,10 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "hf-pipeline": HfPipeline,
   "pytorch-numpy": PytorchNumpy,
   "seed-explorer": SeedExplorer,
+  "terminal-sim": TerminalSim,
+  "venv-explorer": VenvExplorer,
+  "git-simulator": GitSimulator,
+  "notebook-order": NotebookOrder,
 };
 
 /** How much play before the takeaway is revealed. */

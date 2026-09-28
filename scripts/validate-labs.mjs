@@ -41,7 +41,7 @@ async function prepare(packages = []) {
 function run(code, files) {
   for (const [name, source] of Object.entries(files ?? {})) {
     // Datasets are published under /data/ (see scripts/export-data.mjs).
-    const content = /^\/(data|datasets)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
+    const content = /^\/(data|datasets|notebooks)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
     py.FS.writeFile(name, content);
   }
   out = [];

@@ -40,7 +40,7 @@ let lastNamespace = null;
 const fileCache = new Map();
 
 async function fileContent(source) {
-  if (!/^\/(data|datasets)\//.test(source)) return source;
+  if (!/^\/(data|datasets|notebooks)\//.test(source)) return source;
   if (!fileCache.has(source)) {
     const res = await fetch(source);
     if (!res.ok) throw new Error(`Couldn't download the dataset ${source} (HTTP ${res.status}).`);
