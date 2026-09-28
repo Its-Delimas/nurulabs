@@ -7,7 +7,7 @@ const CONTEXT = [
   { id: "trend", label: "Compared with the past", text: "up from 15% in 2000" },
   { id: "peers", label: "Compared with peers", text: "the biggest gain of 20 African countries in the data, and well ahead of Uganda (47%) and Tanzania (46%)" },
   { id: "gap", label: "Who's left behind", text: "though 32% of rural Kenyans still lack it, against 2% in towns" },
-  { id: "meaning", label: "What it means", text: "— roughly 13 million people still without power" },
+  { id: "meaning", label: "What it means", text: "leaving roughly 13 million people without power" },
 ] as const;
 
 /** The same number, with and without the context that gives it meaning. */

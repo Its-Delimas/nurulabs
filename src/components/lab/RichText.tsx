@@ -1,8 +1,8 @@
 import { Fragment } from "react";
 
-/** Renders `code`, **bold** and *italic* inside short lesson copy. Nothing else. */
+/** Renders `code`, **bold**, *italic* and [links](https://…) inside short lesson copy. Nothing else. */
 export default function RichText({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g);
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|\[[^\]]+\]\(https:\/\/[^)\s]+\))/g);
   return (
     <>
       {parts.map((part, i) => {
@@ -21,6 +21,14 @@ export default function RichText({ text }: { text: string }) {
             <strong key={i} className="font-semibold">
               {part.slice(2, -2)}
             </strong>
+          );
+        }
+        const link = part.match(/^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/);
+        if (link) {
+          return (
+            <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">
+              {link[1]}
+            </a>
           );
         }
         if (/^\*[^*\s][^*]*\*$/.test(part)) {

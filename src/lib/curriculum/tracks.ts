@@ -285,6 +285,16 @@ export const tracks: Track[] = [
           description: "You can audit a model for fairness, explain its decisions, protect the people in its data, deploy it safely and monitor it — and document all of it in a model card.",
         },
       },
+      {
+        slug: "ml-tools",
+        title: "Tools of the trade",
+        summary: "The tools ML engineers use every day: Hugging Face, PyTorch, notebooks, GPUs and experiment tracking.",
+        labs: ["hugging-face", "pytorch", "ml-experiments"],
+        milestone: {
+          title: "Ready for real ML work",
+          description: "You can find and vet pretrained models on Hugging Face, read and reason about PyTorch code, run models in Colab, and run reproducible, well-tracked experiments.",
+        },
+      },
     ],
   },
   {

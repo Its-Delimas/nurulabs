@@ -12,7 +12,7 @@ reflection in their own words.
 | Track | Level | Status |
 | --- | --- | --- |
 | Python for AI | Beginner | 13 labs + capstone project, live (complete) |
-| AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 10 modules live (39 labs + 6 capstones, from NumPy to neural networks, LLMs and responsible AI) |
+| AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 11 modules live (42 labs + 6 capstones, from NumPy to neural networks, LLMs, responsible AI and the practitioner's toolkit: Hugging Face, PyTorch, Colab and experiment tracking) |
 | Data Science | Intermediate | Requires Python for AI (or its placement check); all 7 modules live — wrangling, statistics, experiments, Excel, SQL, surveys, maps and communication — ending with a real World Bank data capstone |
 | Data Engineering | Intermediate | Coming soon — planned syllabus published |
 
@@ -90,6 +90,10 @@ Lab CSVs live in `src/lib/curriculum/data/` and are listed in `registry.ts`. `np
 ### Extra Python packages and binary files
 
 Pure-Python packages that Pyodide doesn't ship (currently `openpyxl`, for Excel files) are self-hosted as wheels in `public/wheels/` and listed in `WHEELS` in both `public/pyodide-worker.js` and `scripts/validate-labs.mjs`; labs just name the package. Binary lab files (like the Excel workbook) are committed under `public/datasets/`.
+
+### Models and notebooks outside the browser
+
+The Hugging Face lab can run a real model in the browser with transformers.js (loaded from jsDelivr only when the learner opts in, ~67 MB). Work that needs PyTorch or a GPU uses Google Colab notebooks in `public/notebooks/`, opened straight from GitHub (`colab.research.google.com/github/Its-Delimas/nurulabs/blob/main/public/notebooks/…`).
 
 ### Real open data
 

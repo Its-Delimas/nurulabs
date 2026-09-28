@@ -103,7 +103,10 @@ export type WidgetId =
   | "weighting-demo"
   | "choropleth-explorer"
   | "numbers-in-context"
-  | "dashboard-builder";
+  | "dashboard-builder"
+  | "hf-pipeline"
+  | "pytorch-numpy"
+  | "seed-explorer";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

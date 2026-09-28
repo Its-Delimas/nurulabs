@@ -83,6 +83,9 @@ const WeightingDemo = dynamic<WidgetProps>(() => import("../widgets/WeightingDem
 const ChoroplethExplorer = dynamic<WidgetProps>(() => import("../widgets/ChoroplethExplorer"), { loading, ssr: false });
 const NumbersInContext = dynamic<WidgetProps>(() => import("../widgets/NumbersInContext"), { loading, ssr: false });
 const DashboardBuilder = dynamic<WidgetProps>(() => import("../widgets/DashboardBuilder"), { loading, ssr: false });
+const HfPipeline = dynamic<WidgetProps>(() => import("../widgets/HfPipeline"), { loading, ssr: false });
+const PytorchNumpy = dynamic<WidgetProps>(() => import("../widgets/PytorchNumpy"), { loading, ssr: false });
+const SeedExplorer = dynamic<WidgetProps>(() => import("../widgets/SeedExplorer"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -156,6 +159,9 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "choropleth-explorer": ChoroplethExplorer,
   "numbers-in-context": NumbersInContext,
   "dashboard-builder": DashboardBuilder,
+  "hf-pipeline": HfPipeline,
+  "pytorch-numpy": PytorchNumpy,
+  "seed-explorer": SeedExplorer,
 };
 
 /** How much play before the takeaway is revealed. */
