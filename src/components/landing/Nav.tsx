@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Logo from "./Logo";
 
 const links = [
-  { href: "#how-it-works", label: "How it works" },
+  { href: "#how", label: "How it works" },
   { href: "#try", label: "Try it" },
   { href: "#tracks", label: "Tracks" },
   { href: "/dashboard", label: "My learning" },

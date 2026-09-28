@@ -10,6 +10,7 @@
    *   mist   — subtle fills
    *   code   — code editors and output panels (dark in both themes)
    *   onlime — text on the lime accent (dark in both themes)
+   *   sun, sky — small decorative accents (map dots, markers) only
    */
   --color-ink: #0b0b0c;
   --color-paper: #ffffff;
@@ -22,6 +23,8 @@
   --color-danger-soft: #fff1f1;
   --color-code: #0f0f11;
   --color-onlime: #0b0b0c;
+  --color-sun: #f29a1f;
+  --color-sky: #2f8fd6;
 
   --background: var(--color-cream);
   --foreground: var(--color-ink);
@@ -38,6 +41,8 @@
   --color-danger: #ff8f8f;
   --color-danger-soft: #331517;
   --color-code: #1c1c20;
+  --color-sun: #f7b24a;
+  --color-sky: #5aaef0;
   color-scheme: dark;
 }
 
@@ -53,6 +58,8 @@
   --color-danger-soft: var(--color-danger-soft);
   --color-code: var(--color-code);
   --color-onlime: var(--color-onlime);
+  --color-sun: var(--color-sun);
+  --color-sky: var(--color-sky);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

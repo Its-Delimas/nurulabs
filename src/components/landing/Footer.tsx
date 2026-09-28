@@ -9,15 +9,16 @@ const columns = [
       { href: "/tracks", label: "Choose a track" },
       { href: "/tracks/python-for-ai", label: "Python for AI" },
       { href: "/tracks/ai-ml", label: "AI & Machine Learning" },
+      { href: "/tracks/data-science", label: "Data Science" },
       { href: "/placement/python-for-ai", label: "Python placement check" },
     ],
   },
   {
     title: "Nurulabs",
     links: [
-      { href: "/#how-it-works", label: "How it works" },
+      { href: "/#how", label: "How it works" },
       { href: "/#try", label: "Try an interactive" },
-      { href: "/#free", label: "Why it's free" },
+      { href: "/#why", label: "Why Nurulabs" },
       { href: "/dashboard", label: "My learning" },
     ],
   },

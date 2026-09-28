@@ -13,3 +13,11 @@ Photos from Unsplash, used under the [Unsplash License](https://unsplash.com/lic
 | nairobi-skyline.jpg | Amani Nation — Nairobi | https://unsplash.com/photos/LTh5pGyvKAM |
 | coding-by-window.jpg | #WOCinTech Chat | https://unsplash.com/photos/dFCOgR91H5M |
 | laptop-code.jpg | X (@x) | https://unsplash.com/photos/YgOCJz9uGMk |
+
+Web-sized versions made from the photos above: `hero-students.webp` and the hero's Africa-shaped crop (from students-laptops.jpg), `circle-pair.webp` (pair-programming.jpg), `circle-class.webp` (laptop-code.jpg).
+
+## Maps
+
+- Africa outline and dotted map (`src/components/landing/africa.ts`): [Natural Earth](https://www.naturalearthdata.com/) 1:110m countries, public domain.
+- Kenya county boundaries (Data Science track): [geoBoundaries](https://www.geoboundaries.org/) gbOpen KEN ADM1, public domain.
+
