@@ -117,7 +117,10 @@ export type WidgetId =
   | "query-plan"
   | "api-pager"
   | "load-modes"
-  | "dag-runner";
+  | "dag-runner"
+  | "quality-rules"
+  | "test-mutants"
+  | "volume-monitor";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

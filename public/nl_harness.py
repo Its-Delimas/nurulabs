@@ -148,7 +148,13 @@ def _nl_figures(ns=None):
     return images
 
 
+# The source of the latest run, for tools that need the learner's code as a
+# file (testkit.py writes it out so pytest can collect its tests).
+_nl_state = {"source": ""}
+
+
 def _nl_run(code, ns):
+    _nl_state["source"] = code
     try:
         exec(compile(code, "main.py", "exec"), ns)
         return None

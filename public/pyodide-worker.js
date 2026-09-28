@@ -69,7 +69,12 @@ async function ensurePackages(pyodide, packages) {
   if (missing.length === 0) return;
   postMessage({ type: "packages-loading", data: missing.join(", ") });
   const sources = missing.flatMap((p) => (WHEELS[p] ? WHEELS[p].map((w) => new URL(w, self.location.origin).href) : [p]));
-  await pyodide.loadPackage(sources, { messageCallback: () => {} });
+  // loadPackage reports failed downloads through errorCallback instead of
+  // throwing; throw so the run shows a clear "check your connection" error
+  // and the packages are retried next time.
+  const failures = [];
+  await pyodide.loadPackage(sources, { messageCallback: () => {}, errorCallback: (m) => failures.push(m) });
+  if (failures.length) throw new Error(`Failed to fetch packages: ${failures.join(" ")}`);
   pyodide.globals.get("_nl_prepare")(pyodide.toPy(missing));
   missing.forEach((p) => loadedPackages.add(p));
   postMessage({ type: "packages-loaded" });

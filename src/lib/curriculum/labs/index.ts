@@ -25,6 +25,7 @@ import { toolsLabs } from "./ds-tools";
 import { communicationLabs } from "./ds-communication";
 import { deFoundationLabs } from "./de-foundations";
 import { dePipelineLabs } from "./de-pipelines";
+import { deQualityLabs } from "./de-quality";
 
 export const pythonLabs: Lab[] = [
   pyValues,
@@ -43,4 +44,4 @@ export const pythonLabs: Lab[] = [
   pyProjectMarket,
 ];
 
-export const allLabs: Lab[] = [...pythonLabs, ...pythonToolsLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs, ...aiToolsLabs, ...wranglingLabs, ...visualLabs, ...inferenceLabs, ...causalLabs, ...toolsLabs, ...communicationLabs, ...deFoundationLabs, ...dePipelineLabs];
+export const allLabs: Lab[] = [...pythonLabs, ...pythonToolsLabs, ...scientificLabs, ...mathsLabs, ...aiMlLabs, ...learningLabs, ...supervisedLabs, ...featureLabs, ...unsupervisedLabs, ...timeSeriesLabs, ...neuralLabs, ...languageLabs, ...responsibleLabs, ...aiToolsLabs, ...wranglingLabs, ...visualLabs, ...inferenceLabs, ...causalLabs, ...toolsLabs, ...communicationLabs, ...deFoundationLabs, ...dePipelineLabs, ...deQualityLabs];

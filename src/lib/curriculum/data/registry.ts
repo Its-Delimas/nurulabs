@@ -11,6 +11,8 @@ import { CROPS_CSV } from "./crops";
 import { CUSTOMERS_CSV } from "./customers";
 import { MM_EXPORT_CSV, SACCO_LEDGER_CSV } from "./engineering";
 import { MARKET_API_PY } from "./market-api";
+import { FACILITIES_CSV, IMMUNISATION_H1_CSV, IMMUNISATION_H2_CSV, PIPELINE_RUNS_CSV } from "./quality";
+import { TESTKIT_PY } from "./testkit";
 import { FARMS_CSV } from "./farms";
 import { HF_SWAHILI_MODELS_CSV } from "./hub";
 import { HOUSEHOLDS_CSV, IMMUNISATION_CSV, SCHOOLS_CSV, SMS_TRIAL_CSV, STUDENTS_CSV } from "./inference";
@@ -45,4 +47,9 @@ export const DATA_FILES: Record<string, string> = {
   "mm-export.csv": MM_EXPORT_CSV,
   "sacco-ledger.csv": SACCO_LEDGER_CSV,
   "market_api.py": MARKET_API_PY,
+  "testkit.py": TESTKIT_PY,
+  "facilities.csv": FACILITIES_CSV,
+  "immunisation-h1.csv": IMMUNISATION_H1_CSV,
+  "immunisation-h2.csv": IMMUNISATION_H2_CSV,
+  "pipeline-runs.csv": PIPELINE_RUNS_CSV,
 };

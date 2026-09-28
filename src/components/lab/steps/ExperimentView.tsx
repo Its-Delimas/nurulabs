@@ -97,6 +97,9 @@ const QueryPlan = dynamic<WidgetProps>(() => import("../widgets/QueryPlan"), { l
 const ApiPager = dynamic<WidgetProps>(() => import("../widgets/ApiPager"), { loading, ssr: false });
 const LoadModes = dynamic<WidgetProps>(() => import("../widgets/LoadModes"), { loading, ssr: false });
 const DagRunner = dynamic<WidgetProps>(() => import("../widgets/DagRunner"), { loading, ssr: false });
+const QualityRules = dynamic<WidgetProps>(() => import("../widgets/QualityRules"), { loading, ssr: false });
+const TestMutants = dynamic<WidgetProps>(() => import("../widgets/TestMutants"), { loading, ssr: false });
+const VolumeMonitor = dynamic<WidgetProps>(() => import("../widgets/VolumeMonitor"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -184,6 +187,9 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "api-pager": ApiPager,
   "load-modes": LoadModes,
   "dag-runner": DagRunner,
+  "quality-rules": QualityRules,
+  "test-mutants": TestMutants,
+  "volume-monitor": VolumeMonitor,
 };
 
 /** How much play before the takeaway is revealed. */

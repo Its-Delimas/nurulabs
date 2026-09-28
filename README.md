@@ -14,7 +14,7 @@ reflection in their own words.
 | Python for AI | Beginner | 17 labs + 2 projects, live — from first variables to working like a developer: terminal, pip & virtual environments, Jupyter/Colab, Git & GitHub |
 | AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 11 modules live (42 labs + 6 capstones, from NumPy to neural networks, LLMs, responsible AI and the practitioner's toolkit: Hugging Face, PyTorch, Colab and experiment tracking) |
 | Data Science | Intermediate | Requires Python for AI (or its placement check); all 7 modules live — wrangling, statistics, experiments, Excel, SQL, surveys, maps and communication — ending with a real World Bank data capstone |
-| Data Engineering | Intermediate | In progress (open in preview mode): Modules 1–3 built — files & formats (CSV, JSON, Parquet), data modelling, SQL window functions with DuckDB, indexes and query plans, then pipelines: paginated API extraction with retries and watermarks, idempotent upserts, Airflow-style DAGs and a mini dbt, plus three projects (SACCO ledger, mobile-money analytics, crop prices pipeline). Data quality and warehouses are next |
+| Data Engineering | Intermediate | In progress (open in preview mode): Modules 1–4 built — files & formats, data modelling, analytical SQL with DuckDB, query performance; pipelines (paginated extraction with retries and watermarks, idempotent upserts, Airflow-style DAGs, a mini dbt); data quality (JSON Schema and pydantic contracts, pytest with mutation testing, dbt-style data tests, volume/freshness/drift monitoring and lineage); plus four projects. Warehouses & scale is next |
 
 Experienced learners can take the Python placement check
 (`/placement/python-for-ai`) to go straight to AI & ML.

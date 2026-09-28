@@ -424,13 +424,12 @@ export const tracks: Track[] = [
       {
         slug: "de-quality",
         title: "Data quality & testing",
-        summary: "Catch bad data before it reaches a dashboard or a model.",
-        labs: [],
-        planned: [
-          { title: "Validation & schemas", summary: "Checks that stop broken data at the door." },
-          { title: "Testing pipelines", summary: "Unit and data tests for transformations." },
-          { title: "Monitoring & lineage", summary: "Knowing what broke, where, and what it affected." },
-        ],
+        summary: "Catch bad data before it reaches a dashboard or a model: contracts with JSON Schema and pydantic, pytest and data tests, monitoring and lineage.",
+        labs: ["de-validation", "de-testing", "de-monitoring", "immunisation-quality"],
+        milestone: {
+          title: "Data people can trust",
+          description: "You can enforce a data contract and quarantine failures, test pipeline code and data, and monitor volume, freshness and drift, tracing any failure to everything it affects.",
+        },
       },
       {
         slug: "de-scale",

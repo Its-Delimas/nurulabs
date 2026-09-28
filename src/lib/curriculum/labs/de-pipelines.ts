@@ -1,10 +1,10 @@
 import type { Lab } from "../types";
 import { dataFile } from "../data/paths";
 
-const API = { "market_api.py": dataFile("market_api.py") };
+export const API = { "market_api.py": dataFile("market_api.py") };
 
 // The extract from Lab 08, given to later labs so they can build on it.
-const EXTRACT = `import market_api
+export const EXTRACT = `import market_api
 from market_api import APIError
 
 
@@ -33,7 +33,7 @@ def extract(client, since=None):
 `;
 
 // The transform from Lab 09.
-const TRANSFORM = `import pandas as pd
+export const TRANSFORM = `import pandas as pd
 
 COLUMNS = ["id", "market", "crop", "unit", "price", "date", "updated_at"]
 
@@ -55,7 +55,7 @@ def transform(records):
 `;
 
 // The load from Lab 09.
-const LOAD = `import sqlite3
+export const LOAD = `import sqlite3
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS prices (
@@ -85,7 +85,7 @@ def load(con, clean):
         con.executemany(UPSERT, rows)
 `;
 
-const RUN = `
+export const RUN = `
 
 def get_watermark(con):
     row = con.execute("SELECT value FROM pipeline_state WHERE key = 'prices_watermark'").fetchone()

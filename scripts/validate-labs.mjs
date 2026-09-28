@@ -33,7 +33,9 @@ async function prepare(packages = []) {
   const missing = packages.filter((p) => !prepared.has(p));
   if (!missing.length) return;
   const sources = missing.flatMap((p) => (WHEELS[p] ? WHEELS[p].map((w) => path.join(root, "public/wheels", w)) : [p]));
-  await py.loadPackage(sources, { messageCallback: () => {} });
+  const failures = [];
+  await py.loadPackage(sources, { messageCallback: () => {}, errorCallback: (m) => failures.push(m) });
+  if (failures.length) throw new Error(`Couldn't load ${missing.join(", ")}: ${failures.join(" ")}`);
   py.globals.get("_nl_prepare")(py.toPy(missing));
   missing.forEach((p) => prepared.add(p));
 }
