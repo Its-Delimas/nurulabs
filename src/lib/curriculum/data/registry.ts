@@ -10,6 +10,7 @@ import { CLINICS_CSV, COUNTY_POPULATION_CSV, VISITS_CSV } from "./clinics";
 import { CROPS_CSV } from "./crops";
 import { CUSTOMERS_CSV } from "./customers";
 import { MM_EXPORT_CSV, SACCO_LEDGER_CSV } from "./engineering";
+import { MARKET_API_PY } from "./market-api";
 import { FARMS_CSV } from "./farms";
 import { HF_SWAHILI_MODELS_CSV } from "./hub";
 import { HOUSEHOLDS_CSV, IMMUNISATION_CSV, SCHOOLS_CSV, SMS_TRIAL_CSV, STUDENTS_CSV } from "./inference";
@@ -43,4 +44,5 @@ export const DATA_FILES: Record<string, string> = {
   "hf-swahili-models.csv": HF_SWAHILI_MODELS_CSV,
   "mm-export.csv": MM_EXPORT_CSV,
   "sacco-ledger.csv": SACCO_LEDGER_CSV,
+  "market_api.py": MARKET_API_PY,
 };

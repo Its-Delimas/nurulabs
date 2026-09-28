@@ -413,14 +413,13 @@ export const tracks: Track[] = [
       },
       {
         slug: "de-pipelines",
-        title: "Pipelines & ETL",
-        summary: "Move data reliably from where it’s made to where it’s used.",
-        labs: [],
-        planned: [
-          { title: "Extract", summary: "Pulling data from files, databases and APIs." },
-          { title: "Transform & load", summary: "Cleaning, joining and loading — repeatably." },
-          { title: "Scheduling & orchestration", summary: "Running pipelines on time, with retries and alerts." },
-        ],
+        title: "Pipelines & orchestration",
+        summary: "Move data reliably from where it’s made to where it’s used: extract from APIs, load idempotently, and orchestrate with Airflow-style DAGs and dbt.",
+        labs: ["de-extract", "de-load", "de-orchestration", "crop-prices-pipeline"],
+        milestone: {
+          title: "Pipelines that run themselves",
+          description: "You can build an incremental, idempotent ETL pipeline that survives outages and re-runs, schedule it as a DAG, and organise SQL transforms the dbt way.",
+        },
       },
       {
         slug: "de-quality",

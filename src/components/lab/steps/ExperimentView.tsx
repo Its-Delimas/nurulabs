@@ -94,6 +94,9 @@ const FormatCompare = dynamic<WidgetProps>(() => import("../widgets/FormatCompar
 const NormaliseTable = dynamic<WidgetProps>(() => import("../widgets/NormaliseTable"), { loading, ssr: false });
 const WindowExplorer = dynamic<WidgetProps>(() => import("../widgets/WindowExplorer"), { loading, ssr: false });
 const QueryPlan = dynamic<WidgetProps>(() => import("../widgets/QueryPlan"), { loading, ssr: false });
+const ApiPager = dynamic<WidgetProps>(() => import("../widgets/ApiPager"), { loading, ssr: false });
+const LoadModes = dynamic<WidgetProps>(() => import("../widgets/LoadModes"), { loading, ssr: false });
+const DagRunner = dynamic<WidgetProps>(() => import("../widgets/DagRunner"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -178,6 +181,9 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "normalise-table": NormaliseTable,
   "window-explorer": WindowExplorer,
   "query-plan": QueryPlan,
+  "api-pager": ApiPager,
+  "load-modes": LoadModes,
+  "dag-runner": DagRunner,
 };
 
 /** How much play before the takeaway is revealed. */
