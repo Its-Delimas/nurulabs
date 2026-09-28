@@ -34,16 +34,19 @@ function getPyodide() {
 
 let lastNamespace = null;
 
-// Lab datasets are published under /data/ and downloaded on first use;
+// Lab datasets are published under /data/ (generated CSVs) or /datasets/
+// (committed binary files) and downloaded on first use;
 // anything else in a lab's files is the file's content itself.
 const fileCache = new Map();
 
 async function fileContent(source) {
-  if (!source.startsWith("/data/")) return source;
+  if (!/^\/(data|datasets)\//.test(source)) return source;
   if (!fileCache.has(source)) {
     const res = await fetch(source);
     if (!res.ok) throw new Error(`Couldn't download the dataset ${source} (HTTP ${res.status}).`);
-    fileCache.set(source, await res.text());
+    // Text for CSV/JSON; raw bytes for binary files such as Excel workbooks.
+    const binary = /\.(xlsx|xls|zip|parquet)$/i.test(source);
+    fileCache.set(source, binary ? new Uint8Array(await res.arrayBuffer()) : await res.text());
   }
   return fileCache.get(source);
 }
@@ -55,11 +58,18 @@ async function writeFiles(pyodide, files) {
   }
 }
 
+// Pure-Python packages Pyodide doesn't ship, self-hosted as wheels in /wheels/
+// (dependencies first). Keep in sync with scripts/validate-labs.mjs.
+const WHEELS = {
+  openpyxl: ["/wheels/et_xmlfile-2.0.0-py3-none-any.whl", "/wheels/openpyxl-3.1.5-py2.py3-none-any.whl"],
+};
+
 async function ensurePackages(pyodide, packages) {
   const missing = (packages || []).filter((p) => !loadedPackages.has(p));
   if (missing.length === 0) return;
   postMessage({ type: "packages-loading", data: missing.join(", ") });
-  await pyodide.loadPackage(missing, { messageCallback: () => {} });
+  const sources = missing.flatMap((p) => (WHEELS[p] ? WHEELS[p].map((w) => new URL(w, self.location.origin).href) : [p]));
+  await pyodide.loadPackage(sources, { messageCallback: () => {} });
   pyodide.globals.get("_nl_prepare")(pyodide.toPy(missing));
   missing.forEach((p) => loadedPackages.add(p));
   postMessage({ type: "packages-loaded" });

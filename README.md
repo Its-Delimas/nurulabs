@@ -13,7 +13,7 @@ reflection in their own words.
 | --- | --- | --- |
 | Python for AI | Beginner | 13 labs + capstone project, live (complete) |
 | AI & Machine Learning | Intermediate | Requires Python for AI (or its placement check); all 10 modules live (39 labs + 6 capstones, from NumPy to neural networks, LLMs and responsible AI) |
-| Data Science | Intermediate | Being built — modules 1–5 written (shares its foundation labs with AI & ML), not yet open for enrollment |
+| Data Science | Intermediate | Requires Python for AI (or its placement check); all 7 modules live — wrangling, statistics, experiments, Excel, SQL, surveys, maps and communication — ending with a real World Bank data capstone |
 | Data Engineering | Intermediate | Coming soon — planned syllabus published |
 
 Experienced learners can take the Python placement check
@@ -86,6 +86,14 @@ Labs normally unlock in order after enrolling. To review any lab directly, open 
 ### Lab datasets
 
 Lab CSVs live in `src/lib/curriculum/data/` and are listed in `registry.ts`. `npm run data` (run automatically before `dev`, `build` and `validate:labs`) writes them to `public/data/`, and labs reference them with `dataFile("name.csv")`. The Python worker downloads a lab's datasets when the lab opens, so they're never part of the site's JavaScript.
+
+### Extra Python packages and binary files
+
+Pure-Python packages that Pyodide doesn't ship (currently `openpyxl`, for Excel files) are self-hosted as wheels in `public/wheels/` and listed in `WHEELS` in both `public/pyodide-worker.js` and `scripts/validate-labs.mjs`; labs just name the package. Binary lab files (like the Excel workbook) are committed under `public/datasets/`.
+
+### Real open data
+
+The Data Science track uses real, openly licensed data: World Bank World Development Indicators (CC BY 4.0), Kenya county boundaries from geoBoundaries (public domain) and 2019 census county populations (KNBS). Sources are noted in `src/lib/curriculum/data/open-data.ts`.
 
 ### Shared labs
 

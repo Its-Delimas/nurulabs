@@ -292,9 +292,10 @@ export const tracks: Track[] = [
     name: "Data Science",
     shortName: "Data Science",
     level: "Intermediate",
-    tagline: "Exploratory analysis, statistics, and storytelling with data.",
-    description: "Exploratory analysis, statistics, and storytelling with data.",
-    status: "coming-soon",
+    tagline: "Turn messy real-world data into decisions people trust.",
+    description:
+      "Clean and join messy records, measure uncertainty honestly, run experiments, and work in the tools teams actually use — Excel, SQL, survey data and maps — ending with an investigation of real World Bank data.",
+    status: "active",
     requires: ["python-for-ai"],
     cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
     modules: [
@@ -350,27 +351,23 @@ export const tracks: Track[] = [
       },
       {
         slug: "ds-real-data",
-        title: "Working with real-world data",
-        summary: "The sources and formats African analysts actually use.",
-        labs: [],
-        planned: [
-          { title: "SQL for analysts", summary: "Querying databases with SELECT, JOIN and GROUP BY." },
-          { title: "Survey data & weights", summary: "Household surveys and why raw averages mislead." },
-          { title: "Maps & geospatial basics", summary: "Counties, coordinates and choropleth maps." },
-          { title: "Open data", summary: "National statistics offices, the World Bank and other public sources." },
-          { title: "Capstone: household survey estimate", summary: "Estimate a county indicator from weighted survey data." },
-        ],
+        title: "Real-world data & tools",
+        summary: "The tools analysts use every day — Excel, SQL, survey weights and maps — on data shaped like the real thing.",
+        labs: ["ds-excel", "ds-sql", "ds-surveys", "ds-maps", "survey-report"],
+        milestone: {
+          title: "Fluent in the working toolkit",
+          description: "You can read and write Excel workbooks, query databases with SQL, produce weighted survey estimates and map data honestly.",
+        },
       },
       {
         slug: "ds-communication",
         title: "Communicating with data",
         summary: "Findings only matter if people understand and act on them.",
-        labs: [],
-        planned: [
-          { title: "Storytelling with data", summary: "Structure an analysis around the decision it informs." },
-          { title: "Reports & dashboards", summary: "Notebooks, reports and dashboards people actually read." },
-          { title: "Capstone: public-data investigation", summary: "Answer a real question about your country with open data." },
-        ],
+        labs: ["ds-storytelling", "ds-dashboards", "open-data-investigation"],
+        milestone: {
+          title: "Data scientist",
+          description: "You can take a real question from raw open data to a clear brief, chart and workbook that a decision-maker can act on.",
+        },
       },
     ],
   },

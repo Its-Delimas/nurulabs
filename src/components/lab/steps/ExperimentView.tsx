@@ -77,6 +77,12 @@ const PHacking = dynamic<WidgetProps>(() => import("../widgets/PHacking"), { loa
 const AbSimulator = dynamic<WidgetProps>(() => import("../widgets/AbSimulator"), { loading, ssr: false });
 const ConfounderExplorer = dynamic<WidgetProps>(() => import("../widgets/ConfounderExplorer"), { loading, ssr: false });
 const DidExplorer = dynamic<WidgetProps>(() => import("../widgets/DidExplorer"), { loading, ssr: false });
+const ExcelToPandas = dynamic<WidgetProps>(() => import("../widgets/ExcelToPandas"), { loading, ssr: false });
+const SqlPandas = dynamic<WidgetProps>(() => import("../widgets/SqlPandas"), { loading, ssr: false });
+const WeightingDemo = dynamic<WidgetProps>(() => import("../widgets/WeightingDemo"), { loading, ssr: false });
+const ChoroplethExplorer = dynamic<WidgetProps>(() => import("../widgets/ChoroplethExplorer"), { loading, ssr: false });
+const NumbersInContext = dynamic<WidgetProps>(() => import("../widgets/NumbersInContext"), { loading, ssr: false });
+const DashboardBuilder = dynamic<WidgetProps>(() => import("../widgets/DashboardBuilder"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -144,6 +150,12 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "ab-simulator": AbSimulator,
   "confounder-explorer": ConfounderExplorer,
   "did-explorer": DidExplorer,
+  "excel-to-pandas": ExcelToPandas,
+  "sql-pandas": SqlPandas,
+  "weighting-demo": WeightingDemo,
+  "choropleth-explorer": ChoroplethExplorer,
+  "numbers-in-context": NumbersInContext,
+  "dashboard-builder": DashboardBuilder,
 };
 
 /** How much play before the takeaway is revealed. */

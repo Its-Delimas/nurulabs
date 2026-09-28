@@ -24,10 +24,16 @@ const py = await loadPyodide({
 py.runPython(readFileSync(path.join(root, "public/nl_harness.py"), "utf8"));
 const prepared = new Set();
 
+// Same self-hosted wheels as public/pyodide-worker.js.
+const WHEELS = {
+  openpyxl: ["et_xmlfile-2.0.0-py3-none-any.whl", "openpyxl-3.1.5-py2.py3-none-any.whl"],
+};
+
 async function prepare(packages = []) {
   const missing = packages.filter((p) => !prepared.has(p));
   if (!missing.length) return;
-  await py.loadPackage(missing, { messageCallback: () => {} });
+  const sources = missing.flatMap((p) => (WHEELS[p] ? WHEELS[p].map((w) => path.join(root, "public/wheels", w)) : [p]));
+  await py.loadPackage(sources, { messageCallback: () => {} });
   py.globals.get("_nl_prepare")(py.toPy(missing));
   missing.forEach((p) => prepared.add(p));
 }
@@ -35,7 +41,7 @@ async function prepare(packages = []) {
 function run(code, files) {
   for (const [name, source] of Object.entries(files ?? {})) {
     // Datasets are published under /data/ (see scripts/export-data.mjs).
-    const content = source.startsWith("/data/") ? readFileSync(path.join(root, "public", source)) : source;
+    const content = /^\/(data|datasets)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
     py.FS.writeFile(name, content);
   }
   out = [];

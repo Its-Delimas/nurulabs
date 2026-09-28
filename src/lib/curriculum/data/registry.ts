@@ -13,7 +13,9 @@ import { FARMS_CSV } from "./farms";
 import { HOUSEHOLDS_CSV, IMMUNISATION_CSV, SCHOOLS_CSV, SMS_TRIAL_CSV, STUDENTS_CSV } from "./inference";
 import { LOANS_CSV } from "./loans";
 import { MAIZE_PRICES_CSV } from "./prices";
+import { COUNTIES_CSV, KENYA_COUNTIES_GEOJSON, WORLD_BANK_CSV } from "./open-data";
 import { REVIEWS_CSV } from "./reviews";
+import { SURVEY_CSV } from "./survey";
 import { TRANSACTIONS_CSV } from "./transactions";
 
 export const DATA_FILES: Record<string, string> = {
@@ -32,4 +34,8 @@ export const DATA_FILES: Record<string, string> = {
   "students.csv": STUDENTS_CSV,
   "immunisation.csv": IMMUNISATION_CSV,
   "sms-trial.csv": SMS_TRIAL_CSV,
+  "survey.csv": SURVEY_CSV,
+  "counties.csv": COUNTIES_CSV,
+  "kenya-counties.geojson": KENYA_COUNTIES_GEOJSON,
+  "world-bank-africa.csv": WORLD_BANK_CSV,
 };

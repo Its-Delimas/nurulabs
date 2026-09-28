@@ -8,7 +8,9 @@ import { tracks } from "@/lib/curriculum/tracks";
 
 /** Lab counts per track come from the server (app/page.tsx), keeping lab content out of this bundle. */
 export default function Path({ labCounts }: { labCounts: Record<string, number> }) {
-  const [python, ai, ...soon] = tracks;
+  const [python, ...rest] = tracks;
+  const next = rest.filter((t) => t.status === "active");
+  const soon = rest.filter((t) => t.status !== "active");
 
   return (
     <section id="tracks" className="scroll-mt-20 bg-paper py-24 md:py-32">
@@ -37,13 +39,13 @@ export default function Path({ labCounts }: { labCounts: Record<string, number> 
           transition={{ delay: 0.1 }}
           className="mt-5 max-w-2xl text-ink/60"
         >
-          Every track is a syllabus of modules, each ending in a milestone — a thing you can now do. Machine
-          learning needs Python, so that&apos;s where the path starts. Already code in Python? Take the placement
-          check and go straight to AI &amp; ML.
+          Every track is a syllabus of modules, each ending in a milestone — a thing you can now do. Everything
+          builds on Python, so that&apos;s where the path starts; then choose AI &amp; Machine Learning or Data
+          Science. Already code in Python? Take the placement check and go straight to step two.
         </motion.p>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2">
-          {[python, ai].map((track, i) => {
+        <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {[python, ...next].map((track, i) => {
             const labCount = labCounts[track.slug] ?? 0;
             const milestones = track.modules.filter((m) => m.milestone);
             return (
@@ -59,7 +61,7 @@ export default function Path({ labCounts }: { labCounts: Record<string, number> 
                   <div className="relative aspect-[16/8]">
                     <Image src={track.cover.src} alt={track.cover.alt} fill sizes="(min-width: 768px) 560px, 100vw" className="object-cover" />
                     <span className="absolute top-4 left-4 rounded-md bg-lime px-2.5 py-1 font-mono text-xs font-semibold text-onlime">
-                      STEP {i + 1}
+                      {i === 0 ? "STEP 1" : "STEP 2 · CHOOSE ONE"}
                     </span>
                   </div>
                 )}

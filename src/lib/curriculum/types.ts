@@ -97,7 +97,13 @@ export type WidgetId =
   | "p-hacking"
   | "ab-simulator"
   | "confounder-explorer"
-  | "did-explorer";
+  | "did-explorer"
+  | "excel-to-pandas"
+  | "sql-pandas"
+  | "weighting-demo"
+  | "choropleth-explorer"
+  | "numbers-in-context"
+  | "dashboard-builder";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";
