@@ -82,6 +82,30 @@ def _nl_prepare(packages):
 
         pd.set_option("display.width", 110)
         pd.set_option("display.max_columns", 12)
+    if "pyarrow" in packages:
+        _nl_refresh_pandas_pyarrow()
+
+
+def _nl_refresh_pandas_pyarrow():
+    """pandas records which pyarrow it has when it is first imported. If an
+    earlier lab imported pandas before pyarrow was loaded, those flags say
+    "no pyarrow" and Parquet breaks, so recompute them everywhere."""
+    import pyarrow.parquet  # noqa: F401
+
+    if "pandas" not in _sys.modules:
+        return
+    import importlib
+
+    import pandas.compat.pyarrow as compat
+
+    importlib.reload(compat)
+    fresh = {k: v for k, v in vars(compat).items() if k.startswith("pa_version_under")}
+    for name, mod in list(_sys.modules.items()):
+        if mod is None or not name.startswith("pandas"):
+            continue
+        for k, v in fresh.items():
+            if k in vars(mod):
+                setattr(mod, k, v)
 
 
 def _nl_describe(ax):

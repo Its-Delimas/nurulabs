@@ -110,7 +110,11 @@ export type WidgetId =
   | "terminal-sim"
   | "venv-explorer"
   | "git-simulator"
-  | "notebook-order";
+  | "notebook-order"
+  | "format-compare"
+  | "normalise-table"
+  | "window-explorer"
+  | "query-plan";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";

@@ -394,24 +394,22 @@ export const tracks: Track[] = [
       {
         slug: "de-foundations",
         title: "Data foundations",
-        summary: "How data is stored, shaped and moved.",
-        labs: [],
-        planned: [
-          { title: "Files & formats", summary: "CSV, JSON and Parquet — and when to use each." },
-          { title: "Data modelling", summary: "Tables, keys and relationships." },
-          { title: "Databases", summary: "How relational databases store and find data." },
-        ],
+        summary: "NumPy and pandas (shared with the other tracks), file formats, and modelling data into tables that can't contradict themselves.",
+        labs: ["np-arrays", "pd-dataframes", "de-formats", "de-modelling", "sacco-digitise"],
+        milestone: {
+          title: "Data that holds together",
+          description: "You can choose the right file format, normalise messy exports into linked tables, and load them into a database that enforces the rules.",
+        },
       },
       {
         slug: "de-sql",
         title: "SQL in depth",
-        summary: "The language every data system speaks.",
-        labs: [],
-        planned: [
-          { title: "Joins & aggregation", summary: "Combining and summarising tables correctly." },
-          { title: "Window functions", summary: "Running totals, rankings and period-over-period change." },
-          { title: "Performance", summary: "Indexes, query plans and why some queries crawl." },
-        ],
+        summary: "The language every data system speaks — from everyday queries to window functions, query plans and DuckDB.",
+        labs: ["ds-sql", "de-windows", "de-performance", "ledger-analytics"],
+        milestone: {
+          title: "Fluent in analytical SQL",
+          description: "You can write joins, CTEs and window functions, read query plans, add the right indexes, and choose between row and column stores.",
+        },
       },
       {
         slug: "de-pipelines",

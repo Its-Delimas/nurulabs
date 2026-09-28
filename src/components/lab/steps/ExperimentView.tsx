@@ -90,6 +90,10 @@ const TerminalSim = dynamic<WidgetProps>(() => import("../widgets/TerminalSim"),
 const VenvExplorer = dynamic<WidgetProps>(() => import("../widgets/VenvExplorer"), { loading, ssr: false });
 const GitSimulator = dynamic<WidgetProps>(() => import("../widgets/GitSimulator"), { loading, ssr: false });
 const NotebookOrder = dynamic<WidgetProps>(() => import("../widgets/NotebookOrder"), { loading, ssr: false });
+const FormatCompare = dynamic<WidgetProps>(() => import("../widgets/FormatCompare"), { loading, ssr: false });
+const NormaliseTable = dynamic<WidgetProps>(() => import("../widgets/NormaliseTable"), { loading, ssr: false });
+const WindowExplorer = dynamic<WidgetProps>(() => import("../widgets/WindowExplorer"), { loading, ssr: false });
+const QueryPlan = dynamic<WidgetProps>(() => import("../widgets/QueryPlan"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -170,6 +174,10 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "venv-explorer": VenvExplorer,
   "git-simulator": GitSimulator,
   "notebook-order": NotebookOrder,
+  "format-compare": FormatCompare,
+  "normalise-table": NormaliseTable,
+  "window-explorer": WindowExplorer,
+  "query-plan": QueryPlan,
 };
 
 /** How much play before the takeaway is revealed. */
