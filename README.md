@@ -87,6 +87,10 @@ Labs normally unlock in order after enrolling. To review any lab directly, open 
 
 Lab CSVs live in `src/lib/curriculum/data/` and are listed in `registry.ts`. `npm run data` (run automatically before `dev`, `build` and `validate:labs`) writes them to `public/data/`, and labs reference them with `dataFile("name.csv")`. The Python worker downloads a lab's datasets when the lab opens, so they're never part of the site's JavaScript.
 
+### Keeping pages light
+
+`npm run data` also writes `src/lib/curriculum/lab-index.json`: every lab's title, summary and step outline, without lesson text, code or checks. Syllabus pages, the dashboard and other client code use this index; only a lab's own page (a server component) loads that lab's full content. Widgets and the code editor are loaded on demand. Run `npm run data` (or `dev`/`build`, which run it) after changing labs.
+
 ### Extra Python packages and binary files
 
 Pure-Python packages that Pyodide doesn't ship (currently `openpyxl`, for Excel files) are self-hosted as wheels in `public/wheels/` and listed in `WHEELS` in both `public/pyodide-worker.js` and `scripts/validate-labs.mjs`; labs just name the package. Binary lab files (like the Excel workbook) are committed under `public/datasets/`.

@@ -55,6 +55,12 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
   useEffect(() => {
     if (status === "ready") preload(lab.packages, lab.files);
   }, [status, preload, lab.packages, lab.files]);
+
+  // Warm up the code editor in the background once the page is showing.
+  useEffect(() => {
+    const t = setTimeout(() => void import("./CodeEditor"), 1500);
+    return () => clearTimeout(t);
+  }, []);
   const step = lab.steps[index];
   const stepDone = done.has(step.id);
   // Concepts are complete as soon as they're read.

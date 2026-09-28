@@ -1,14 +1,17 @@
-import type { Lab, Module, Track } from "./types";
+import type { LabSummary, Module, Track } from "./types";
 import type { Progress } from "@/lib/progress";
 import { tracks } from "./tracks";
-import { allLabs } from "./labs";
+// The generated outline of every lab (npm run data). Full lab content is only
+// loaded by a lab's own page, so the rest of the site stays light.
+import labIndex from "./lab-index.json";
 
 export { tracks };
 export type * from "./types";
 
+const allLabs = labIndex as LabSummary[];
 const labsBySlug = new Map(allLabs.map((l) => [l.slug, l]));
 
-export function getLab(slug: string): Lab | undefined {
+export function getLab(slug: string): LabSummary | undefined {
   return labsBySlug.get(slug);
 }
 
@@ -16,12 +19,12 @@ export function getTrack(slug: string): Track | undefined {
   return tracks.find((t) => t.slug === slug);
 }
 
-export function moduleLabs(mod: Module): Lab[] {
-  return mod.labs.map((s) => labsBySlug.get(s)).filter((l): l is Lab => !!l);
+export function moduleLabs(mod: Module): LabSummary[] {
+  return mod.labs.map((s) => labsBySlug.get(s)).filter((l): l is LabSummary => !!l);
 }
 
 /** All built labs of a track, in path order. */
-export function trackLabs(track: Track): Lab[] {
+export function trackLabs(track: Track): LabSummary[] {
   return track.modules.flatMap(moduleLabs);
 }
 
@@ -51,7 +54,7 @@ export function labNumber(slug: string, track: Track | undefined): string {
 }
 
 /** "Lab 07" or "Project" — how a lab is labelled within a track. */
-export function labLabel(lab: Lab, track: Track | undefined): string {
+export function labLabel(lab: LabSummary, track: Track | undefined): string {
   return lab.kind === "project" ? "Project" : `Lab ${labNumber(lab.slug, track)}`;
 }
 
@@ -135,7 +138,7 @@ export function canWorkOnTrack(track: Track, progress: Progress | null) {
 export type LabAccess =
   | { open: true }
   | { open: false; reason: "not-enrolled"; track: Track }
-  | { open: false; reason: "order"; first: Lab };
+  | { open: false; reason: "order"; first: LabSummary };
 
 /**
  * A lab is open when a track that includes it is workable and every lab
@@ -163,7 +166,7 @@ export function labAccess(slug: string, progress: Progress | null): LabAccess {
 }
 
 /** The lab after this one on its track's path, if any. */
-export function nextLabAfter(slug: string, progress: Progress | null = null): Lab | undefined {
+export function nextLabAfter(slug: string, progress: Progress | null = null): LabSummary | undefined {
   const track = trackOfLab(slug, progress);
   if (!track) return undefined;
   const labs = trackLabs(track);

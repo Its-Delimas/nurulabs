@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BookOpen, Check, ChevronDown, Clock, Flag, Hammer, Lock } from "lucide-react";
-import type { Lab, Track } from "@/lib/curriculum/types";
+import type { LabSummary, Track } from "@/lib/curriculum/types";
 import {
   canWorkOnTrack,
   enrolledTrack,
@@ -200,7 +200,7 @@ function LabRow({
   workable,
   isNext,
 }: {
-  lab: Lab;
+  lab: LabSummary;
   track: Track;
   progress: Progress | null;
   workable: boolean;

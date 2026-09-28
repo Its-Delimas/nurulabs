@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -18,7 +19,11 @@ import type { CodeStep } from "@/lib/curriculum/types";
 import type { PyodideStatus, RunResult } from "@/hooks/usePyodideWorker";
 import { mentorFor, type Attempt } from "@/lib/mentor";
 import { recordActivityToday, saveCode } from "@/lib/progress";
-import CodeEditor from "../CodeEditor";
+// The editor (CodeMirror) is the heaviest part of a lab page; load it only when a code step needs it.
+const CodeEditor = dynamic(() => import("../CodeEditor"), {
+  ssr: false,
+  loading: () => <div className="min-h-64 bg-code" />,
+});
 import ErrorExplainer from "../ErrorExplainer";
 import RichText from "../RichText";
 import PythonCode from "../PythonCode";

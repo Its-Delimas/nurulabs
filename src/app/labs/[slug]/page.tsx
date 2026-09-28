@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: PageProps<"/labs/[slug]">): P
 
 export default async function LabPage({ params }: PageProps<"/labs/[slug]">) {
   const { slug } = await params;
-  const lab = getLab(slug);
+  // Full content, on the server: only this one lab is sent to the browser.
+  const lab = allLabs.find((l) => l.slug === slug);
   if (!lab) notFound();
   return <LabPlayer lab={lab} />;
 }

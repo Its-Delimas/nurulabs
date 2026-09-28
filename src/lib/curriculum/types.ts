@@ -212,6 +212,20 @@ export interface Lab {
   steps: Step[];
 }
 
+/** A step's outline: enough for syllabus pages and progress, without its content. */
+export interface StepSummary {
+  id: string;
+  kind: StepKind;
+  title: string;
+  challenge?: boolean;
+}
+
+/**
+ * A lab without its lesson text, code and checks (see scripts/export-lab-index.mjs).
+ * Everything outside a lab's own page works with these, so pages stay small.
+ */
+export type LabSummary = Omit<Lab, "steps"> & { steps: StepSummary[] };
+
 export interface PlannedLab {
   title: string;
   summary: string;

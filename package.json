@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "data": "node scripts/export-data.mjs",
+    "data": "node scripts/export-data.mjs && node scripts/export-lab-index.mjs",
     "predev": "npm run data",
     "dev": "next dev",
     "prebuild": "npm run data",

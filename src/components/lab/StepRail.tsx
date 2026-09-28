@@ -1,9 +1,9 @@
 "use client";
 
 import { BookOpen, Code2, Eye, FlaskConical, MessageSquareText, Target } from "lucide-react";
-import type { Step } from "@/lib/curriculum/types";
+import type { StepSummary } from "@/lib/curriculum/types";
 
-export function stepMeta(step: Step) {
+export function stepMeta(step: StepSummary) {
   switch (step.kind) {
     case "concept":
       return { label: "Lesson", icon: BookOpen };
@@ -27,7 +27,7 @@ export default function StepRail({
   reachable,
   onSelect,
 }: {
-  steps: Step[];
+  steps: StepSummary[];
   current: number;
   done: Set<string>;
   reachable: number;
