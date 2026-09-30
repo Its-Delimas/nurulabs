@@ -21,7 +21,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import EnrollAction from "./EnrollAction";
 import TrackSyllabus from "./TrackSyllabus";
 import SectionHeading from "./SectionHeading";
-import { hours, plural } from "./format";
+import { plural } from "./format";
 
 
 export default function TrackView({ track }: { track: Track }) {
@@ -30,7 +30,7 @@ export default function TrackView({ track }: { track: Track }) {
   const workable = canWorkOnTrack(track, progress);
   const isEnrolled = enrolledTrack(progress)?.slug === track.slug;
   const labs = trackLabs(track);
-  const minutes = labs.reduce((s, l) => s + l.minutes, 0);
+  const activities = labs.reduce((s, l) => s + l.steps.length, 0);
   const projects = labs.filter((l) => l.kind === "project");
   const next = workable ? stats.next : undefined;
   const nextStarted = next && progress?.labs[next.slug]?.steps.length;
@@ -95,7 +95,7 @@ export default function TrackView({ track }: { track: Track }) {
                     ["Modules", String(track.modules.length)],
                     ["Labs", String(stats.total)],
                     ["Projects", String(projects.length)],
-                    ["Hands-on", hours(minutes)],
+                    ["Activities", String(activities)],
                   ]
               ).map(([label, value]) => (
                 <div key={label} className="bg-cream px-5 py-4">
@@ -130,7 +130,6 @@ export default function TrackView({ track }: { track: Track }) {
             const done = modLabs.length > 0 && isModuleDone(mod, progress);
             const current = mod === currentModule;
             const doneCount = modLabs.filter((l) => isLabDone(progress, l.slug)).length;
-            const mins = modLabs.reduce((s, l) => s + l.minutes, 0);
             return (
               <li key={mod.slug} className="w-60 shrink-0 snap-start">
                 <a
@@ -156,7 +155,7 @@ export default function TrackView({ track }: { track: Track }) {
                   <p className="mt-4 font-display text-base font-semibold leading-snug text-ink">{mod.title}</p>
                   <p className="mt-1 text-xs text-ink/50">
                     {modLabs.length
-                      ? `${plural(modLabs.length, "lab")} · ${hours(mins)}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
+                      ? `${plural(modLabs.length, "lab")}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
                       : `${mod.planned?.length ?? 0} lessons planned`}
                   </p>
                   {mod.milestone && (

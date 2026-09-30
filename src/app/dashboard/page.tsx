@@ -67,7 +67,18 @@ export default function DashboardPage() {
 
           <div className="min-w-0 space-y-6">
             <section className="rounded-3xl bg-paper p-6 text-ink ring-1 ring-ink/10">
-              <p className="font-display text-base font-semibold">Your progress</p>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="font-display text-base font-semibold">Your progress</p>
+                <p className="font-display text-2xl font-semibold text-lime-deep">{stats.percent}%</p>
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/10">
+                <div className="h-full rounded-full bg-lime" style={{ width: `${stats.percent}%` }} />
+              </div>
+              {!stats.complete && stats.percent >= 75 && (
+                <p className="mt-2 text-xs font-semibold text-lime-deep">
+                  Almost there: {stats.total - stats.done} {stats.total - stats.done === 1 ? "lab" : "labs"} to finish {track.name}.
+                </p>
+              )}
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <Metric value={`${stats.done}/${stats.total}`} label="Labs" />
                 <Metric value={String(milestonesReached)} label="Milestones" />

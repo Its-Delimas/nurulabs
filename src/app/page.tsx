@@ -18,7 +18,7 @@ export default function Home() {
   const facts = Object.fromEntries(
     tracks.map((t) => {
       const labs = trackLabs(t);
-      return [t.slug, { labs: labs.length, hours: Math.max(1, Math.round(labs.reduce((m, l) => m + l.minutes, 0) / 60)) }];
+      return [t.slug, { labs: labs.length, projects: labs.filter((l) => l.kind === "project").length }];
     }),
   );
 

@@ -9,7 +9,7 @@ import type { Track } from "@/lib/curriculum/types";
 
 export interface TrackFacts {
   labs: number;
-  hours: number;
+  projects: number;
 }
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -20,7 +20,7 @@ function Stats({ track, facts, className = "" }: { track: Track; facts: TrackFac
     <dl className={`grid grid-cols-3 divide-x divide-ink/10 rounded-2xl bg-paper py-3 text-center ring-1 ring-ink/10 ${className}`}>
       {[
         [String(facts.labs), "labs"],
-        [`~${facts.hours}`, "hours"],
+        [String(facts.projects), facts.projects === 1 ? "project" : "projects"],
         [String(milestones), "milestones"],
       ].map(([v, l]) => (
         <div key={l} className="flex flex-col-reverse">
@@ -52,7 +52,7 @@ export default function Path({ facts }: { facts: Record<string, TrackFacts> }) {
   const live = tracks.filter((t) => t.status === "active");
   const soon = tracks.filter((t) => t.status !== "active");
   const [foundation, ...paths] = live;
-  const factsFor = (t: Track) => facts[t.slug] ?? { labs: 0, hours: 0 };
+  const factsFor = (t: Track) => facts[t.slug] ?? { labs: 0, projects: 0 };
 
   return (
     <section id="tracks" className="scroll-mt-20 bg-cream px-6 py-24 md:px-10 xl:px-16">
@@ -89,8 +89,8 @@ export default function Path({ facts }: { facts: Record<string, TrackFacts> }) {
               <Link href="/tracks" className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5">
                 Start here <ArrowRight size={16} />
               </Link>
-              <Link href={`/tracks/${foundation.slug}`} className="text-sm font-semibold text-ink underline-offset-4 hover:underline">
-                See the syllabus
+              <Link href={`/tracks/${foundation.slug}`} className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-ink ring-1 ring-ink/20 transition-colors hover:ring-ink/50">
+                Show syllabus
               </Link>
               <Link href={`/placement/${foundation.slug}`} className="text-sm text-ink/55 underline-offset-4 hover:text-ink hover:underline">
                 Already code? Take the placement check
@@ -137,15 +137,14 @@ export default function Path({ facts }: { facts: Record<string, TrackFacts> }) {
                   <div className="mt-auto pt-6">
                     <Stats track={track} facts={factsFor(track)} />
                     <div className="flex items-center justify-between gap-4 pt-6">
-                      <Link href={`/tracks/${track.slug}`} className="text-sm font-semibold text-ink underline-offset-4 hover:underline">
-                        See the syllabus
-                      </Link>
                       <Link
                         href={`/tracks/${track.slug}`}
-                        aria-label={`Open ${track.name}`}
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-lime text-onlime transition-transform group-hover:translate-x-1"
+                        className="inline-flex w-full items-center justify-between gap-2 rounded-full bg-ink py-2 pl-5 pr-2 text-sm font-semibold text-paper"
                       >
-                        <ArrowRight size={18} />
+                        Show syllabus
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lime text-onlime transition-transform group-hover:translate-x-0.5">
+                          <ArrowRight size={16} />
+                        </span>
                       </Link>
                     </div>
                   </div>

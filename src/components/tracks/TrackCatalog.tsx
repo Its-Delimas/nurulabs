@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BarChart3, BookOpen, Clock, Flag } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, Flag, Hammer } from "lucide-react";
 import { enrolledTrack, trackLabs, trackStats, tracks } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -33,7 +33,7 @@ export default function TrackCatalog() {
           <p className="mt-4 max-w-2xl leading-relaxed text-white/70">
             Nurulabs works like a programme, not a buffet. You enroll in one track, follow its syllabus
             milestone by milestone, and finish it before starting the next. New to code? Start with Python
-            for AI — everything else builds on it. Every track is free.
+            Essentials — everything else builds on it. Every track is free.
           </p>
         </div>
       </section>
@@ -41,7 +41,7 @@ export default function TrackCatalog() {
       <div className="mt-10 space-y-5">
         {tracks.map((track, i) => {
           const labs = trackLabs(track);
-          const minutes = labs.reduce((s, l) => s + l.minutes, 0);
+          const projects = labs.filter((l) => l.kind === "project").length;
           const stats = trackStats(track, progress);
           const milestones = track.modules.filter((m) => m.milestone).length;
           const isCurrent = current?.slug === track.slug;
@@ -92,7 +92,7 @@ export default function TrackCatalog() {
                   <dl className={`mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink/55`}>
                     <div className="inline-flex items-center gap-1.5"><BookOpen size={15} /> {labs.length} lab{labs.length === 1 ? "" : "s"}</div>
                     <div className="inline-flex items-center gap-1.5"><Flag size={15} /> {milestones} milestone{milestones === 1 ? "" : "s"}</div>
-                    <div className="inline-flex items-center gap-1.5"><Clock size={15} /> ~{Math.max(1, Math.round(minutes / 60))} hrs hands-on</div>
+                    <div className="inline-flex items-center gap-1.5"><Hammer size={15} /> {projects} project{projects === 1 ? "" : "s"}</div>
                     <div className="inline-flex items-center gap-1.5"><BarChart3 size={15} /> {track.level}</div>
                   </dl>
                 )}
@@ -108,9 +108,10 @@ export default function TrackCatalog() {
                   <EnrollAction track={track} progress={progress} />
                   <Link
                     href={`/tracks/${track.slug}`}
-                    className={`text-sm font-semibold underline-offset-4 hover:underline text-ink/60`}
+                    className="inline-flex items-center gap-2 rounded-md px-5 py-3 text-sm font-semibold text-ink ring-1 ring-ink/20 transition-colors hover:ring-ink/50"
                   >
-                    {soon ? `See the planned syllabus (${track.modules.length} modules)` : "View syllabus"}
+                    {soon ? "Show planned syllabus" : "Show syllabus"}
+                    <ArrowRight size={15} />
                   </Link>
                 </div>
               </div>

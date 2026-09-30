@@ -4,24 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Check, ChevronDown, Clock, Flag, Hammer, Lock } from "lucide-react";
-import type { LabSummary, Module, StepSummary, Track } from "@/lib/curriculum/types";
+import type { LabSummary, Module, Track } from "@/lib/curriculum/types";
 import { isLabDone, isModuleDone, labAccess, labLabel, moduleLabs } from "@/lib/curriculum";
 import type { Progress } from "@/lib/progress";
-import { stepMeta } from "@/components/lab/StepRail";
+import { stepMeta, stepTone as tone, stepTones as tones } from "@/components/lab/StepRail";
 import SectionHeading from "./SectionHeading";
-import { hours, plural } from "./format";
+import { plural } from "./format";
 
-/** Colour for each kind of activity, used in the activity bars and their legend. */
-const tones = {
-  Lesson: "bg-sky",
-  Interactive: "bg-sun",
-  Quiz: "bg-lime-deep",
-  Practice: "bg-ink/60",
-  Challenge: "bg-ink",
-  Reflect: "bg-ink/20",
-} as const;
-
-const tone = (step: StepSummary) => tones[stepMeta(step).label as keyof typeof tones];
 
 export default function TrackSyllabus({
   track,
@@ -101,7 +90,6 @@ function ModuleSection({
   const labs = moduleLabs(mod);
   const reached = labs.length > 0 && isModuleDone(mod, progress);
   const doneCount = labs.filter((l) => isLabDone(progress, l.slug)).length;
-  const minutes = labs.reduce((s, l) => s + l.minutes, 0);
   const activities = labs.reduce((s, l) => s + l.steps.length, 0);
 
   return (
@@ -115,7 +103,7 @@ function ModuleSection({
           <p className="mt-1 max-w-2xl text-ink/60">{mod.summary}</p>
           <p className="mt-2 text-xs font-medium text-ink/45">
             {labs.length
-              ? `${plural(labs.length, "lab")} · ${activities} activities · ${hours(minutes)}`
+              ? `${plural(labs.length, "lab")} · ${activities} activities`
               : `${mod.planned?.length ?? 0} lessons planned`}
           </p>
         </div>

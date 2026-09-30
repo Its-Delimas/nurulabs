@@ -20,6 +20,18 @@ export function stepMeta(step: StepSummary) {
   }
 }
 
+/** Colour for each kind of activity, used in activity bars and their legend. */
+export const stepTones = {
+  Lesson: "bg-sky",
+  Interactive: "bg-sun",
+  Quiz: "bg-lime-deep",
+  Practice: "bg-ink/60",
+  Challenge: "bg-ink",
+  Reflect: "bg-ink/20",
+} as const;
+
+export const stepTone = (step: StepSummary) => stepTones[stepMeta(step).label as keyof typeof stepTones];
+
 export default function StepRail({
   steps,
   current,
