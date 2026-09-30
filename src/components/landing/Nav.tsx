@@ -7,9 +7,9 @@ import Logo from "./Logo";
 import AccountButton from "@/components/auth/AccountButton";
 
 const links = [
-  { href: "#how", label: "How it works" },
-  { href: "#try", label: "Try it" },
-  { href: "#tracks", label: "Tracks" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#try", label: "Try it" },
+  { href: "/#tracks", label: "Tracks" },
   { href: "/dashboard", label: "My learning" },
 ];
 

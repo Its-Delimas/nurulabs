@@ -21,6 +21,7 @@ const columns = [
       { href: "/#try", label: "Try an interactive" },
       { href: "/#why", label: "Why Nurulabs" },
       { href: "/dashboard", label: "My learning" },
+      { href: "/credits", label: "Credits" },
     ],
   },
 ];
@@ -52,7 +53,11 @@ export default function Footer() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/10 px-6 py-5 md:px-10 xl:px-16">
         <p className="text-xs text-ink/40">
-          Photography from Unsplash — credits in <code className="font-mono">public/images/CREDITS.md</code>.
+          Photography by the photographers of Unsplash.{" "}
+          <Link href="/credits" className="underline underline-offset-2 transition-colors hover:text-ink">
+            See who took each photo
+          </Link>
+          .
         </p>
         <ThemeToggle />
       </div>
