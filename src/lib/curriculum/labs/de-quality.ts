@@ -1024,7 +1024,7 @@ export const immunisationCapstone: Lab = {
   kind: "project",
   packages: ["pandas", "pydantic", "pytest"],
   files: { ...IMMUNISATION, ...TESTKIT },
-  cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
+  cover: { src: "/images/mother-child.webp", alt: "A mother smiling at her young child" },
   skills: [
     "Detect and handle schema drift between exports",
     "Validate health reports against a contract and quarantine failures",

@@ -781,7 +781,7 @@ export const shipProjectCapstone: Lab = {
     "Turn the Maize Price Tracker into a real project someone else can download and run: a command-line tool, a README, pinned requirements, a .gitignore and tests — then put it on your own GitHub.",
   minutes: 60,
   kind: "project",
-  cover: { src: "/images/laptop-code.jpg", alt: "Code on a laptop screen" },
+  cover: { src: "/images/developer-office.webp", alt: "A smiling developer working on a laptop in an office" },
   skills: [
     "Structure a Python project others can run",
     "Write a README, requirements, .gitignore and tests",

@@ -1221,7 +1221,7 @@ export const feedbackCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scikit-learn"],
   files: REVIEWS,
-  cover: { src: "/images/pair-programming.jpg", alt: "Two developers reading code together on a monitor" },
+  cover: { src: "/images/support-headset.webp", alt: "A young woman in headphones smiling at her phone" },
   skills: [
     "Combine classification, keyword tagging and retrieval in one tool",
     "Prioritise issues from unstructured feedback",

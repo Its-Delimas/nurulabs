@@ -10,7 +10,7 @@ export const tracks: Track[] = [
     description:
       "Start from zero and finish able to load, clean and analyse a real dataset in Python — the foundation the Data Science, Data Engineering and AI & ML tracks all build on.",
     status: "active",
-    cover: { src: "/images/pair-programming.jpg", alt: "Two developers reading code together on a monitor" },
+    cover: { src: "/images/track-python.webp", alt: "A young woman with braided hair working on a laptop at her desk" },
     modules: [
       {
         slug: "py-foundations",
@@ -182,7 +182,7 @@ export const tracks: Track[] = [
       "Clean and join messy records, measure uncertainty honestly, run experiments, and work in the tools teams actually use — Excel, SQL, survey data and maps — ending with an investigation of real World Bank data.",
     status: "active",
     requires: ["python-essentials"],
-    cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
+    cover: { src: "/images/track-data-science.webp", alt: "A woman in glasses working on a laptop in a busy office" },
     modules: [
       {
         slug: "ds-scientific",
@@ -266,7 +266,7 @@ export const tracks: Track[] = [
       "Build the systems that move and model data: file formats and SQL, pipelines with Airflow-style DAGs and dbt, data quality and testing, warehouses, star schemas and streaming. It ends with an end-to-end mobile-money pipeline.",
     status: "active",
     requires: ["python-essentials"],
-    cover: { src: "/images/laptop-code.jpg", alt: "Code on a laptop screen" },
+    cover: { src: "/images/track-data-engineering.webp", alt: "Fibre-optic cables plugged into a network switch in a server rack" },
     modules: [
       {
         slug: "de-foundations",
@@ -330,7 +330,7 @@ export const tracks: Track[] = [
       "From your first straight-line model to neural networks, language models and responsible deployment — every concept built, run, and tested by you.",
     status: "active",
     requires: ["python-essentials"],
-    cover: { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky" },
+    cover: { src: "/images/track-ai.webp", alt: "A developer in headphones working across a laptop and a large monitor of code" },
     modules: [
       {
         slug: "ml-scientific",

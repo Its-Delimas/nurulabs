@@ -8,7 +8,7 @@ import { ArrowRight } from "lucide-react";
 export default function CTA() {
   return (
     <section className="relative isolate overflow-hidden bg-code text-white">
-      <Image src="/images/nairobi-night.jpg" alt="Nairobi's city centre lit up at night" fill sizes="100vw" className="-z-20 object-cover" />
+      <Image src="/images/graduation-nairobi.webp" alt="Graduates in gowns celebrating together in Nairobi" fill sizes="100vw" className="-z-20 object-cover" />
       <div className="absolute inset-0 -z-10 bg-black/65" />
       <motion.div
         initial={{ opacity: 0, y: 24 }}

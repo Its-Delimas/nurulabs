@@ -776,7 +776,7 @@ export const clinicCapstone: Lab = {
   kind: "project",
   packages: ["pandas", "matplotlib"],
   files: CLINIC_FILES,
-  cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
+  cover: { src: "/images/health-workers.webp", alt: "Two health workers in green scrubs walking down a busy street" },
   skills: [
     "Build an end-to-end cleaning pipeline",
     "Report data-quality problems to data producers",

@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { Leaf, Car, Smartphone, Scale, MessageSquareText, Images } from "lucide-react";
 
 const mosaic = [
-  { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky", caption: "AI & ML Lab 09", sub: "Predict maize yield from rainfall" },
-  { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya", caption: "AI & ML capstone", sub: "Forecast market prices, with honest error bars" },
-  { src: "/images/nairobi-skyline.jpg", alt: "Nairobi's skyline at golden hour", caption: "AI & ML capstone", sub: "Audit a lending model for fairness" },
+  { src: "/images/farm-harvest.webp", alt: "Farmers harvesting leafy greens in the evening light", caption: "AI & ML Lab 09", sub: "Predict maize yield from rainfall" },
+  { src: "/images/entebbe-market.webp", alt: "A busy open-air produce market in Entebbe, Uganda", caption: "AI & ML capstone", sub: "Forecast market prices, with honest error bars" },
+  { src: "/images/city-dusk.webp", alt: "An African city seen from above at dusk, its lights coming on", caption: "AI & ML capstone", sub: "Audit a lending model for fairness" },
 ];
 
 // Capstones that are live today, then what's still on the roadmap.

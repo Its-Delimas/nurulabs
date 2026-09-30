@@ -683,7 +683,7 @@ export const surveyCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "matplotlib", "openpyxl"],
   files: { ...SURVEY, ...MAPS },
-  cover: { src: "/images/highland-farms.jpg", alt: "Terraced farms in Kenya's highlands" },
+  cover: { src: "/images/community-meeting.webp", alt: "Women gathered at a community meeting" },
   skills: [
     "Produce weighted estimates with stratified bootstrap intervals",
     "Deliver results in the formats clients use",

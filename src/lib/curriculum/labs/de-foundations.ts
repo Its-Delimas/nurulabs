@@ -416,7 +416,7 @@ export const saccoCapstone: Lab = {
   kind: "project",
   packages: ["pandas", "pyarrow"],
   files: SACCO,
-  cover: { src: "/images/highland-farms.jpg", alt: "Terraced farms in Kenya's highlands" },
+  cover: { src: "/images/savings-group-laptop.webp", alt: "Three women going through their records together on a laptop" },
   skills: [
     "Profile a messy dataset before loading it",
     "Design and load a constrained schema, logging rejected rows",
@@ -923,7 +923,7 @@ export const ledgerCapstone: Lab = {
   kind: "project",
   packages: ["pandas", "duckdb", "pyarrow"],
   files: MM,
-  cover: { src: "/images/nairobi-night.jpg", alt: "Nairobi's city centre lit up at night" },
+  cover: { src: "/images/shop-counter.webp", alt: "A shopkeeper at the counter of her general store" },
   skills: [
     "Build analytical SQL with CTEs and windows",
     "Answer operational questions from a transaction ledger",

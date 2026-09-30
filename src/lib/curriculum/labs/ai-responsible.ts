@@ -703,7 +703,7 @@ export const lendingCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scikit-learn"],
   files: LOANS,
-  cover: { src: "/images/nairobi-skyline.jpg", alt: "The Nairobi skyline" },
+  cover: { src: "/images/tailor-shop.webp", alt: "A tailor at work on a sewing machine in his shop" },
   skills: [
     "Compare candidate models on accuracy and fairness together",
     "Choose a decision threshold under a fairness constraint",

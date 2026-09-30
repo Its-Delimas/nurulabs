@@ -17,12 +17,12 @@ export default function TrackCatalog() {
     <div>
       <section className="relative isolate overflow-hidden rounded-[28px] bg-code text-white">
         <Image
-          src="/images/students-laptops.jpg"
-          alt="Four students sitting together outdoors with laptops"
+          src="/images/learner-library.webp"
+          alt="A student smiling over her shoulder as she works on a laptop"
           fill
           priority
           sizes="(min-width: 1024px) 1024px, 100vw"
-          className="-z-20 object-cover object-[center_30%]"
+          className="-z-20 object-cover object-[center_40%]"
         />
         <div className="absolute inset-0 -z-10 bg-black/65" />
         <div className="px-7 py-12 md:px-10 md:py-16">

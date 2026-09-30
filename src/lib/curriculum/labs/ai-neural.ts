@@ -816,7 +816,7 @@ export const digitCapstone: Lab = {
   minutes: 60,
   kind: "project",
   packages: ["numpy", "scikit-learn", "matplotlib"],
-  cover: { src: "/images/pair-programming.jpg", alt: "Two developers reading code together on a monitor" },
+  cover: { src: "/images/classroom-numbers.webp", alt: "Children in a classroom with numbers chalked on the wall" },
   skills: [
     "Train and compare image classifiers on real data",
     "Diagnose errors with a confusion matrix",

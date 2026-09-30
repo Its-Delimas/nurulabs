@@ -42,7 +42,7 @@ export const rainfallYield: Lab = {
     "Predict maize yield from rainfall on smallholder farms in Nakuru County — and see exactly what “training a model” means.",
   minutes: 35,
   kind: "lab",
-  cover: { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky" },
+  cover: { src: "/images/storm-savanna.webp", alt: "Storm clouds gathering over grassland in Kenya's Maasai Mara" },
   skills: [
     "Explain what training a model actually does",
     "Fit a straight-line model to real data",

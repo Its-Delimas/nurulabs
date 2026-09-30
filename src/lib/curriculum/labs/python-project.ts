@@ -82,7 +82,7 @@ export const pyProjectMarket: Lab = {
     "A farmers' cooperative in Kisumu asks: where and when should we sell our maize? Load a year of messy market data, clean it, analyse it, and forecast next month's price.",
   minutes: 45,
   kind: "project",
-  cover: { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya" },
+  cover: { src: "/images/fruit-stand.webp", alt: "A trader standing at a fruit and vegetable stall" },
   skills: [
     "Take a raw CSV all the way to a recommendation",
     "Clean messy data with missing values",

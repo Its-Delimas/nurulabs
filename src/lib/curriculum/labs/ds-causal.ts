@@ -473,7 +473,7 @@ export const smsCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scipy", "matplotlib"],
   files: SMS,
-  cover: { src: "/images/nairobi-night.jpg", alt: "Nairobi's city centre lit up at night" },
+  cover: { src: "/images/reading-phone.webp", alt: "A man sitting on a bench reading his phone" },
   skills: [
     "Analyse a multi-arm randomised trial",
     "Report lifts with confidence intervals",

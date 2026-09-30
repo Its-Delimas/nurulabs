@@ -477,7 +477,7 @@ export const schoolsCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scipy", "matplotlib"],
   files: SCHOOLS,
-  cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
+  cover: { src: "/images/pupils-classroom.webp", alt: "Pupils reading at their desks in a busy classroom" },
   skills: [
     "Test a difference between groups with intervals",
     "Recognise and correct for regression to the mean",

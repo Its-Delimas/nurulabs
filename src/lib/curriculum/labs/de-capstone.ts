@@ -88,7 +88,7 @@ export const mobileMoneyCapstone: Lab = {
   kind: "project",
   packages: ["pandas", "pyarrow", "duckdb"],
   files: MM,
-  cover: { src: "/images/nairobi-night.jpg", alt: "Nairobi's city centre lit up at night" },
+  cover: { src: "/images/mobile-money-kiosk.webp", alt: "A shopkeeper holding a phone at her kiosk, phone numbers written on the wall behind her" },
   skills: [
     "Build a lake → warehouse → mart pipeline end to end",
     "Model facts and history-keeping dimensions in a warehouse",

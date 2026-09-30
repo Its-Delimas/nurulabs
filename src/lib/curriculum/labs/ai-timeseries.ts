@@ -349,7 +349,7 @@ export const priceCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scikit-learn", "matplotlib"],
   files: FILES,
-  cover: { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya" },
+  cover: { src: "/images/tomato-market.webp", alt: "Tomatoes piled high on a market stall" },
   skills: [
     "Take a forecasting problem from raw data to a delivered forecast",
     "Validate a forecast against baselines on a held-out year",

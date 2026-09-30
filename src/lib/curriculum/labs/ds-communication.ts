@@ -385,7 +385,7 @@ export const openDataCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "matplotlib", "openpyxl"],
   files: WB,
-  cover: { src: "/images/nairobi-night.jpg", alt: "Nairobi's city centre lit up at night" },
+  cover: { src: "/images/lagos-aerial.webp", alt: "An aerial view of Lagos, with a bridge crossing the lagoon" },
   skills: [
     "Investigate a real public dataset, gaps and oddities included",
     "Combine reshaping, comparison and visual storytelling",

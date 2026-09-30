@@ -906,7 +906,7 @@ export const cropCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scikit-learn"],
   files: FILES,
-  cover: { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky" },
+  cover: { src: "/images/farmer-crops.webp", alt: "A farmer inspecting his crops in a green field" },
   skills: [
     "Take a classification problem from raw CSV to a tuned model",
     "Choose a model and threshold from the costs of each mistake",

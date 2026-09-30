@@ -1036,7 +1036,7 @@ export const cropPricesCapstone: Lab = {
   kind: "project",
   packages: ["pandas"],
   files: API,
-  cover: { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky" },
+  cover: { src: "/images/maize-harvest.webp", alt: "A pile of harvested maize cobs" },
   skills: [
     "Build an incremental ETL pipeline end to end",
     "Keep a pipeline correct through failures and re-runs",

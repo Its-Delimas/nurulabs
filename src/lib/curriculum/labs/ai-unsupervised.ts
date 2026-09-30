@@ -532,7 +532,7 @@ export const fraudCapstone: Lab = {
   kind: "project",
   packages: ["numpy", "pandas", "scikit-learn"],
   files: TX,
-  cover: { src: "/images/nairobi-night.jpg", alt: "Nairobi's city centre lit up at night" },
+  cover: { src: "/images/phone-surprise.webp", alt: "A woman looking at her phone in surprise" },
   skills: [
     "Design features that make fraud stand out",
     "Rank transactions by anomaly score for a fixed review budget",
