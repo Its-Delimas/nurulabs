@@ -1,0 +1,317 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, Check, ChevronDown, Clock, Flag, Hammer, Lock } from "lucide-react";
+import type { LabSummary, Module, StepSummary, Track } from "@/lib/curriculum/types";
+import { isLabDone, isModuleDone, labAccess, labLabel, moduleLabs } from "@/lib/curriculum";
+import type { Progress } from "@/lib/progress";
+import { stepMeta } from "@/components/lab/StepRail";
+import SectionHeading from "./SectionHeading";
+import { hours, plural } from "./format";
+
+/** Colour for each kind of activity, used in the activity bars and their legend. */
+const tones = {
+  Lesson: "bg-sky",
+  Interactive: "bg-sun",
+  Quiz: "bg-lime-deep",
+  Practice: "bg-ink/60",
+  Challenge: "bg-ink",
+  Reflect: "bg-ink/20",
+} as const;
+
+const tone = (step: StepSummary) => tones[stepMeta(step).label as keyof typeof tones];
+
+export default function TrackSyllabus({
+  track,
+  progress,
+  workable,
+  nextSlug,
+}: {
+  track: Track;
+  progress: Progress | null;
+  workable: boolean;
+  nextSlug?: string;
+}) {
+  return (
+    <section className="mt-16">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <SectionHeading eyebrow="Syllabus" title="Every module and lab" />
+        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink/55" aria-label="Activity types">
+          {Object.entries(tones).map(([label, cls]) => (
+            <li key={label} className="inline-flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${cls}`} />
+              {label}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-8 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+        {/* Module index, pinned while the syllabus scrolls */}
+        <nav aria-label="Modules" className="hidden lg:sticky lg:top-8 lg:block lg:self-start">
+          <ol className="space-y-1 border-l border-ink/10">
+            {track.modules.map((mod, i) => {
+              const labs = moduleLabs(mod);
+              const done = labs.length > 0 && isModuleDone(mod, progress);
+              const current = !!nextSlug && mod.labs.includes(nextSlug);
+              return (
+                <li key={mod.slug}>
+                  <a
+                    href={`#module-${mod.slug}`}
+                    className={`-ml-px flex items-start gap-2 border-l-2 py-1.5 pl-4 text-sm transition-colors ${
+                      current ? "border-lime-deep font-semibold text-ink" : "border-transparent text-ink/55 hover:text-ink"
+                    }`}
+                  >
+                    <span className="w-5 shrink-0 font-mono text-xs leading-5 text-ink/35">{done ? <Check size={13} className="mt-1 text-lime-deep" /> : i + 1}</span>
+                    <span className="leading-snug">{mod.title}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+
+        <div className="space-y-14">
+          {track.modules.map((mod, i) => (
+            <ModuleSection key={mod.slug} mod={mod} index={i} track={track} progress={progress} workable={workable} nextSlug={nextSlug} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ModuleSection({
+  mod,
+  index,
+  track,
+  progress,
+  workable,
+  nextSlug,
+}: {
+  mod: Module;
+  index: number;
+  track: Track;
+  progress: Progress | null;
+  workable: boolean;
+  nextSlug?: string;
+}) {
+  const labs = moduleLabs(mod);
+  const reached = labs.length > 0 && isModuleDone(mod, progress);
+  const doneCount = labs.filter((l) => isLabDone(progress, l.slug)).length;
+  const minutes = labs.reduce((s, l) => s + l.minutes, 0);
+  const activities = labs.reduce((s, l) => s + l.steps.length, 0);
+
+  return (
+    <section id={`module-${mod.slug}`} className="scroll-mt-8">
+      <header className="flex flex-wrap items-start gap-x-6 gap-y-3 border-t border-ink/10 pt-6">
+        <span className="font-display text-5xl font-semibold leading-none tracking-tight text-ink/15 md:w-20 md:text-6xl">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-2xl font-semibold tracking-tight text-ink">{mod.title}</h3>
+          <p className="mt-1 max-w-2xl text-ink/60">{mod.summary}</p>
+          <p className="mt-2 text-xs font-medium text-ink/45">
+            {labs.length
+              ? `${plural(labs.length, "lab")} · ${activities} activities · ${hours(minutes)}`
+              : `${mod.planned?.length ?? 0} lessons planned`}
+          </p>
+        </div>
+        {workable && labs.length > 0 && (
+          <div className="hidden sm:block">
+            <Ring done={doneCount} total={labs.length} />
+          </div>
+        )}
+      </header>
+
+      <ul className="mt-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        {labs.map((lab) => (
+          <LabCard key={lab.slug} lab={lab} track={track} progress={progress} workable={workable} isNext={lab.slug === nextSlug} />
+        ))}
+        {mod.planned?.map((p) => (
+          <li key={p.title} className="flex flex-col rounded-2xl border border-dashed border-ink/20 p-5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink/40">
+              <Hammer size={12} /> Being built
+            </span>
+            <p className="mt-3 font-display text-base font-semibold text-ink/55">{p.title}</p>
+            <p className="mt-1 text-sm text-ink/45">{p.summary}</p>
+          </li>
+        ))}
+      </ul>
+
+      {mod.milestone && (
+        <div
+          className={`mt-4 flex items-start gap-4 rounded-2xl p-5 ${
+            reached ? "bg-lime-soft ring-1 ring-lime-deep/20" : "bg-paper ring-1 ring-ink/10"
+          }`}
+        >
+          <span
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+              reached ? "bg-lime-deep text-paper" : "bg-cream text-ink/40"
+            }`}
+          >
+            <Flag size={17} />
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">
+              Milestone {index + 1}
+              {reached ? " · reached" : ""}
+            </p>
+            <p className="mt-0.5 font-display text-lg font-semibold text-ink">{mod.milestone.title}</p>
+            <p className="mt-1 text-sm text-ink/60">{mod.milestone.description}</p>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function LabCard({
+  lab,
+  track,
+  progress,
+  workable,
+  isNext,
+}: {
+  lab: LabSummary;
+  track: Track;
+  progress: Progress | null;
+  workable: boolean;
+  isNext: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const done = isLabDone(progress, lab.slug);
+  const canOpen = workable && labAccess(lab.slug, progress).open;
+  const doneSteps = new Set(progress?.labs[lab.slug]?.steps ?? []);
+  const isProject = lab.kind === "project";
+
+  const status = done ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-lime-deep px-2.5 py-1 text-xs font-semibold text-paper">
+      <Check size={12} strokeWidth={3} /> Done
+    </span>
+  ) : isNext ? (
+    <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">Up next</span>
+  ) : workable && !canOpen ? (
+    <span className="inline-flex items-center gap-1 text-xs text-ink/35">
+      <Lock size={12} /> Locked
+    </span>
+  ) : null;
+
+  return (
+    <li
+      className={`flex flex-col rounded-2xl bg-paper p-5 transition-shadow ${
+        isNext ? "ring-2 ring-lime-deep" : isProject ? "ring-1 ring-ink/25" : "ring-1 ring-ink/10"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold text-ink/45">
+          {isProject && <Flag size={12} className="mr-1 inline -translate-y-px text-lime-deep" />}
+          {labLabel(lab, track)} · <span className="font-medium">{lab.subject}</span>
+        </p>
+        {status}
+      </div>
+      <p className="mt-2 font-display text-lg font-semibold leading-snug text-ink">{lab.title}</p>
+      <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-ink/60">{lab.summary}</p>
+
+      {/* One segment per activity, coloured by kind; finished ones stay solid */}
+      <div className="mt-4 flex gap-1" aria-hidden>
+        {lab.steps.map((s) => (
+          <span
+            key={s.id}
+            className={`h-1.5 flex-1 rounded-full ${tone(s)} ${done || doneSteps.has(s.id) || !workable ? "" : "opacity-35"}`}
+          />
+        ))}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-3 pt-1">
+        <span className="inline-flex items-center gap-3 text-xs text-ink/50">
+          <span className="inline-flex items-center gap-1">
+            <Clock size={12} /> {lab.minutes} min
+          </span>
+          <span>{lab.steps.length} activities</span>
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-semibold text-ink/55 hover:bg-cream hover:text-ink"
+          >
+            Outline
+            <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+          {canOpen && (
+            <Link
+              href={`/labs/${lab.slug}`}
+              className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold ${
+                isNext ? "bg-lime text-onlime" : "bg-ink text-paper"
+              }`}
+            >
+              {done ? "Review" : doneSteps.size ? "Continue" : "Open"}
+              <ArrowRight size={13} />
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <ol className="mt-4 space-y-2 border-t border-ink/10 pt-4">
+              {lab.steps.map((s) => {
+                const meta = stepMeta(s);
+                const sDone = done || doneSteps.has(s.id);
+                return (
+                  <li key={s.id} className="flex items-center gap-2.5 text-sm">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${tone(s)}`} />
+                    <span className="w-20 shrink-0 text-xs font-semibold text-ink/45">{meta.label}</span>
+                    <span className={`min-w-0 truncate ${sDone ? "text-ink/45 line-through decoration-ink/20" : "text-ink/80"}`}>{s.title}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </li>
+  );
+}
+
+/** A small progress ring: labs done out of the module's total. */
+function Ring({ done, total }: { done: number; total: number }) {
+  const r = 20;
+  const c = 2 * Math.PI * r;
+  const frac = total ? done / total : 0;
+  return (
+    <div className="flex items-center gap-3">
+      <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90" aria-hidden>
+        <circle cx="26" cy="26" r={r} fill="none" strokeWidth="5" className="stroke-ink/10" />
+        <circle
+          cx="26"
+          cy="26"
+          r={r}
+          fill="none"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - frac)}
+          className="stroke-lime-deep transition-[stroke-dashoffset] duration-700"
+        />
+      </svg>
+      <span className="text-sm">
+        <span className="font-display text-lg font-semibold text-ink">
+          {done}/{total}
+        </span>
+        <span className="block text-xs text-ink/45">labs done</span>
+      </span>
+    </div>
+  );
+}

@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, BookOpen, Check, ChevronDown, Clock, Flag, Hammer, Lock } from "lucide-react";
-import type { LabSummary, Track } from "@/lib/curriculum/types";
+import { motion } from "framer-motion";
+import { ArrowRight, Check, Flag } from "lucide-react";
+import type { Track } from "@/lib/curriculum/types";
 import {
   canWorkOnTrack,
   enrolledTrack,
@@ -13,272 +12,225 @@ import {
   isModuleDone,
   labAccess,
   labLabel,
-  labNumber,
   moduleLabs,
   trackLabs,
   trackStats,
 } from "@/lib/curriculum";
-import { useProgress, type Progress } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
 import ProgressBar from "@/components/ui/ProgressBar";
-import { stepMeta } from "@/components/lab/StepRail";
 import EnrollAction from "./EnrollAction";
+import TrackSyllabus from "./TrackSyllabus";
+import SectionHeading from "./SectionHeading";
+import { hours, plural } from "./format";
+
 
 export default function TrackView({ track }: { track: Track }) {
   const progress = useProgress();
   const stats = trackStats(track, progress);
   const workable = canWorkOnTrack(track, progress);
   const isEnrolled = enrolledTrack(progress)?.slug === track.slug;
-  const minutes = trackLabs(track).reduce((s, l) => s + l.minutes, 0);
-  const milestones = track.modules.filter((m) => m.milestone);
-  const next = stats.next;
+  const labs = trackLabs(track);
+  const minutes = labs.reduce((s, l) => s + l.minutes, 0);
+  const projects = labs.filter((l) => l.kind === "project");
+  const next = workable ? stats.next : undefined;
   const nextStarted = next && progress?.labs[next.slug]?.steps.length;
   const soon = track.status === "coming-soon";
   const plannedCount = track.modules.reduce((n, m) => n + (m.planned?.length ?? 0), 0);
+  const currentModule = next && track.modules.find((m) => m.labs.includes(next.slug));
 
   return (
     <div>
-      {/* Hero */}
-      <section className="grid overflow-hidden rounded-[28px] bg-paper text-ink ring-1 ring-ink/10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <div className="p-7 md:p-10">
-          <p className="eyebrow text-lime-deep">
-            {isEnrolled ? "Your track" : soon ? "Planned syllabus" : "Track syllabus"} · {track.level}
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-semibold leading-tight tracking-tight">{track.name}</h1>
-          <p className="mt-4 max-w-xl leading-relaxed text-ink/60">{track.description}</p>
-
-          <dl className="mt-7 flex flex-wrap gap-x-8 gap-y-3 text-sm">
-            {soon ? (
-              <>
-                <Stat label="Modules planned" value={String(track.modules.length)} />
-                <Stat label="Lessons planned" value={String(plannedCount)} />
-              </>
-            ) : (
-              <>
-                <Stat label="Labs" value={String(stats.total)} />
-                <Stat label="Milestones" value={String(milestones.length)} />
-                <Stat label="Hands-on" value={`~${Math.max(1, Math.round(minutes / 60))} hrs`} />
-              </>
-            )}
-            {workable && <Stat label="Complete" value={progress ? `${stats.percent}%` : "—"} />}
-          </dl>
-          {soon && (
-            <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/55">
-              This is the plan for the track. Labs are being written now, and this page fills in as they go live.
+      {/* Hero: the track's photo with its name, then what it takes and how to start */}
+      <section className="overflow-hidden rounded-[28px] bg-paper text-ink ring-1 ring-ink/10">
+        <div className="relative isolate flex min-h-[18rem] items-end md:min-h-[24rem]">
+          {track.cover && (
+            <Image src={track.cover.src} alt={track.cover.alt} fill priority sizes="100vw" className="-z-20 object-cover object-[center_35%]" />
+          )}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full p-7 text-white md:p-10"
+          >
+            <p className="eyebrow text-lime">
+              {isEnrolled ? "Your track" : soon ? "Planned syllabus" : "Track"} · {track.level}
             </p>
-          )}
+            <h1 className="mt-3 max-w-4xl font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">{track.name}</h1>
+            <p className="mt-3 max-w-2xl text-base text-white/75 md:text-lg">{track.tagline}</p>
+          </motion.div>
+        </div>
 
-          {workable && (
-            <div className="mt-6 max-w-sm">
-              <ProgressBar value={stats.percent} />
+        <div className="grid gap-8 p-7 md:p-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <div>
+            <p className="max-w-2xl text-lg leading-relaxed text-ink/70">{track.description}</p>
+            {soon && (
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink/55">
+                This is the plan for the track. Labs are being written now, and this page fills in as they go live.
+              </p>
+            )}
+            <div className="mt-7">
+              {next ? (
+                <Link
+                  href={`/labs/${next.slug}`}
+                  className="inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime"
+                >
+                  {nextStarted ? "Continue" : stats.done === 0 ? "Start" : "Next"}: {next.title}
+                  <ArrowRight size={16} />
+                </Link>
+              ) : (
+                <EnrollAction track={track} progress={progress} />
+              )}
             </div>
-          )}
+          </div>
 
-          <div className="mt-8">
-            {workable && next ? (
-              <Link
-                href={`/labs/${next.slug}`}
-                className="inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime"
-              >
-                {nextStarted ? "Continue" : stats.done === 0 ? "Start" : "Next"}: {next.title}
-                <ArrowRight size={16} />
-              </Link>
-            ) : (
-              <EnrollAction track={track} progress={progress} />
+          <div>
+            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-ink/10 sm:grid-cols-4 lg:grid-cols-2">
+              {(soon
+                ? [
+                    ["Modules planned", String(track.modules.length)],
+                    ["Lessons planned", String(plannedCount)],
+                  ]
+                : [
+                    ["Modules", String(track.modules.length)],
+                    ["Labs", String(stats.total)],
+                    ["Projects", String(projects.length)],
+                    ["Hands-on", hours(minutes)],
+                  ]
+              ).map(([label, value]) => (
+                <div key={label} className="bg-cream px-5 py-4">
+                  <dt className="text-xs font-medium text-ink/50">{label}</dt>
+                  <dd className="mt-1 font-display text-2xl font-semibold">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {workable && (
+              <div className="mt-5">
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="font-semibold">
+                    {stats.done} of {stats.total} labs done
+                  </span>
+                  <span className="text-ink/50">{stats.percent}%</span>
+                </div>
+                <div className="mt-2">
+                  <ProgressBar value={stats.percent} />
+                </div>
+              </div>
             )}
           </div>
         </div>
-        {track.cover && (
-          <div className="relative min-h-56">
-            <Image src={track.cover.src} alt={track.cover.alt} fill priority sizes="(min-width: 768px) 440px, 100vw" className="object-cover" />
-          </div>
-        )}
       </section>
 
-      {/* Milestones at a glance */}
-      {milestones.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-display text-lg font-semibold text-ink">Milestones</h2>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {milestones.map((m, i) => {
-              const reached = isModuleDone(m, progress);
-              return (
-                <li
-                  key={m.slug}
-                  className={`rounded-2xl p-4 ${reached ? "bg-lime-soft ring-1 ring-lime-deep/15" : "bg-paper ring-1 ring-ink/10"}`}
+      {/* The journey: every module in order, with where the learner is now */}
+      <section className="mt-14">
+        <SectionHeading eyebrow="The journey" title={`${track.modules.length} modules, one skill at a time`} />
+        <ol className="-mx-5 mt-6 flex snap-x gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
+          {track.modules.map((mod, i) => {
+            const modLabs = moduleLabs(mod);
+            const done = modLabs.length > 0 && isModuleDone(mod, progress);
+            const current = mod === currentModule;
+            const doneCount = modLabs.filter((l) => isLabDone(progress, l.slug)).length;
+            const mins = modLabs.reduce((s, l) => s + l.minutes, 0);
+            return (
+              <li key={mod.slug} className="w-60 shrink-0 snap-start">
+                <a
+                  href={`#module-${mod.slug}`}
+                  className={`group flex h-full flex-col rounded-2xl p-5 transition-colors ${
+                    done
+                      ? "bg-lime-soft ring-1 ring-lime-deep/20"
+                      : current
+                        ? "bg-paper ring-2 ring-lime-deep"
+                        : "bg-paper ring-1 ring-ink/10 hover:ring-ink/25"
+                  }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold ${
-                        reached ? "bg-lime-deep text-paper" : "bg-cream text-ink/50"
+                      className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-semibold ${
+                        done ? "bg-lime-deep text-paper" : current ? "bg-lime text-onlime" : "bg-cream text-ink/55"
                       }`}
                     >
-                      {reached ? <Check size={12} strokeWidth={3} /> : i + 1}
+                      {done ? <Check size={16} strokeWidth={3} /> : i + 1}
                     </span>
-                    <Flag size={13} className={reached ? "text-lime-deep" : "text-ink/30"} />
+                    {current && <span className="text-xs font-semibold text-lime-deep">You&apos;re here</span>}
                   </div>
-                  <p className="mt-3 text-sm font-semibold leading-snug text-ink">{m.milestone!.title}</p>
+                  <p className="mt-4 font-display text-base font-semibold leading-snug text-ink">{mod.title}</p>
+                  <p className="mt-1 text-xs text-ink/50">
+                    {modLabs.length
+                      ? `${plural(modLabs.length, "lab")} · ${hours(mins)}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
+                      : `${mod.planned?.length ?? 0} lessons planned`}
+                  </p>
+                  {mod.milestone && (
+                    <p className="mt-auto flex items-start gap-1.5 pt-4 text-xs leading-snug text-ink/60">
+                      <Flag size={12} className={`mt-0.5 shrink-0 ${done ? "text-lime-deep" : "text-ink/35"}`} />
+                      {mod.milestone.title}
+                    </p>
+                  )}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      {/* Projects: the real-world work the track builds towards */}
+      {projects.length > 0 && (
+        <section className="mt-14">
+          <SectionHeading
+            eyebrow="What you'll build"
+            title={projects.length === 1 ? "A project from real local data" : `${projects.length} projects from real local data`}
+          />
+          <ul className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {projects.map((p) => {
+              const open = workable && labAccess(p.slug, progress).open;
+              const done = isLabDone(progress, p.slug);
+              const modIndex = track.modules.findIndex((m) => m.labs.includes(p.slug));
+              const body = (
+                <>
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    {p.cover && (
+                      <Image
+                        src={p.cover.src}
+                        alt={p.cover.alt}
+                        fill
+                        sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                      <p className="eyebrow text-lime">
+                        {labLabel(p, track)} · Module {modIndex + 1}
+                      </p>
+                      <p className="mt-1 font-display text-xl font-semibold leading-snug">{p.title}</p>
+                    </div>
+                    {done && (
+                      <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">
+                        <Check size={12} strokeWidth={3} /> Built
+                      </span>
+                    )}
+                  </div>
+                  <p className="p-5 text-sm leading-relaxed text-ink/65">{p.summary}</p>
+                </>
+              );
+              return (
+                <li key={p.slug} className="group overflow-hidden rounded-2xl bg-paper ring-1 ring-ink/10">
+                  {open ? (
+                    <Link href={`/labs/${p.slug}`} className="block">
+                      {body}
+                    </Link>
+                  ) : (
+                    <a href={`#module-${track.modules[modIndex]?.slug}`} className="block">
+                      {body}
+                    </a>
+                  )}
                 </li>
               );
             })}
-          </ol>
+          </ul>
         </section>
       )}
 
-      {/* Syllabus */}
-      <section className="mt-12">
-        <h2 className="font-display text-lg font-semibold text-ink">Syllabus</h2>
-        <div className="mt-5 space-y-6">
-          {track.modules.map((mod, mi) => {
-            const labs = moduleLabs(mod);
-            const reached = isModuleDone(mod, progress);
-            return (
-              <div key={mod.slug} className="overflow-hidden rounded-3xl bg-paper ring-1 ring-ink/10">
-                <div className="flex items-start justify-between gap-4 border-b border-ink/5 px-6 py-5">
-                  <div>
-                    <p className="eyebrow text-ink/40">Module {mi + 1}</p>
-                    <h3 className="mt-1 font-display text-xl font-semibold text-ink">{mod.title}</h3>
-                    <p className="mt-1 text-sm text-ink/55">{mod.summary}</p>
-                  </div>
-                  {labs.length > 0 && (
-                    <span className="shrink-0 text-xs font-medium text-ink/40">
-                      {labs.filter((l) => isLabDone(progress, l.slug)).length}/{labs.length} labs
-                    </span>
-                  )}
-                </div>
-
-                <ul>
-                  {labs.map((lab) => (
-                    <LabRow key={lab.slug} lab={lab} track={track} progress={progress} workable={workable} isNext={workable && next?.slug === lab.slug} />
-                  ))}
-                  {mod.planned?.map((p) => (
-                    <li key={p.title} className="flex items-center gap-4 border-t border-ink/5 px-6 py-4">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-ink/20 text-ink/30">
-                        <Hammer size={13} />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink/45">{p.title}</p>
-                        <p className="text-xs text-ink/35">{p.summary} · being built</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                {mod.milestone && (
-                  <div className={`flex items-start gap-3 px-6 py-4 ${reached ? "bg-lime-soft" : "bg-cream/70"}`}>
-                    <Flag size={16} className={`mt-0.5 shrink-0 ${reached ? "text-lime-deep" : "text-ink/35"}`} />
-                    <div>
-                      <p className="text-xs font-semibold text-ink/50">
-                        Milestone {mi + 1} {reached ? "· reached" : ""}
-                      </p>
-                      <p className="text-sm font-semibold text-ink">{mod.milestone.title}</p>
-                      <p className="mt-0.5 text-xs text-ink/55">{mod.milestone.description}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <TrackSyllabus track={track} progress={progress} workable={workable} nextSlug={next?.slug} />
     </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-ink/45">{label}</dt>
-      <dd className="mt-0.5 font-display text-xl font-semibold">{value}</dd>
-    </div>
-  );
-}
-
-function LabRow({
-  lab,
-  track,
-  progress,
-  workable,
-  isNext,
-}: {
-  lab: LabSummary;
-  track: Track;
-  progress: Progress | null;
-  workable: boolean;
-  isNext: boolean;
-}) {
-  const [open, setOpen] = useState(isNext);
-  const done = isLabDone(progress, lab.slug);
-  const canOpen = workable && labAccess(lab.slug, progress).open;
-  const doneSteps = new Set(progress?.labs[lab.slug]?.steps ?? []);
-  const isProject = lab.kind === "project";
-
-  return (
-    <li className={`border-t border-ink/5 ${isNext ? "bg-lime-soft/40" : ""}`}>
-      <div className="flex items-center gap-4 px-6 py-4">
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold ${
-            done ? "bg-lime-deep text-paper" : isNext ? "bg-lime text-onlime" : canOpen ? "bg-cream text-ink/60" : "bg-cream text-ink/30"
-          }`}
-        >
-          {done ? <Check size={14} strokeWidth={3} /> : !canOpen ? <Lock size={12} /> : isProject ? <Flag size={13} /> : labNumber(lab.slug, track)}
-        </span>
-        <button type="button" onClick={() => setOpen((o) => !o)} className="min-w-0 flex-1 text-left">
-          <p className="text-xs text-ink/40">
-            {labLabel(lab, track)} · {lab.subject}
-          </p>
-          <p className="truncate font-display text-base font-semibold text-ink">{lab.title}</p>
-        </button>
-        <span className="hidden items-center gap-1 text-xs text-ink/40 sm:inline-flex">
-          <Clock size={12} /> {lab.minutes} min
-        </span>
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={open ? "Hide lab outline" : "Show lab outline"}
-          aria-expanded={open}
-          className="rounded-md p-1.5 text-ink/40 hover:bg-cream hover:text-ink"
-        >
-          <ChevronDown size={16} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-      </div>
-
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="px-6 pb-5 sm:pl-[72px]">
-              <p className="text-sm leading-relaxed text-ink/60">{lab.summary}</p>
-              <ol className="mt-4 space-y-1.5">
-                {lab.steps.map((s) => {
-                  const meta = stepMeta(s);
-                  const sDone = doneSteps.has(s.id) || done;
-                  return (
-                    <li key={s.id} className="flex items-center gap-3 text-sm">
-                      <meta.icon size={14} className={sDone ? "text-lime-deep" : "text-ink/35"} />
-                      <span className="w-20 shrink-0 text-xs font-semibold text-ink/40">{meta.label}</span>
-                      <span className={`truncate ${sDone ? "text-ink/45" : "text-ink/80"}`}>{s.title}</span>
-                    </li>
-                  );
-                })}
-              </ol>
-              {canOpen && (
-                <Link
-                  href={`/labs/${lab.slug}`}
-                  className="mt-5 inline-flex items-center gap-2 rounded-md bg-ink px-5 py-2.5 text-sm font-semibold text-paper"
-                >
-                  <BookOpen size={15} />
-                  {done ? "Review lab" : doneSteps.size ? "Continue lab" : "Open lab"}
-                </Link>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </li>
   );
 }
