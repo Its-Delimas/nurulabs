@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Check, ChevronDown, Clock, Flag, Hammer, Lock } from "lucide-react";
@@ -10,6 +10,7 @@ import type { Progress } from "@/lib/progress";
 import { stepMeta, stepTone as tone, stepTones as tones } from "@/components/lab/StepRail";
 import SectionHeading from "./SectionHeading";
 import { plural } from "./format";
+import { isModuleLocked } from "./moduleLock";
 
 
 export default function TrackSyllabus({
@@ -23,6 +24,8 @@ export default function TrackSyllabus({
   workable: boolean;
   nextSlug?: string;
 }) {
+  const active = useActiveModule(track.modules.map((m) => m.slug));
+
   return (
     <section className="mt-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -45,16 +48,28 @@ export default function TrackSyllabus({
               const labs = moduleLabs(mod);
               const done = labs.length > 0 && isModuleDone(mod, progress);
               const current = !!nextSlug && mod.labs.includes(nextSlug);
+              const locked = isModuleLocked(mod, progress, workable);
+              const here = active === mod.slug;
               return (
                 <li key={mod.slug}>
                   <a
                     href={`#module-${mod.slug}`}
+                    aria-current={here ? "location" : undefined}
                     className={`-ml-px flex items-start gap-2 border-l-2 py-1.5 pl-4 text-sm transition-colors ${
-                      current ? "border-lime-deep font-semibold text-ink" : "border-transparent text-ink/55 hover:text-ink"
+                      here
+                        ? "border-lime-deep font-semibold text-ink"
+                        : locked
+                          ? "border-transparent text-ink/35 hover:text-ink/60"
+                          : "border-transparent text-ink/55 hover:text-ink"
                     }`}
                   >
-                    <span className="w-5 shrink-0 font-mono text-xs leading-5 text-ink/35">{done ? <Check size={13} className="mt-1 text-lime-deep" /> : i + 1}</span>
-                    <span className="leading-snug">{mod.title}</span>
+                    <span className="w-5 shrink-0 font-mono text-xs leading-5 text-ink/35">
+                      {done ? <Check size={13} className="mt-1 text-lime-deep" /> : locked ? <Lock size={12} className="mt-1" /> : i + 1}
+                    </span>
+                    <span className="leading-snug">
+                      {mod.title}
+                      {current && <span className="ml-1.5 inline-block h-1.5 w-1.5 -translate-y-0.5 rounded-full bg-lime-deep" title="You're here" />}
+                    </span>
                   </a>
                 </li>
               );
@@ -91,6 +106,7 @@ function ModuleSection({
   const reached = labs.length > 0 && isModuleDone(mod, progress);
   const doneCount = labs.filter((l) => isLabDone(progress, l.slug)).length;
   const activities = labs.reduce((s, l) => s + l.steps.length, 0);
+  const locked = isModuleLocked(mod, progress, workable);
 
   return (
     <section id={`module-${mod.slug}`} className="scroll-mt-8">
@@ -99,7 +115,12 @@ function ModuleSection({
           {String(index + 1).padStart(2, "0")}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-2xl font-semibold tracking-tight text-ink">{mod.title}</h3>
+          {locked && (
+            <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-1 text-xs font-semibold text-ink/50">
+              <Lock size={12} /> Unlocks when you finish module {index}
+            </p>
+          )}
+          <h3 className={`font-display text-2xl font-semibold tracking-tight ${locked ? "text-ink/50" : "text-ink"}`}>{mod.title}</h3>
           <p className="mt-1 max-w-2xl text-ink/60">{mod.summary}</p>
           <p className="mt-2 text-xs font-medium text-ink/45">
             {labs.length
@@ -175,22 +196,26 @@ function LabCard({
   const doneSteps = new Set(progress?.labs[lab.slug]?.steps ?? []);
   const isProject = lab.kind === "project";
 
+  const locked = workable && !canOpen && !done;
+
   const status = done ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-lime-deep px-2.5 py-1 text-xs font-semibold text-paper">
       <Check size={12} strokeWidth={3} /> Done
     </span>
   ) : isNext ? (
     <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">Up next</span>
-  ) : workable && !canOpen ? (
-    <span className="inline-flex items-center gap-1 text-xs text-ink/35">
-      <Lock size={12} /> Locked
+  ) : locked ? (
+    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink/5 text-ink/40" title="Locked" aria-label="Locked">
+      <Lock size={13} />
     </span>
   ) : null;
 
   return (
     <li
-      className={`flex flex-col rounded-2xl bg-paper p-5 transition-shadow ${
-        isNext ? "ring-2 ring-lime-deep" : isProject ? "ring-1 ring-ink/25" : "ring-1 ring-ink/10"
+      className={`flex flex-col rounded-2xl p-5 transition-shadow ${
+        locked
+          ? "bg-ink/[0.03] ring-1 ring-ink/10"
+          : `bg-paper ${isNext ? "ring-2 ring-lime-deep" : isProject ? "ring-1 ring-ink/25" : "ring-1 ring-ink/10"}`
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -200,17 +225,19 @@ function LabCard({
         </p>
         {status}
       </div>
-      <p className="mt-2 font-display text-lg font-semibold leading-snug text-ink">{lab.title}</p>
-      <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-ink/60">{lab.summary}</p>
+      <div className={locked ? "opacity-55" : ""}>
+        <p className="mt-2 font-display text-lg font-semibold leading-snug text-ink">{lab.title}</p>
+        <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-ink/60">{lab.summary}</p>
 
-      {/* One segment per activity, coloured by kind; finished ones stay solid */}
-      <div className="mt-4 flex gap-1" aria-hidden>
-        {lab.steps.map((s) => (
-          <span
-            key={s.id}
-            className={`h-1.5 flex-1 rounded-full ${tone(s)} ${done || doneSteps.has(s.id) || !workable ? "" : "opacity-35"}`}
-          />
-        ))}
+        {/* One segment per activity, coloured by kind; finished ones stay solid */}
+        <div className="mt-4 flex gap-1" aria-hidden>
+          {lab.steps.map((s) => (
+            <span
+              key={s.id}
+              className={`h-1.5 flex-1 rounded-full ${tone(s)} ${done || doneSteps.has(s.id) || !workable ? "" : "opacity-35"}`}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3 pt-1">
@@ -302,4 +329,31 @@ function Ring({ done, total }: { done: number; total: number }) {
       </span>
     </div>
   );
+}
+
+/** The module section nearest the top of the viewport, for highlighting the index as you scroll. */
+function useActiveModule(slugs: string[]) {
+  const [active, setActive] = useState<string | undefined>(slugs[0]);
+  const key = slugs.join(",");
+
+  useEffect(() => {
+    const ids = key.split(",");
+    const els = ids.map((s) => document.getElementById(`module-${s}`)).filter((e): e is HTMLElement => !!e);
+    const onScroll = () => {
+      // The last section whose top has passed a line a quarter of the way down the screen.
+      const line = window.innerHeight * 0.25;
+      let current = ids[0];
+      for (const el of els) if (el.getBoundingClientRect().top <= line) current = el.id.slice("module-".length);
+      setActive(current);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [key]);
+
+  return active;
 }

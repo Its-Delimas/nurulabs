@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Flag } from "lucide-react";
+import { ArrowRight, Check, Flag, Lock } from "lucide-react";
 import type { Track } from "@/lib/curriculum/types";
 import {
   canWorkOnTrack,
@@ -22,6 +22,7 @@ import EnrollAction from "./EnrollAction";
 import TrackSyllabus from "./TrackSyllabus";
 import SectionHeading from "./SectionHeading";
 import { plural } from "./format";
+import { isModuleLocked } from "./moduleLock";
 
 
 export default function TrackView({ track }: { track: Track }) {
@@ -124,14 +125,15 @@ export default function TrackView({ track }: { track: Track }) {
       {/* The journey: every module in order, with where the learner is now */}
       <section className="mt-14">
         <SectionHeading eyebrow="The journey" title={`${track.modules.length} modules, one skill at a time`} />
-        <ol className="-mx-5 mt-6 flex snap-x gap-3 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
+        <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {track.modules.map((mod, i) => {
             const modLabs = moduleLabs(mod);
             const done = modLabs.length > 0 && isModuleDone(mod, progress);
             const current = mod === currentModule;
             const doneCount = modLabs.filter((l) => isLabDone(progress, l.slug)).length;
+            const locked = isModuleLocked(mod, progress, workable);
             return (
-              <li key={mod.slug} className="w-60 shrink-0 snap-start">
+              <li key={mod.slug}>
                 <a
                   href={`#module-${mod.slug}`}
                   className={`group flex h-full flex-col rounded-2xl p-5 transition-colors ${
@@ -139,20 +141,27 @@ export default function TrackView({ track }: { track: Track }) {
                       ? "bg-lime-soft ring-1 ring-lime-deep/20"
                       : current
                         ? "bg-paper ring-2 ring-lime-deep"
-                        : "bg-paper ring-1 ring-ink/10 hover:ring-ink/25"
+                        : locked
+                          ? "bg-ink/[0.03] ring-1 ring-ink/10 hover:ring-ink/20"
+                          : "bg-paper ring-1 ring-ink/10 hover:ring-ink/25"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-semibold ${
-                        done ? "bg-lime-deep text-paper" : current ? "bg-lime text-onlime" : "bg-cream text-ink/55"
+                        done ? "bg-lime-deep text-paper" : current ? "bg-lime text-onlime" : locked ? "bg-ink/5 text-ink/35" : "bg-cream text-ink/55"
                       }`}
                     >
                       {done ? <Check size={16} strokeWidth={3} /> : i + 1}
                     </span>
                     {current && <span className="text-xs font-semibold text-lime-deep">You&apos;re here</span>}
+                    {locked && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-ink/40">
+                        <Lock size={13} /> Locked
+                      </span>
+                    )}
                   </div>
-                  <p className="mt-4 font-display text-base font-semibold leading-snug text-ink">{mod.title}</p>
+                  <p className={`mt-4 font-display text-base font-semibold leading-snug ${locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
                   <p className="mt-1 text-xs text-ink/50">
                     {modLabs.length
                       ? `${plural(modLabs.length, "lab")}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
