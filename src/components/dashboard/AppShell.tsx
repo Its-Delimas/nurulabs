@@ -2,6 +2,7 @@ import Link from "next/link";
 import Logo from "@/components/landing/Logo";
 import Sidebar from "./Sidebar";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import AccountButton from "@/components/auth/AccountButton";
 
 /** Layout for the signed-in-feeling side of the app: dashboard and tracks. */
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="flex items-center gap-4 text-sm font-medium text-ink/60">
           <Link href="/dashboard">Home</Link>
           <Link href="/tracks">Tracks</Link>
+          <AccountButton compact />
         </nav>
       </header>
       <Sidebar />

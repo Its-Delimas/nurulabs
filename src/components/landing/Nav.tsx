@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Logo from "./Logo";
+import AccountButton from "@/components/auth/AccountButton";
 
 const links = [
   { href: "#how", label: "How it works" },
@@ -47,14 +48,12 @@ export default function Nav() {
             </a>
           ))}
         </nav>
-        <Link
-          href="/tracks"
-          className={`rounded-md px-5 py-2.5 text-sm font-semibold transition-colors ${
-            "bg-ink text-paper"
-          }`}
-        >
-          Start free
-        </Link>
+        <div className="flex items-center gap-4">
+          <AccountButton />
+          <Link href="/tracks" className="rounded-md bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors">
+            Start free
+          </Link>
+        </div>
       </div>
     </motion.header>
   );

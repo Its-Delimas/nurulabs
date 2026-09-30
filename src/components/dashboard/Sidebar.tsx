@@ -6,6 +6,7 @@ import { BookOpen, Globe, Home, LayoutGrid } from "lucide-react";
 import Logo from "@/components/landing/Logo";
 import { enrolledTrack, trackStats } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
+import AccountButton from "@/components/auth/AccountButton";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -58,6 +59,9 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto border-t border-ink/10 pt-4">
+          <div className="px-3 pb-3">
+            <AccountButton compact />
+          </div>
           <Link
             href="/"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink/55 transition-colors hover:bg-cream hover:text-ink"

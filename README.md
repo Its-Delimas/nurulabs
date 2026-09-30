@@ -19,6 +19,14 @@ reflection in their own words.
 Experienced learners can take the Python placement check
 (`/placement/python-essentials`) to go straight to AI & ML.
 
+## Accounts (optional)
+
+Learners can use Nurulabs without an account; progress is kept in their
+browser. With Supabase configured, they can also sign in with Google or an
+emailed link. Copy `.env.example` to `.env.local` and fill in the project URL
+and publishable key (Supabase → Project Settings → API). Without them, sign-in
+is hidden and everything else works as before.
+
 ## Stack
 
 - [Next.js](https://nextjs.org) (App Router) + TypeScript + Tailwind CSS v4
