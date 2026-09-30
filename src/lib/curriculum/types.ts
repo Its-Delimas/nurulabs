@@ -252,6 +252,11 @@ export interface Module {
   milestone?: { title: string; description: string };
   /** Lab slugs, in order. */
   labs: string[];
+  /**
+   * A bonus module: it doesn't count towards finishing the track, and opens
+   * once the required modules are done. Keep optional modules at the end.
+   */
+  optional?: boolean;
   /** Labs that are designed but not built yet — shown, never clickable. */
   planned?: PlannedLab[];
 }

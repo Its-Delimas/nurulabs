@@ -13,6 +13,7 @@ import {
   labAccess,
   labLabel,
   moduleLabs,
+  requiredLabs,
   trackLabs,
   trackStats,
 } from "@/lib/curriculum";
@@ -31,8 +32,10 @@ export default function TrackView({ track }: { track: Track }) {
   const workable = canWorkOnTrack(track, progress);
   const isEnrolled = enrolledTrack(progress)?.slug === track.slug;
   const labs = trackLabs(track);
-  const activities = labs.reduce((s, l) => s + l.steps.length, 0);
+  const required = requiredLabs(track);
+  const activities = required.reduce((s, l) => s + l.steps.length, 0);
   const projects = labs.filter((l) => l.kind === "project");
+  const bonusModules = track.modules.filter((m) => m.optional && moduleLabs(m).length);
   const next = workable ? stats.next : undefined;
   const nextStarted = next && progress?.labs[next.slug]?.steps.length;
   const soon = track.status === "coming-soon";
@@ -93,9 +96,9 @@ export default function TrackView({ track }: { track: Track }) {
                     ["Lessons planned", String(plannedCount)],
                   ]
                 : [
-                    ["Modules", String(track.modules.length)],
+                    ["Modules", String(track.modules.length - bonusModules.length)],
                     ["Labs", String(stats.total)],
-                    ["Projects", String(projects.length)],
+                    ["Projects", String(required.filter((l) => l.kind === "project").length)],
                     ["Activities", String(activities)],
                   ]
               ).map(([label, value]) => (
@@ -105,6 +108,11 @@ export default function TrackView({ track }: { track: Track }) {
                 </div>
               ))}
             </dl>
+            {!soon && bonusModules.length > 0 && (
+              <p className="mt-3 text-xs text-ink/50">
+                Plus an optional bonus module, {bonusModules.map((m) => m.title).join(", ")}, {stats.complete ? "open to you now" : "that opens when you finish"}.
+              </p>
+            )}
             {workable && (
               <div className="mt-5">
                 <div className="flex items-baseline justify-between text-sm">
@@ -124,7 +132,7 @@ export default function TrackView({ track }: { track: Track }) {
 
       {/* The journey: every module in order, with where the learner is now */}
       <section className="mt-14">
-        <SectionHeading eyebrow="The journey" title={`${track.modules.length} modules, one skill at a time`} />
+        <SectionHeading eyebrow="The journey" title={`${track.modules.length - bonusModules.length} modules, one skill at a time${bonusModules.length ? ", plus a bonus" : ""}`} />
         <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {track.modules.map((mod, i) => {
             const modLabs = moduleLabs(mod);
@@ -161,8 +169,14 @@ export default function TrackView({ track }: { track: Track }) {
                         <Lock size={13} /> Locked
                       </span>
                     )}
+                    {mod.optional && !locked && !done && !current && (
+                      <span className="rounded-full bg-sun/15 px-2 py-0.5 text-xs font-semibold text-sun">Bonus</span>
+                    )}
                   </div>
-                  <p className={`mt-4 font-display text-base font-semibold leading-snug ${done ? "" : locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
+                  {mod.optional && (locked || current || done) && (
+                    <p className={`mt-3 text-[11px] font-semibold uppercase tracking-wide ${done ? "text-onlime/60" : "text-sun"}`}>Optional bonus</p>
+                  )}
+                  <p className={`${mod.optional && (locked || current || done) ? "mt-1" : "mt-4"} font-display text-base font-semibold leading-snug ${done ? "" : locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
                   <p className={`mt-1 text-xs ${done ? "text-onlime/65" : "text-ink/50"}`}>
                     {modLabs.length
                       ? `${plural(modLabs.length, "lab")}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
@@ -208,7 +222,7 @@ export default function TrackView({ track }: { track: Track }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                       <p className="eyebrow text-lime">
-                        {labLabel(p, track)} · Module {modIndex + 1}
+                        {track.modules[modIndex]?.optional ? "Bonus project" : labLabel(p, track)} · Module {modIndex + 1}
                       </p>
                       <p className="mt-1 font-display text-xl font-semibold leading-snug">{p.title}</p>
                     </div>

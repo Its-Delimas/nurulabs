@@ -28,6 +28,16 @@ export function trackLabs(track: Track): LabSummary[] {
   return track.modules.flatMap(moduleLabs);
 }
 
+/** The labs a learner must finish to complete the track: everything outside optional modules. */
+export function requiredLabs(track: Track): LabSummary[] {
+  return track.modules.filter((m) => !m.optional).flatMap(moduleLabs);
+}
+
+/** Labs in the track's optional bonus modules. */
+export function bonusLabs(track: Track): LabSummary[] {
+  return track.modules.filter((m) => m.optional).flatMap(moduleLabs);
+}
+
 /** Every track whose syllabus includes this lab — foundation labs are shared between tracks. */
 export function tracksOfLab(slug: string): Track[] {
   return tracks.filter((t) => t.modules.some((m) => m.labs.includes(slug)));
@@ -74,8 +84,9 @@ export function isModuleDone(mod: Module, progress: Progress | null) {
   return labs.length > 0 && labs.every((l) => isLabDone(progress, l.slug));
 }
 
+/** Progress through the track's required labs (optional bonus modules don't count). */
 export function trackStats(track: Track, progress: Progress | null) {
-  const labs = trackLabs(track);
+  const labs = requiredLabs(track);
   const done = labs.filter((l) => isLabDone(progress, l.slug)).length;
   return {
     total: labs.length,
@@ -156,7 +167,9 @@ export function labAccess(slug: string, progress: Progress | null): LabAccess {
       continue;
     }
     if (progress?.preview) return { open: true };
-    const labs = trackLabs(track);
+    // Bonus labs wait for the required path; required labs never wait for bonus ones.
+    const bonus = new Set(bonusLabs(track).map((l) => l.slug));
+    const labs = bonus.has(slug) ? trackLabs(track) : requiredLabs(track);
     const idx = labs.findIndex((l) => l.slug === slug);
     const firstUndone = labs.slice(0, idx).find((l) => !isLabDone(progress, l.slug));
     if (!firstUndone) return { open: true };
@@ -165,11 +178,12 @@ export function labAccess(slug: string, progress: Progress | null): LabAccess {
   return closed!;
 }
 
-/** The lab after this one on its track's path, if any. */
+/** The lab after this one on its track's path, if any. The required path ends before bonus modules. */
 export function nextLabAfter(slug: string, progress: Progress | null = null): LabSummary | undefined {
   const track = trackOfLab(slug, progress);
   if (!track) return undefined;
-  const labs = trackLabs(track);
+  const bonus = new Set(bonusLabs(track).map((l) => l.slug));
+  const labs = bonus.has(slug) ? bonusLabs(track) : requiredLabs(track);
   const idx = labs.findIndex((l) => l.slug === slug);
   return labs[idx + 1];
 }

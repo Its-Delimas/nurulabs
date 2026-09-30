@@ -11,6 +11,7 @@ import WeekBars from "@/components/dashboard/WeekBars";
 import TrackCatalog from "@/components/tracks/TrackCatalog";
 import { stepMeta } from "@/components/lab/StepRail";
 import {
+  bonusLabs,
   enrolledTrack,
   isLabDone,
   isModuleDone,
@@ -60,7 +61,7 @@ export default function DashboardPage() {
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-8">
-            {stats.complete ? <TrackComplete track={track} /> : <ContinueCard track={track} progress={progress} />}
+            {stats.complete ? <TrackComplete track={track} progress={progress} /> : <ContinueCard track={track} progress={progress} />}
             <MilestonePath track={track} progress={progress} />
             <SkillMap track={track} progress={progress} />
           </div>
@@ -174,19 +175,30 @@ function ContinueCard({ track, progress }: { track: Track; progress: Progress })
   );
 }
 
-function TrackComplete({ track }: { track: Track }) {
+function TrackComplete({ track, progress }: { track: Track; progress: Progress }) {
   const unlocked = tracksUnlockedBy(track).filter((t) => t.status === "active");
+  const bonus = bonusLabs(track).find((l) => !isLabDone(progress, l.slug));
+  const bonusModule = bonus && track.modules.find((m) => m.labs.includes(bonus.slug));
   return (
     <section className="rounded-[28px] bg-paper p-8 text-ink ring-1 ring-ink/10">
       <Trophy className="text-lime-deep" />
       <h2 className="mt-4 font-display text-3xl font-semibold">You finished {track.name}.</h2>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-ink/60">
-        Every lab, every milestone. {unlocked.length ? `${unlocked.map((t) => t.name).join(" and ")} is open to you now.` : "New tracks are on the way."}
+        Every required lab and milestone. {unlocked.length ? `${new Intl.ListFormat("en", { type: "conjunction" }).format(unlocked.map((t) => t.name))} ${unlocked.length === 1 ? "is" : "are"} open to you now.` : "New tracks are on the way."}
       </p>
       <Link href="/tracks" className="mt-6 inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime">
         Choose your next track
         <ArrowRight size={16} />
       </Link>
+      {bonus && bonusModule && (
+        <p className="mt-5 text-sm text-ink/60">
+          Optional bonus:{" "}
+          <Link href={`/labs/${bonus.slug}`} className="font-semibold text-ink underline-offset-4 hover:underline">
+            {bonusModule.title}
+          </Link>
+          , whenever you want it.
+        </p>
+      )}
     </section>
   );
 }

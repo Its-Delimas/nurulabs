@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Flag, Trophy, Unlock } from "lucide-react";
+import { ArrowRight, Check, Flag, Sparkles, Trophy, Unlock } from "lucide-react";
 import type { Lab } from "@/lib/curriculum/types";
-import { isModuleDone, labNumber, moduleOfLab, nextLabAfter, trackOfLab, tracksUnlockedBy } from "@/lib/curriculum";
+import { bonusLabs, isLabDone, isModuleDone, labNumber, moduleOfLab, nextLabAfter, trackOfLab, tracksUnlockedBy } from "@/lib/curriculum";
 import { getProgress } from "@/lib/progress";
 import Logo from "@/components/landing/Logo";
 
@@ -16,6 +16,9 @@ export default function LabComplete({ lab }: { lab: Lab }) {
   const unlocked = !next && track ? tracksUnlockedBy(track).filter((t) => t.status === "active") : [];
   const mod = moduleOfLab(lab.slug, progress);
   const milestone = mod && isModuleDone(mod.module, progress) ? mod.module.milestone : undefined;
+  // At the end of the required path, point to the optional bonus module if there is one left.
+  const bonus = !next && track && !mod?.module.optional ? bonusLabs(track).find((l) => !isLabDone(progress, l.slug)) : undefined;
+  const bonusModule = bonus && track?.modules.find((m) => m.labs.includes(bonus.slug));
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
@@ -97,6 +100,25 @@ export default function LabComplete({ lab }: { lab: Lab }) {
             </div>
           </motion.div>
         ))}
+
+        {bonus && bonusModule && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
+            className="mt-6 flex flex-wrap items-center gap-4 rounded-3xl bg-paper p-6 ring-1 ring-ink/10"
+          >
+            <Sparkles size={22} className="shrink-0 text-sun" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-sun">Optional bonus</p>
+              <p className="mt-1 font-display text-lg font-semibold">{bonusModule.title}</p>
+              <p className="mt-0.5 text-sm text-ink/60">{bonusModule.summary}</p>
+            </div>
+            <Link href={`/labs/${bonus.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink underline-offset-4 hover:underline">
+              Open it <ArrowRight size={15} />
+            </Link>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

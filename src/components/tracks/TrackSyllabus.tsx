@@ -115,10 +115,19 @@ function ModuleSection({
           {String(index + 1).padStart(2, "0")}
         </span>
         <div className="min-w-0 flex-1">
-          {locked && (
-            <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-1 text-xs font-semibold text-ink/50">
-              <Lock size={12} /> Unlocks when you finish module {index}
-            </p>
+          {(locked || mod.optional) && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {mod.optional && (
+                <span className="inline-flex items-center rounded-full bg-sun/15 px-2.5 py-1 text-xs font-semibold text-sun">
+                  Optional bonus · doesn&apos;t count towards finishing the track
+                </span>
+              )}
+              {locked && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-1 text-xs font-semibold text-ink/50">
+                  <Lock size={12} /> {mod.optional ? "Opens when you finish the track" : `Unlocks when you finish module ${index}`}
+                </span>
+              )}
+            </div>
           )}
           <h3 className={`font-display text-2xl font-semibold tracking-tight ${locked ? "text-ink/50" : "text-ink"}`}>{mod.title}</h3>
           <p className="mt-1 max-w-2xl text-ink/60">{mod.summary}</p>

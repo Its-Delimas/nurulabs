@@ -8,7 +8,7 @@ import LocalProjects from "@/components/landing/LocalProjects";
 import Impact from "@/components/landing/Impact";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
-import { trackLabs, tracks } from "@/lib/curriculum";
+import { requiredLabs, trackLabs, tracks } from "@/lib/curriculum";
 
 export default function Home() {
   // Computed at build time on the server: only the numbers reach the browser.
@@ -17,7 +17,7 @@ export default function Home() {
   const activities = openLabs.reduce((n, l) => n + l.steps.length, 0);
   const facts = Object.fromEntries(
     tracks.map((t) => {
-      const labs = trackLabs(t);
+      const labs = requiredLabs(t);
       return [t.slug, { labs: labs.length, projects: labs.filter((l) => l.kind === "project").length }];
     }),
   );

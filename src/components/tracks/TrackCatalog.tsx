@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, BarChart3, BookOpen, Flag, Hammer } from "lucide-react";
-import { enrolledTrack, trackLabs, trackStats, tracks } from "@/lib/curriculum";
+import { enrolledTrack, requiredLabs, trackStats, tracks } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import ProgressBar from "@/components/ui/ProgressBar";
 import EnrollAction from "./EnrollAction";
@@ -40,7 +40,7 @@ export default function TrackCatalog() {
 
       <div className="mt-10 space-y-5">
         {tracks.map((track, i) => {
-          const labs = trackLabs(track);
+          const labs = requiredLabs(track);
           const projects = labs.filter((l) => l.kind === "project").length;
           const stats = trackStats(track, progress);
           const milestones = track.modules.filter((m) => m.milestone).length;

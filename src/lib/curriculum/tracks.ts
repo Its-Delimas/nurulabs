@@ -58,8 +58,8 @@ export const tracks: Track[] = [
         summary: "Put it all together on a real question with messy data.",
         labs: ["py-project-market"],
         milestone: {
-          title: "Your first data project",
-          description: "You've taken messy data all the way to a defensible recommendation.",
+          title: "Python Essentials — complete",
+          description: "You've taken messy data all the way to a defensible recommendation. You're ready for Data Science, Data Engineering or AI & ML.",
         },
       },
       {
@@ -67,9 +67,10 @@ export const tracks: Track[] = [
         title: "Your developer toolkit",
         summary: "Leave the browser: Python on your own computer, packages and virtual environments, notebooks, Git and GitHub.",
         labs: ["py-local", "py-packages", "py-notebooks", "py-git", "py-ship-project"],
+        optional: true,
         milestone: {
-          title: "Python Essentials — complete",
-          description: "You can run Python on your own machine, manage packages and notebooks like a developer, and have a tested project on your GitHub. You're ready for AI & ML or Data Science.",
+          title: "A developer's setup",
+          description: "You can run Python on your own machine, manage packages and notebooks like a developer, and have a tested project on your GitHub.",
         },
       },
     ],
