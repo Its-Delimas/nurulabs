@@ -233,6 +233,7 @@ function LabCard({
         <p className="text-xs font-semibold text-ink/45">
           {isProject && <Flag size={12} className="mr-1 inline -translate-y-px text-lime-deep" />}
           {labLabel(lab, track)} · <span className="font-medium">{lab.subject}</span>
+          {lab.format === "thinking" && <span className="ml-1.5 rounded-full bg-violet/15 px-2 py-0.5 text-[11px] font-semibold text-violet">Thinking lab</span>}
         </p>
         {status}
       </div>

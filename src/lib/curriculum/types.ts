@@ -10,9 +10,10 @@
  *   predict    → "what will this code do?" before they run it
  *   code       → write and run real Python, checked against the namespace
  *   explain    → put the idea into their own words, checked for key ideas
+ *   scenario   → a realistic situation and a judgement call, with feedback on every option
  */
 
-export type StepKind = "concept" | "experiment" | "predict" | "code" | "explain";
+export type StepKind = "concept" | "experiment" | "predict" | "code" | "explain" | "scenario";
 
 interface BaseStep {
   id: string;
@@ -198,12 +199,37 @@ export interface ExplainStep extends BaseStep {
   modelAnswer: string;
 }
 
+export interface ScenarioOption {
+  text: string;
+  /** Why this choice is (or isn't) the best call — shown when it's picked. */
+  feedback: string;
+  /** Exactly one option per scenario is the best call. */
+  best?: boolean;
+}
+
+export interface ScenarioStep extends BaseStep {
+  kind: "scenario";
+  /** The situation, in short paragraphs. */
+  situation: string[];
+  /** Evidence to weigh: a small table, a figure, or both. */
+  exhibit?: {
+    caption: string;
+    table?: { columns: string[]; rows: (string | number)[][] };
+    image?: { src: string; alt: string };
+  };
+  question: string;
+  options: ScenarioOption[];
+  /** How an experienced practitioner reasons about it — shown once the best call is found. */
+  debrief: string;
+}
+
 export type Step =
   | ConceptStep
   | ExperimentStep
   | PredictStep
   | CodeStep
-  | ExplainStep;
+  | ExplainStep
+  | ScenarioStep;
 
 export interface Lab {
   slug: string;
@@ -214,6 +240,11 @@ export interface Lab {
   summary: string;
   minutes: number;
   kind: "lab" | "project";
+  /**
+   * "thinking": a lab about judgement (chart design, fairness, privacy…) that
+   * teaches mainly through scenarios, with little or no code.
+   */
+  format?: "thinking";
   /** Optional photo under /public/images, for cards and headers. */
   cover?: { src: string; alt: string };
   /** What the learner can do after finishing — powers the skill map. */

@@ -3,6 +3,7 @@
 //   - code steps: the starter must NOT pass all checks; the solution must pass all
 //   - predict steps: the marked answer must match what the code really prints
 //   - explain steps: the model answer must cover every key idea
+//   - scenario steps: exactly one best option, and feedback on every option
 // Run with `npm run validate:labs`. Exits non-zero on any failure.
 
 import { readFileSync } from "node:fs";
@@ -88,6 +89,10 @@ for (const lab of labs) {
       const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
       const ok = r1.every(Boolean) && !r0.every(Boolean);
       report(ok, tag, `starter=${JSON.stringify(r0)} solution=${JSON.stringify(r1)} solutionError=${so.error?.summary ?? "none"}`);
+    } else if (s.kind === "scenario") {
+      const best = s.options.filter((o) => o.best).length;
+      const silent = s.options.filter((o) => !o.feedback?.trim()).length;
+      report(best === 1 && silent === 0 && s.options.length >= 3 && !!s.debrief?.trim(), tag, `best=${best} options=${s.options.length} withoutFeedback=${silent}`);
     } else if (s.kind === "explain") {
       const covered = s.ideas.map((i) => i.patterns.some((p) => new RegExp(p, "i").test(s.modelAnswer)));
       report(covered.every(Boolean), tag, `model answer misses ${JSON.stringify(s.ideas.filter((_, i) => !covered[i]).map((i) => i.label))}`);

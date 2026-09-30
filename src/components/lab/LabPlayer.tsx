@@ -20,6 +20,7 @@ import ExperimentView from "./steps/ExperimentView";
 import PredictView from "./steps/PredictView";
 import CodeView from "./steps/CodeView";
 import ExplainView from "./steps/ExplainView";
+import ScenarioView from "./steps/ScenarioView";
 import LabComplete from "./LabComplete";
 import LabOverview from "./LabOverview";
 
@@ -161,6 +162,9 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
             {step.kind === "explain" && (
               <ExplainView step={step} done={stepDone} onComplete={complete} />
             )}
+            {step.kind === "scenario" && (
+              <ScenarioView step={step} done={stepDone} onComplete={complete} />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -189,7 +193,9 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
                     ? "Play with the experiment to continue"
                     : step.kind === "predict"
                       ? "Make a prediction to continue"
-                      : "Check your explanation to continue"}
+                      : step.kind === "scenario"
+                        ? "Find the best call to continue"
+                        : "Check your explanation to continue"}
               </span>
             )}
             <button

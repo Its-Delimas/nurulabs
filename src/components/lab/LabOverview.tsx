@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Flag, Lock, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Flag, Scale, Lock, Target } from "lucide-react";
 import type { Lab } from "@/lib/curriculum/types";
 import { isLabDone, labAccess, labLabel, moduleLabs, moduleOfLab, nextLabAfter, trackOfLab } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
@@ -17,6 +17,7 @@ const nouns: Record<string, [string, string]> = {
   Practice: ["coding exercise", "coding exercises"],
   Challenge: ["challenge", "challenges"],
   Reflect: ["reflection", "reflections"],
+  Scenario: ["scenario", "scenarios"],
 };
 
 const rise = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
@@ -39,6 +40,7 @@ export default function LabOverview({
   const started = done.size > 0;
   const finished = done.size === lab.steps.length;
   const isProject = lab.kind === "project";
+  const thinking = lab.format === "thinking";
   const label = track ? labLabel(lab, track) : `Lab ${lab.number}`;
 
   // How many of each kind of activity, in the order they first appear.
@@ -100,6 +102,11 @@ export default function LabOverview({
                 <span className="inline-flex items-center gap-1.5">
                   <Target size={15} /> {lab.steps.length} activities
                 </span>
+                {thinking && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Scale size={15} /> Thinking lab: judgement calls, light on code
+                  </span>
+                )}
                 {isProject && (
                   <span className="inline-flex items-center gap-1.5">
                     <Flag size={15} /> Capstone project
@@ -135,7 +142,7 @@ export default function LabOverview({
             <section>
               <p className="eyebrow text-lime-deep">How it runs</p>
               <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">
-                {lab.steps.length} activities, from idea to working code
+                {lab.steps.length} activities, {thinking ? "from idea to a decision you can defend" : "from idea to working code"}
               </h2>
               <p className="mt-2 text-sm text-ink/55">
                 {[...mix].map(([k, n]) => `${n} ${nouns[k][n === 1 ? 0 : 1]}`).join(" · ")}
@@ -243,7 +250,9 @@ export default function LabOverview({
               </ul>
 
               <p className="mt-6 text-sm leading-relaxed text-ink/60">
-                {isProject
+                {thinking
+                  ? "A thinking lab. The skill here is judgement, so most activities are real situations where you weigh the evidence and make a call, with feedback on every choice. There's still a little Python where it helps."
+                  : isProject
                   ? "You get a brief from a real client and a messy dataset. Work through it one stage at a time in real Python, then write up what you found for them."
                   : "Short lessons first, then hands-on activities that build intuition. After that you write and run real Python, and finish by explaining what you learned in your own words."}
               </p>

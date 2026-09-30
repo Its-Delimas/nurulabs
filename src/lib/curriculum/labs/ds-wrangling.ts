@@ -44,8 +44,9 @@ export const dsQuestionLab: Lab = {
   subject: "Questions, units and denominators",
   summary:
     "A county health officer asks: \"Where is malaria worst?\" Before any code, turn that into a question data can answer — and discover how the choice of denominator changes the answer.",
-  minutes: 35,
+  minutes: 30,
   kind: "lab",
+  format: "thinking",
   packages: ["pandas"],
   files: CLINIC_FILES,
   skills: [
@@ -75,6 +76,37 @@ export const dsQuestionLab: Lab = {
         "By raw count Kakamega is \"worst\"; per resident, Kisumu edges ahead; as a share of workload, Kisumu and Turkana lead and Nairobi — fourth by count — falls to last. None of these is wrong. Each answers a different question, which is why the question has to come first.",
     },
     {
+      id: "sharpen",
+      kind: "scenario",
+      title: "Sharpen the question",
+      situation: [
+        "The officer's message says: \"Where is malaria worst? We need to plan test-kit deliveries and nurse postings for next quarter.\"",
+        "Your data covers outpatient visits at 18 clinics, three in each of six counties, from January 2023 to December 2024.",
+      ],
+      question: "Which version of the question should you agree with the officer before you start?",
+      options: [
+        {
+          text: "\"Where is malaria worst in Kenya?\"",
+          feedback: "Still vague, and wider than your data: 18 clinics in six counties can't speak for the whole country.",
+        },
+        {
+          text: "\"Which county had the highest share of clinic visits diagnosed as malaria in 2023–2024?\"",
+          feedback: "Yes. It names the population (visits at these clinics), the measure (share diagnosed as malaria), the comparison (between counties) and the time frame, and it fits a staffing and supplies decision.",
+          best: true,
+        },
+        {
+          text: "\"How many malaria cases were there?\"",
+          feedback: "Answerable, but it won't tell the officer where to send anything. A single total has no comparison in it.",
+        },
+        {
+          text: "\"Why is malaria so bad in some counties?\"",
+          feedback: "A good research question, but it asks about causes. This data can describe where the burden is, not explain why.",
+        },
+      ],
+      debrief:
+        "A precise question names who, what is measured, against what, and when, and it should match the decision it serves. Agreeing it with the person asking saves a lot of rework: most \"wrong\" analyses answer a perfectly good question that nobody asked.",
+    },
+    {
       id: "predict-unit",
       kind: "predict",
       title: "Visits or people?",
@@ -102,22 +134,44 @@ share = malaria_visits / all_visits`,
     },
     {
       id: "unit",
-      kind: "code",
-      title: "What is a row?",
-      brief: "`visits` holds the cleaned records, one row per visit. Store the number of visits in `n_visits`, the number of distinct patients in `n_patients`, and the number of distinct patients who had at least one malaria visit in `malaria_patients`.",
-      starterCode: CLEAN + `
-`,
-      checks: [
-        { expr: "n_visits == len(visits) and n_patients == visits['patient_id'].nunique()", label: "Visits vs patients", failHint: "`len(visits)` counts rows; `.nunique()` counts distinct values." },
-        { expr: `malaria_patients == ${MALARIA}["patient_id"].nunique()`, label: "`malaria_patients` counts people, not visits", failHint: "Filter to malaria visits first, then count distinct `patient_id`." },
+      kind: "scenario",
+      title: "223 malaria patients?",
+      situation: [
+        "A colleague drafts the first line of the report: \"**223 malaria patients** were seen across the 18 clinics.\" They got 223 by counting the rows in the malaria extract.",
+        "You check what one row is. The file has one row per **visit**, and some patients came back more than once.",
       ],
-      hints: ["`visits[visits[\"diagnosis\"] == \"Malaria\"]` keeps only malaria visits."],
-      why: "About 1,400 visits came from fewer than 800 people, and 223 malaria visits from 200 patients. Reporting \"223 malaria patients\" would overstate the number of people affected. Always know what one row represents.",
-      solution: CLEAN + `
-n_visits = len(visits)
-n_patients = visits["patient_id"].nunique()
-malaria_patients = visits[visits["diagnosis"] == "Malaria"]["patient_id"].nunique()
-print(n_visits, n_patients, malaria_patients)`,
+      exhibit: {
+        caption: "Counts from the cleaned outpatient records.",
+        table: {
+          columns: ["", "Rows (visits)", "Distinct patients"],
+          rows: [
+            ["All diagnoses", 1391, 764],
+            ["Malaria", 223, 200],
+          ],
+        },
+      },
+      question: "What should the sentence say?",
+      options: [
+        {
+          text: "Keep it: 223 is what the data shows.",
+          feedback: "223 is a count of visits, not people. Twenty-three of those rows are return visits by patients already counted, so the sentence overstates how many people were affected.",
+        },
+        {
+          text: "\"200 patients were diagnosed with malaria, across 223 visits.\"",
+          feedback: "Yes. It reports people and visits separately, so readers know exactly what each number counts.",
+          best: true,
+        },
+        {
+          text: "\"About 29% of patients had malaria\" (223 ÷ 764).",
+          feedback: "This mixes units: visits on top, people underneath. The honest version is 200 ÷ 764, about 26% of patients.",
+        },
+        {
+          text: "Drop the number until every patient's visits are merged into one row.",
+          feedback: "You don't need to reshape anything. Counting distinct `patient_id` values already gives the number of people.",
+        },
+      ],
+      debrief:
+        "Before reporting any count, say what one row is. Health, school and sales data are usually event-level (visits, enrolments, transactions), while decisions are often about people. Report the unit you counted, and when both matter, give both: 200 patients, 223 visits.",
     },
     {
       id: "counts-rates",
@@ -144,22 +198,48 @@ print(rates.round(2).sort_values(ascending=False))`,
     },
     {
       id: "share",
-      kind: "code",
-      challenge: true,
-      title: "What share of the workload?",
-      brief: "The health officer's real question is where to send extra malaria test kits and nurses — so what matters is how much of each county's clinic workload is malaria. Compute `share`, the fraction of each county's visits diagnosed as malaria, and `ranking`, the list of counties from highest share to lowest.",
-      starterCode: CLEAN + `
-`,
-      checks: [
-        { expr: "np.allclose(share.sort_index(), visits.groupby('county')['diagnosis'].apply(lambda s: (s == 'Malaria').mean()).sort_index())", label: "`share` per county", failHint: "Group by county, then take the mean of `diagnosis == \"Malaria\"` — the mean of True/False is a proportion." },
-        { expr: "ranking == list(share.sort_values(ascending=False).index)", label: "`ranking` from highest to lowest", failHint: "`list(share.sort_values(ascending=False).index)`" },
+      kind: "scenario",
+      title: "Where do the test kits go?",
+      situation: [
+        "The county health officer has a limited stock of malaria test kits and can second a few nurses for three months. They need to decide which counties get them first.",
+        "You've prepared three measures for 2023–2024 from the 18 sentinel clinics (three per county). Remember that the clinics serve only part of each county, so the per-resident rate uses a denominator the clinics don't really serve.",
       ],
-      hints: ["`(visits[\"diagnosis\"] == \"Malaria\").groupby(visits[\"county\"]).mean()` is one way."],
-      why: "In Kisumu about 41% of clinic visits are malaria, in Turkana 39%, in Kakamega 37% — against 4% in Nairobi. For planning test kits and staff, this is the number that matters, and it doesn't depend on guessing how many people each clinic serves.",
-      solution: CLEAN + `
-share = (visits["diagnosis"] == "Malaria").groupby(visits["county"]).mean()
-ranking = list(share.sort_values(ascending=False).index)
-print(share.round(3).sort_values(ascending=False))`,
+      exhibit: {
+        caption: "Malaria at the 18 clinics, 2023–2024. Rate uses 2019 census population; share is malaria visits ÷ all visits.",
+        table: {
+          columns: ["County", "Malaria visits", "Per 100,000 residents", "Share of clinic visits"],
+          rows: [
+            ["Kakamega", 78, "4.2", "37%"],
+            ["Kisumu", 51, "4.4", "41%"],
+            ["Turkana", 34, "3.7", "39%"],
+            ["Nairobi", 23, "0.5", "4%"],
+            ["Mombasa", 20, "1.7", "15%"],
+            ["Nakuru", 17, "0.8", "7%"],
+          ],
+        },
+      },
+      question: "Which measure should drive the decision about kits and nurses?",
+      options: [
+        {
+          text: "Malaria visits, because Kakamega clearly has the most cases.",
+          feedback: "Kakamega's clinics are simply busier. A raw count mixes how common malaria is with how many people walk through the door.",
+        },
+        {
+          text: "The rate per 100,000 residents, because it adjusts for county size.",
+          feedback: "Rates are the right idea for comparing places of different sizes, but here the denominator is wrong: three clinics don't serve a whole county. Nairobi's 0.5 mostly reflects its huge population, not its clinics' workload.",
+        },
+        {
+          text: "The share of clinic visits, because kits and nurses are used by the clinics' own caseload.",
+          feedback: "Yes. The decision is about clinic workload, and the share uses the clinics' own visits as the denominator. Kisumu, Turkana and Kakamega stand out, with malaria about four in ten visits.",
+          best: true,
+        },
+        {
+          text: "Average the three rankings so no single measure dominates.",
+          feedback: "Averaging measures that answer different questions gives a number nobody can explain. Choose the measure that matches the decision and say why.",
+        },
+      ],
+      debrief:
+        "Match the measure to the decision. Counts describe size, rates compare populations, and shares describe composition. For stocking clinics, the share of their own visits is the fairest and most direct measure. In the report, show the counts alongside it, so readers can see how many kits each share implies.",
     },
     {
       id: "explain-question",

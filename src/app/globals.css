@@ -11,6 +11,7 @@
    *   code   — code editors and output panels (dark in both themes)
    *   onlime — text on the lime accent (dark in both themes)
    *   sun, sky — small decorative accents (map dots, markers) only
+   *   violet — marks scenario (judgement) activities
    */
   --color-ink: #0b0b0c;
   --color-paper: #ffffff;
@@ -25,6 +26,7 @@
   --color-onlime: #0b0b0c;
   --color-sun: #f29a1f;
   --color-sky: #2f8fd6;
+  --color-violet: #7a5af5;
 
   --background: var(--color-cream);
   --foreground: var(--color-ink);
@@ -43,6 +45,7 @@
   --color-code: #1c1c20;
   --color-sun: #f7b24a;
   --color-sky: #5aaef0;
+  --color-violet: #a891ff;
   color-scheme: dark;
 }
 
@@ -60,6 +63,7 @@
   --color-onlime: var(--color-onlime);
   --color-sun: var(--color-sun);
   --color-sky: var(--color-sky);
+  --color-violet: var(--color-violet);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
