@@ -102,6 +102,7 @@ const TestMutants = dynamic<WidgetProps>(() => import("../widgets/TestMutants"),
 const VolumeMonitor = dynamic<WidgetProps>(() => import("../widgets/VolumeMonitor"), { loading, ssr: false });
 const PartitionPruner = dynamic<WidgetProps>(() => import("../widgets/PartitionPruner"), { loading, ssr: false });
 const ScdHistory = dynamic<WidgetProps>(() => import("../widgets/ScdHistory"), { loading, ssr: false });
+const StreamWindows = dynamic<WidgetProps>(() => import("../widgets/StreamWindows"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -194,6 +195,7 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "volume-monitor": VolumeMonitor,
   "partition-pruner": PartitionPruner,
   "scd-history": ScdHistory,
+  "stream-windows": StreamWindows,
 };
 
 /** How much play before the takeaway is revealed. */

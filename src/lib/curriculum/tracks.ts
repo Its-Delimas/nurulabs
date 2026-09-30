@@ -435,9 +435,8 @@ export const tracks: Track[] = [
         slug: "de-scale",
         title: "Warehouses & scale",
         summary: "The systems behind analytics at large organisations: lakes and warehouses, partitions, star schemas, and batch vs streaming.",
-        labs: ["de-warehouse", "de-dimensional"],
+        labs: ["de-warehouse", "de-dimensional", "de-streaming"],
         planned: [
-          { title: "Batch vs streaming", summary: "Nightly jobs vs real-time events: windows, watermarks and late data." },
           { title: "Capstone: mobile-money analytics pipeline", summary: "Build an end-to-end pipeline from raw transactions to a daily report." },
         ],
       },

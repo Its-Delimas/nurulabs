@@ -122,7 +122,8 @@ export type WidgetId =
   | "test-mutants"
   | "volume-monitor"
   | "partition-pruner"
-  | "scd-history";
+  | "scd-history"
+  | "stream-windows";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";
