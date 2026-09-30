@@ -138,7 +138,7 @@ export default function TrackView({ track }: { track: Track }) {
                   href={`#module-${mod.slug}`}
                   className={`group flex h-full flex-col rounded-2xl p-5 transition-colors ${
                     done
-                      ? "bg-lime-soft ring-1 ring-lime-deep/20"
+                      ? "bg-lime text-onlime shadow-[0_12px_30px_-18px_rgba(85,113,10,0.8)]"
                       : current
                         ? "bg-paper ring-2 ring-lime-deep"
                         : locked
@@ -149,27 +149,28 @@ export default function TrackView({ track }: { track: Track }) {
                   <div className="flex items-center justify-between">
                     <span
                       className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-sm font-semibold ${
-                        done ? "bg-lime-deep text-paper" : current ? "bg-lime text-onlime" : locked ? "bg-ink/5 text-ink/35" : "bg-cream text-ink/55"
+                        done ? "bg-onlime text-lime" : current ? "bg-lime text-onlime" : locked ? "bg-ink/5 text-ink/35" : "bg-cream text-ink/55"
                       }`}
                     >
                       {done ? <Check size={16} strokeWidth={3} /> : i + 1}
                     </span>
                     {current && <span className="text-xs font-semibold text-lime-deep">You&apos;re here</span>}
+                    {done && <span className="text-xs font-semibold text-onlime/70">Completed</span>}
                     {locked && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-ink/40">
                         <Lock size={13} /> Locked
                       </span>
                     )}
                   </div>
-                  <p className={`mt-4 font-display text-base font-semibold leading-snug ${locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
-                  <p className="mt-1 text-xs text-ink/50">
+                  <p className={`mt-4 font-display text-base font-semibold leading-snug ${done ? "" : locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
+                  <p className={`mt-1 text-xs ${done ? "text-onlime/65" : "text-ink/50"}`}>
                     {modLabs.length
                       ? `${plural(modLabs.length, "lab")}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
                       : `${mod.planned?.length ?? 0} lessons planned`}
                   </p>
                   {mod.milestone && (
-                    <p className="mt-auto flex items-start gap-1.5 pt-4 text-xs leading-snug text-ink/60">
-                      <Flag size={12} className={`mt-0.5 shrink-0 ${done ? "text-lime-deep" : "text-ink/35"}`} />
+                    <p className={`mt-auto flex items-start gap-1.5 pt-4 text-xs leading-snug ${done ? "font-semibold text-onlime/80" : "text-ink/60"}`}>
+                      <Flag size={12} className={`mt-0.5 shrink-0 ${done ? "" : "text-ink/35"}`} />
                       {mod.milestone.title}
                     </p>
                   )}

@@ -153,23 +153,23 @@ function ModuleSection({
       {mod.milestone && (
         <div
           className={`mt-4 flex items-start gap-4 rounded-2xl p-5 ${
-            reached ? "bg-lime-soft ring-1 ring-lime-deep/20" : "bg-paper ring-1 ring-ink/10"
+            reached ? "bg-lime text-onlime" : "bg-paper ring-1 ring-ink/10"
           }`}
         >
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-              reached ? "bg-lime-deep text-paper" : "bg-cream text-ink/40"
+              reached ? "bg-onlime text-lime" : "bg-cream text-ink/40"
             }`}
           >
             <Flag size={17} />
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">
+            <p className={`text-xs font-semibold uppercase tracking-wide ${reached ? "text-onlime/60" : "text-ink/45"}`}>
               Milestone {index + 1}
               {reached ? " · reached" : ""}
             </p>
-            <p className="mt-0.5 font-display text-lg font-semibold text-ink">{mod.milestone.title}</p>
-            <p className="mt-1 text-sm text-ink/60">{mod.milestone.description}</p>
+            <p className={`mt-0.5 font-display text-lg font-semibold ${reached ? "" : "text-ink"}`}>{mod.milestone.title}</p>
+            <p className={`mt-1 text-sm ${reached ? "text-onlime/75" : "text-ink/60"}`}>{mod.milestone.description}</p>
           </div>
         </div>
       )}
@@ -215,7 +215,9 @@ function LabCard({
       className={`flex flex-col rounded-2xl p-5 transition-shadow ${
         locked
           ? "bg-ink/[0.03] ring-1 ring-ink/10"
-          : `bg-paper ${isNext ? "ring-2 ring-lime-deep" : isProject ? "ring-1 ring-ink/25" : "ring-1 ring-ink/10"}`
+          : done
+            ? "bg-lime-soft ring-1 ring-lime-deep/30"
+            : `bg-paper ${isNext ? "ring-2 ring-lime-deep" : isProject ? "ring-1 ring-ink/25" : "ring-1 ring-ink/10"}`
       }`}
     >
       <div className="flex items-center justify-between gap-3">
