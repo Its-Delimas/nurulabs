@@ -735,7 +735,7 @@ sales = np.array([1250, 980, 1430, 1100, 1610, 2050, 870])
       ],
       hints: ["`for _ in range(200): c = c - 0.1 * 2 * np.mean(c - sales)`"],
       why:
-        "Gradient descent landed on exactly the mean — because the mean is the constant that minimises squared error. Remember the `MeanModel` baseline from Python for AI? You've just derived it by training.",
+        "Gradient descent landed on exactly the mean — because the mean is the constant that minimises squared error. Remember the `MeanModel` baseline from Python Essentials? You've just derived it by training.",
       solution: `import numpy as np
 
 sales = np.array([1250, 980, 1430, 1100, 1610, 2050, 870])

@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Nurulabs — Learn AI by building it",
   description:
-    "A structured, hands-on AI programme for African students: start with Python for AI, then train real models — lessons, interactives, and real code in your browser, with a mentor that hints instead of answering.",
+    "A structured, hands-on AI programme for African students: start with Python Essentials, then train real models — lessons, interactives, and real code in your browser, with a mentor that hints instead of answering.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

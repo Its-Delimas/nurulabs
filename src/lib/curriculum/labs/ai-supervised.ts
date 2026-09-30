@@ -830,7 +830,7 @@ print(gb_auc)`,
         { expr: "len(test_proba) == len(X_test) and np.allclose(test_proba, xgb.predict_proba(X_test)[:, 1])", label: "`test_proba` has a risk for every test field", failHint: "`xgb.predict_proba(X_test)[:, 1]`" },
       ],
       hints: ["XGBoost uses the same `fit` / `predict_proba` interface as scikit-learn."],
-      why: "One library, same interface, industrial-strength implementation. The fit/predict pattern you built from scratch in Python for AI now scales to any model.",
+      why: "One library, same interface, industrial-strength implementation. The fit/predict pattern you built from scratch in Python Essentials now scales to any model.",
       solution: PREP + CV + `from xgboost import XGBClassifier
 
 xgb_auc = cross_val_score(XGBClassifier(n_estimators=200, learning_rate=0.05, max_depth=3), X, y, cv=cv, scoring="roc_auc").mean()

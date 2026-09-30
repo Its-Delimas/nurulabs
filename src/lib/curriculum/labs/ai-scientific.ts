@@ -171,7 +171,7 @@ print(farm_avg, season_total, best_farm)`,
       challenge: true,
       title: "A whole model in two lines",
       brief:
-        "Remember `predict_yield` and `mae` from Python for AI? Redo them vectorised: compute `predictions` for **every** farm at once with `yield = 0.075 × rain − 0.76`, then the mean absolute error `mae` against `actual`. No loops.",
+        "Remember `predict_yield` and `mae` from Python Essentials? Redo them vectorised: compute `predictions` for **every** farm at once with `yield = 0.075 × rain − 0.76`, then the mean absolute error `mae` against `actual`. No loops.",
       starterCode: `import numpy as np
 
 rain = np.array([150, 240, 310, 180, 275])
@@ -185,7 +185,7 @@ actual = np.array([10.5, 17.4, 22.1, 13.0, 19.8])
       ],
       hints: ["`np.abs()` works on a whole array, just like `+` and `*`."],
       why:
-        "In Python for AI this took two functions and two loops. With NumPy it's two lines — and it's exactly how scikit-learn computes predictions and errors internally.",
+        "In Python Essentials this took two functions and two loops. With NumPy it's two lines — and it's exactly how scikit-learn computes predictions and errors internally.",
       solution: `import numpy as np
 
 rain = np.array([150, 240, 310, 180, 275])
@@ -233,7 +233,7 @@ export const pdDataFrames: Lab = {
       kind: "concept",
       title: "A DataFrame is a table you can question",
       body: [
-        "In Python for AI you read a CSV into a list of dictionaries and looped over it. pandas does all of that in one line — and gives you a **DataFrame**: rows and named columns, like a spreadsheet you control with code.",
+        "In Python Essentials you read a CSV into a list of dictionaries and looped over it. pandas does all of that in one line — and gives you a **DataFrame**: rows and named columns, like a spreadsheet you control with code.",
         "Each column is a **Series** — basically a NumPy array with labels. So everything you just learned about vectorised maths works on columns.",
         "`import pandas as pd` is the convention. First moves with any new dataset: `df.head()`, `df.shape`, `df.columns`, `df.dtypes`.",
       ],
@@ -317,7 +317,7 @@ print(kitui)
         { pattern: "NoneType", hint: "`df` is still `None` — load the file first." },
       ],
       why:
-        "What took a loop and a list of dictionaries in Python for AI is now one line each. The logic is the same — pandas just vectorises it.",
+        "What took a loop and a list of dictionaries in Python Essentials is now one line each. The logic is the same — pandas just vectorises it.",
       solution: `import pandas as pd
 
 df = pd.read_csv("farms.csv")

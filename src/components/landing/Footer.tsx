@@ -7,10 +7,10 @@ const columns = [
     title: "Learn",
     links: [
       { href: "/tracks", label: "Choose a track" },
-      { href: "/tracks/python-for-ai", label: "Python for AI" },
+      { href: "/tracks/python-essentials", label: "Python Essentials" },
       { href: "/tracks/ai-ml", label: "AI & Machine Learning" },
       { href: "/tracks/data-science", label: "Data Science" },
-      { href: "/placement/python-for-ai", label: "Python placement check" },
+      { href: "/placement/python-essentials", label: "Python placement check" },
     ],
   },
   {
@@ -31,7 +31,7 @@ export default function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/55">
-            Africa&apos;s hands-on AI academy. Free to learn, starting with Python for AI.
+            Africa&apos;s hands-on AI academy. Free to learn, starting with Python Essentials.
           </p>
         </div>
         {columns.map((col) => (

@@ -22,7 +22,7 @@ export default function CTA() {
           Your first program is five minutes away.
         </h2>
         <p className="mx-auto mt-6 max-w-lg text-white/70">
-          Enroll in Python for AI, open Lab 01, and run real code before you&apos;ve finished your tea.
+          Enroll in Python Essentials, open Lab 01, and run real code before you&apos;ve finished your tea.
         </p>
         <Link
           href="/tracks"

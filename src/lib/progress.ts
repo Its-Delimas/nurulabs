@@ -49,6 +49,18 @@ function write(key: string, value: unknown) {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+// Tracks that have been renamed: old slug -> new slug.
+const RENAMED_TRACKS: Record<string, string> = { "python-for-ai": "python-essentials" };
+
+/** Point enrolment and placement records at renamed tracks' new slugs. */
+function renameTracks(p: Progress): Progress {
+  const enrolled = p.enrolled && RENAMED_TRACKS[p.enrolled.track] ? { ...p.enrolled, track: RENAMED_TRACKS[p.enrolled.track] } : p.enrolled;
+  const placements = p.placements
+    ? Object.fromEntries(Object.entries(p.placements).map(([slug, at]) => [RENAMED_TRACKS[slug] ?? slug, at]))
+    : p.placements;
+  return { ...p, enrolled, placements };
+}
+
 function parseProgress(raw: string | null): Progress {
   if (!raw) {
     // Carry over missions finished under the old, flat progress format.
@@ -70,7 +82,7 @@ function parseProgress(raw: string | null): Progress {
   }
   try {
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed.labs === "object" ? parsed : EMPTY;
+    return parsed && typeof parsed.labs === "object" ? renameTracks(parsed) : EMPTY;
   } catch {
     return EMPTY;
   }

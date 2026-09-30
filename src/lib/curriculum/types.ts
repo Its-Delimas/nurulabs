@@ -1,7 +1,7 @@
 /**
  * The Nurulabs curriculum model.
  *
- * A Track is a path (e.g. "Python for AI"), made of Modules, made of Labs.
+ * A Track is a path (e.g. "Python Essentials"), made of Modules, made of Labs.
  * A Lab is a sequence of Steps, and each step is an *activity*, not a page
  * of reading: the text is glue between things the learner does.
  *

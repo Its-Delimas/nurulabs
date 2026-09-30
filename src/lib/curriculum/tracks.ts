@@ -2,13 +2,13 @@ import type { Track } from "./types";
 
 export const tracks: Track[] = [
   {
-    slug: "python-for-ai",
-    name: "Python for AI",
+    slug: "python-essentials",
+    name: "Python Essentials",
     shortName: "Python",
     level: "Beginner",
-    tagline: "The language every AI system is written in.",
+    tagline: "The language of AI, data science and data engineering.",
     description:
-      "Start from zero and finish able to load, clean and analyse a real dataset in Python — the foundation every lab in the AI & ML track builds on.",
+      "Start from zero and finish able to load, clean and analyse a real dataset in Python — the foundation the AI & ML, Data Science and Data Engineering tracks all build on.",
     status: "active",
     cover: { src: "/images/pair-programming.jpg", alt: "Two developers reading code together on a monitor" },
     modules: [
@@ -68,7 +68,7 @@ export const tracks: Track[] = [
         summary: "Leave the browser: Python on your own computer, packages and virtual environments, notebooks, Git and GitHub.",
         labs: ["py-local", "py-packages", "py-notebooks", "py-git", "py-ship-project"],
         milestone: {
-          title: "Python for AI — complete",
+          title: "Python Essentials — complete",
           description: "You can run Python on your own machine, manage packages and notebooks like a developer, and have a tested project on your GitHub. You're ready for AI & ML or Data Science.",
         },
       },
@@ -181,7 +181,7 @@ export const tracks: Track[] = [
     description:
       "From your first straight-line model to neural networks, language models and responsible deployment — every concept built, run, and tested by you.",
     status: "active",
-    requires: ["python-for-ai"],
+    requires: ["python-essentials"],
     cover: { src: "/images/maize-field.jpg", alt: "A field of young maize under a blue sky" },
     modules: [
       {
@@ -305,7 +305,7 @@ export const tracks: Track[] = [
     description:
       "Clean and join messy records, measure uncertainty honestly, run experiments, and work in the tools teams actually use — Excel, SQL, survey data and maps — ending with an investigation of real World Bank data.",
     status: "active",
-    requires: ["python-for-ai"],
+    requires: ["python-essentials"],
     cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
     modules: [
       {
@@ -388,7 +388,7 @@ export const tracks: Track[] = [
     tagline: "Pipelines, warehouses, and the systems that feed ML models.",
     description: "Pipelines, warehouses, and the systems that feed ML models.",
     status: "coming-soon",
-    requires: ["python-for-ai"],
+    requires: ["python-essentials"],
     cover: { src: "/images/laptop-code.jpg", alt: "Code on a laptop screen" },
     modules: [
       {

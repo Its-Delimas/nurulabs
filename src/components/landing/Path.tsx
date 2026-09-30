@@ -22,7 +22,7 @@ export default function Path({ facts }: { facts: Record<string, TrackFacts> }) {
         <p className="eyebrow text-lime-deep">A programme, not a playlist</p>
         <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-ink md:text-4xl">Enroll in one track. Finish it. Move up.</h2>
         <p className="mt-4 text-ink/60">
-          Start with Python for AI — everything builds on it — then choose AI &amp; Machine Learning or Data Science. Already
+          Start with Python Essentials — everything builds on it — then choose AI &amp; Machine Learning or Data Science. Already
           code in Python? Take the placement check and go straight to step two.
         </p>
       </div>
@@ -70,7 +70,7 @@ export default function Path({ facts }: { facts: Record<string, TrackFacts> }) {
                     See the syllabus
                   </Link>
                   <Link
-                    href={first ? "/tracks" : "/placement/python-for-ai"}
+                    href={first ? "/tracks" : "/placement/python-essentials"}
                     aria-label={first ? `Start ${track.name}` : "Take the Python placement check"}
                     className="flex h-12 w-12 items-center justify-center rounded-full bg-lime text-onlime transition-transform group-hover:translate-x-1"
                   >
