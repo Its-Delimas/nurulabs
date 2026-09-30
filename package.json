@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate:labs": "npm run data && tsc src/lib/curriculum/labs/index.ts --outDir .labs-build --module commonjs --target es2020 --skipLibCheck && node -e \"require('fs').writeFileSync('.labs-build/labs.json', JSON.stringify(require('./.labs-build/labs/index.js').allLabs))\" && node scripts/validate-labs.mjs"
+    "validate:labs": "npm run data && tsc src/lib/curriculum/labs/index.ts --outDir .labs-build --module commonjs --target es2020 --skipLibCheck && node -e \"require('fs').writeFileSync('.labs-build/labs.json', JSON.stringify(require('./.labs-build/labs/index.js').allLabs))\" && node scripts/validate-labs.mjs",
+    "test": "tsc src/lib/progress-merge.ts --outDir .labs-build/merge --module commonjs --target es2020 --skipLibCheck && node scripts/test-progress-merge.cjs"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",

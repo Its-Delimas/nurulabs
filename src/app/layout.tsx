@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import ProgressSync from "@/components/auth/ProgressSync";
 import { themeInitScript } from "@/components/ui/ThemeToggle";
 
 const spaceGrotesk = Space_Grotesk({
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col bg-cream font-sans text-ink antialiased">
         {children}
+        <ProgressSync />
       </body>
     </html>
   );

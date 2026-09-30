@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { LogOut, UserRound } from "lucide-react";
 import { authEnabled } from "@/lib/supabase/config";
 import { displayName, signOut, useAuth } from "@/lib/auth";
+import { useSyncStatus } from "@/lib/sync";
 
 /**
  * "Sign in" when signed out; the learner's initial with a small menu when
@@ -12,6 +13,7 @@ import { displayName, signOut, useAuth } from "@/lib/auth";
  */
 export default function AccountButton({ compact = false }: { compact?: boolean }) {
   const { user, ready } = useAuth();
+  const sync = useSyncStatus();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
@@ -58,6 +60,10 @@ export default function AccountButton({ compact = false }: { compact?: boolean }
           <div className="border-b border-ink/10 px-4 py-3">
             <p className="truncate text-sm font-semibold text-ink">{name}</p>
             {user.email && <p className="truncate text-xs text-ink/50">{user.email}</p>}
+            <p className={`mt-2 flex items-center gap-1.5 text-xs ${sync === "error" ? "text-danger" : "text-ink/55"}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${sync === "error" ? "bg-danger" : sync === "saved" ? "bg-lime-deep" : "bg-ink/30"}`} />
+              {sync === "saved" ? "Progress saved to your account" : sync === "error" ? "Not saved yet; will retry" : "Saving progress…"}
+            </p>
           </div>
           <Link role="menuitem" href="/dashboard" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm text-ink/75 hover:bg-cream">
             My learning

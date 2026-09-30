@@ -3,7 +3,8 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Learner progress, kept in localStorage (there are no accounts yet).
+ * Learner progress, kept in localStorage. When a learner signs in, it is also
+ * synced with their account (see ./sync.ts), merging rather than overwriting.
  *
  * Stored per lab: which steps are done, when the lab was finished, and the
  * learner's latest code per code step so they can pick up where they left off.
@@ -13,6 +14,8 @@ export interface LabProgress {
   steps: string[];
   completedAt?: string;
   code?: Record<string, string>;
+  /** Last change to this lab, used when merging copies from two devices. */
+  updatedAt?: string;
 }
 
 export interface Progress {
@@ -23,12 +26,14 @@ export interface Progress {
   placements?: Record<string, string>;
   /** Reviewer preview: every lab of every live track is open, whatever the enrollment. */
   preview?: boolean;
+  /** Labs the learner reset, by slug, with when — so a merge doesn't bring them back. */
+  resets?: Record<string, string>;
 }
 
 const STORAGE_KEY = "nurulabs:progress:v2";
 const LEGACY_KEY = "nurulabs:progress";
 const ACTIVITY_KEY = "nurulabs:activity";
-const CHANGE_EVENT = "nurulabs:progress-change";
+export const CHANGE_EVENT = "nurulabs:progress-change";
 
 const EMPTY: Progress = { labs: {} };
 
@@ -109,6 +114,13 @@ function labOf(p: Progress, slug: string): LabProgress {
   return p.labs[slug] ?? { steps: [] };
 }
 
+const now = () => new Date().toISOString();
+
+/** Replace the stored progress wholesale (used by account sync after merging). */
+export function replaceProgress(p: Progress) {
+  write(STORAGE_KEY, p);
+}
+
 /** Turn reviewer preview on or off (see /preview). Progress itself is untouched. */
 export function setPreview(on: boolean) {
   update((p) => ({ ...p, preview: on || undefined }));
@@ -120,7 +132,7 @@ export function markStepComplete(labSlug: string, stepId: string) {
     if (lab.steps.includes(stepId)) return p;
     return {
       ...p,
-      labs: { ...p.labs, [labSlug]: { ...lab, steps: [...lab.steps, stepId] } },
+      labs: { ...p.labs, [labSlug]: { ...lab, steps: [...lab.steps, stepId], updatedAt: now() } },
     };
   });
 }
@@ -133,7 +145,7 @@ export function markLabComplete(labSlug: string) {
       ...p,
       labs: {
         ...p.labs,
-        [labSlug]: { ...lab, completedAt: new Date().toISOString() },
+        [labSlug]: { ...lab, completedAt: now(), updatedAt: now() },
       },
     };
   });
@@ -146,7 +158,7 @@ export function saveCode(labSlug: string, stepId: string, code: string) {
       ...p,
       labs: {
         ...p.labs,
-        [labSlug]: { ...lab, code: { ...lab.code, [stepId]: code } },
+        [labSlug]: { ...lab, code: { ...lab.code, [stepId]: code }, updatedAt: now() },
       },
     };
   });
@@ -167,7 +179,7 @@ export function resetLab(labSlug: string) {
   update((p) => {
     const labs = { ...p.labs };
     delete labs[labSlug];
-    return { ...p, labs };
+    return { ...p, labs, resets: { ...p.resets, [labSlug]: now() } };
   });
 }
 
@@ -209,6 +221,11 @@ export function getActivityDates(): Set<string> {
     }
   }
   return cachedActivity;
+}
+
+/** Replace the stored activity days (used by account sync after merging). */
+export function replaceActivity(dates: string[]) {
+  write(ACTIVITY_KEY, dates);
 }
 
 /** Records that the learner actually ran code today — a real activity signal. */
