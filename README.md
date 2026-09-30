@@ -12,9 +12,9 @@ reflection in their own words.
 | Track | Level | Status |
 | --- | --- | --- |
 | Python Essentials | Beginner | 17 labs + 2 projects, live — from first variables to working like a developer: terminal, pip & virtual environments, Jupyter/Colab, Git & GitHub |
-| AI & Machine Learning | Intermediate | Requires Python Essentials (or its placement check); all 11 modules live (42 labs + 6 capstones, from NumPy to neural networks, LLMs, responsible AI and the practitioner's toolkit: Hugging Face, PyTorch, Colab and experiment tracking) |
 | Data Science | Intermediate | Requires Python Essentials (or its placement check); all 7 modules live — wrangling, statistics, experiments, Excel, SQL, surveys, maps and communication — ending with a real World Bank data capstone |
-| Data Engineering | Intermediate | In progress (open in preview mode): Modules 1–4 built — files & formats, data modelling, analytical SQL with DuckDB, query performance; pipelines (paginated extraction with retries and watermarks, idempotent upserts, Airflow-style DAGs, a mini dbt); data quality (JSON Schema and pydantic contracts, pytest with mutation testing, dbt-style data tests, volume/freshness/drift monitoring and lineage); warehouses and lakes (partitioned Parquet, pruning, idempotent rebuilds) dimensional modelling (star schemas, SCD type 2) and streaming (offsets, at-least-once, event-time windows and watermarks); plus four projects. The final capstone is next |
+| Data Engineering | Intermediate | Requires Python Essentials (or its placement check); all 5 modules live — formats, modelling and analytical SQL (DuckDB); pipelines (API extraction with retries and watermarks, idempotent upserts, Airflow-style DAGs, a mini dbt); data quality (JSON Schema and pydantic contracts, pytest with mutation testing, data tests, monitoring and lineage); warehouses, lakes, star schemas with SCD type 2 and streaming — ending with an end-to-end mobile-money pipeline capstone |
+| AI & Machine Learning | Advanced | Requires Python Essentials (or its placement check); all 11 modules live (42 labs + 6 capstones, from NumPy to neural networks, LLMs, responsible AI and the practitioner's toolkit: Hugging Face, PyTorch, Colab and experiment tracking) |
 
 Experienced learners can take the Python placement check
 (`/placement/python-essentials`) to go straight to AI & ML.

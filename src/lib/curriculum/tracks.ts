@@ -8,7 +8,7 @@ export const tracks: Track[] = [
     level: "Beginner",
     tagline: "The language of AI, data science and data engineering.",
     description:
-      "Start from zero and finish able to load, clean and analyse a real dataset in Python — the foundation the AI & ML, Data Science and Data Engineering tracks all build on.",
+      "Start from zero and finish able to load, clean and analyse a real dataset in Python — the foundation the Data Science, Data Engineering and AI & ML tracks all build on.",
     status: "active",
     cover: { src: "/images/pair-programming.jpg", alt: "Two developers reading code together on a monitor" },
     modules: [
@@ -173,10 +173,158 @@ export const tracks: Track[] = [
     ],
   },
   {
+    slug: "data-science",
+    name: "Data Science",
+    shortName: "Data Science",
+    level: "Intermediate",
+    tagline: "Turn messy real-world data into decisions people trust.",
+    description:
+      "Clean and join messy records, measure uncertainty honestly, run experiments, and work in the tools teams actually use — Excel, SQL, survey data and maps — ending with an investigation of real World Bank data.",
+    status: "active",
+    requires: ["python-essentials"],
+    cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
+    modules: [
+      {
+        slug: "ds-scientific",
+        title: "Scientific Python",
+        summary: "NumPy, pandas and matplotlib — the toolkit every analysis is built on. Shared with the AI & ML track.",
+        labs: ["np-arrays", "pd-dataframes", "viz-basics", "eda"],
+        milestone: {
+          title: "From raw CSV to first insight",
+          description: "You can load, summarise and chart a dataset — and say what it does and doesn't show.",
+        },
+      },
+      {
+        slug: "ds-wrangling",
+        title: "Wrangling real-world data",
+        summary: "Turn a vague question into an answerable one, and messy multi-table records into data you can trust.",
+        labs: ["ds-question", "ds-cleaning", "ds-joins", "ds-dates", "clinic-cleanup"],
+        milestone: {
+          title: "Clean data you can defend",
+          description: "You can frame a precise question, clean messy records with logged rules, join and reshape tables safely, and parse dates without silent errors.",
+        },
+      },
+      {
+        slug: "ds-visual",
+        title: "Visual storytelling",
+        summary: "See the shape of the data, find real relationships, and design charts that make the point honestly.",
+        labs: ["ds-distributions", "ds-relationships", "ds-chart-design"],
+        milestone: {
+          title: "Charts that tell the truth",
+          description: "You can describe distributions, read relationships without being fooled by them, and design clear, honest charts.",
+        },
+      },
+      {
+        slug: "ds-inference",
+        title: "Statistics & inference",
+        summary: "How sure can you be? Sampling, uncertainty and tests — building on the shared Statistics and Probability labs.",
+        labs: ["math-stats", "math-probability", "ds-sampling", "ds-confidence", "ds-hypothesis", "school-results"],
+        milestone: {
+          title: "Numbers with honest error bars",
+          description: "You can say how sure an estimate is, test whether a difference is real, and spot regression to the mean before it fools a decision-maker.",
+        },
+      },
+      {
+        slug: "ds-causal",
+        title: "Experiments & causal thinking",
+        summary: "Telling \"causes\" from \"goes along with\" — with experiments when you can, and careful comparisons when you can't.",
+        labs: ["ds-ab-tests", "ds-confounding", "ds-did", "sms-experiment"],
+        milestone: {
+          title: "Cause, not just correlation",
+          description: "You can design and analyse an A/B test, adjust for confounders, and evaluate a policy with difference-in-differences.",
+        },
+      },
+      {
+        slug: "ds-real-data",
+        title: "Real-world data & tools",
+        summary: "The tools analysts use every day — Excel, SQL, survey weights and maps — on data shaped like the real thing.",
+        labs: ["ds-excel", "ds-sql", "ds-surveys", "ds-maps", "survey-report"],
+        milestone: {
+          title: "Fluent in the working toolkit",
+          description: "You can read and write Excel workbooks, query databases with SQL, produce weighted survey estimates and map data honestly.",
+        },
+      },
+      {
+        slug: "ds-communication",
+        title: "Communicating with data",
+        summary: "Findings only matter if people understand and act on them.",
+        labs: ["ds-storytelling", "ds-dashboards", "open-data-investigation"],
+        milestone: {
+          title: "Data scientist",
+          description: "You can take a real question from raw open data to a clear brief, chart and workbook that a decision-maker can act on.",
+        },
+      },
+    ],
+  },
+  {
+    slug: "data-engineering",
+    name: "Data Engineering",
+    shortName: "Data Eng.",
+    level: "Intermediate",
+    tagline: "Pipelines, warehouses, and the systems that feed ML models.",
+    description:
+      "Build the systems that move and model data: file formats and SQL, pipelines with Airflow-style DAGs and dbt, data quality and testing, warehouses, star schemas and streaming. It ends with an end-to-end mobile-money pipeline.",
+    status: "active",
+    requires: ["python-essentials"],
+    cover: { src: "/images/laptop-code.jpg", alt: "Code on a laptop screen" },
+    modules: [
+      {
+        slug: "de-foundations",
+        title: "Data foundations",
+        summary: "NumPy and pandas (shared with the other tracks), file formats, and modelling data into tables that can't contradict themselves.",
+        labs: ["np-arrays", "pd-dataframes", "de-formats", "de-modelling", "sacco-digitise"],
+        milestone: {
+          title: "Data that holds together",
+          description: "You can choose the right file format, normalise messy exports into linked tables, and load them into a database that enforces the rules.",
+        },
+      },
+      {
+        slug: "de-sql",
+        title: "SQL in depth",
+        summary: "The language every data system speaks — from everyday queries to window functions, query plans and DuckDB.",
+        labs: ["ds-sql", "de-windows", "de-performance", "ledger-analytics"],
+        milestone: {
+          title: "Fluent in analytical SQL",
+          description: "You can write joins, CTEs and window functions, read query plans, add the right indexes, and choose between row and column stores.",
+        },
+      },
+      {
+        slug: "de-pipelines",
+        title: "Pipelines & orchestration",
+        summary: "Move data reliably from where it’s made to where it’s used: extract from APIs, load idempotently, and orchestrate with Airflow-style DAGs and dbt.",
+        labs: ["de-extract", "de-load", "de-orchestration", "crop-prices-pipeline"],
+        milestone: {
+          title: "Pipelines that run themselves",
+          description: "You can build an incremental, idempotent ETL pipeline that survives outages and re-runs, schedule it as a DAG, and organise SQL transforms the dbt way.",
+        },
+      },
+      {
+        slug: "de-quality",
+        title: "Data quality & testing",
+        summary: "Catch bad data before it reaches a dashboard or a model: contracts with JSON Schema and pydantic, pytest and data tests, monitoring and lineage.",
+        labs: ["de-validation", "de-testing", "de-monitoring", "immunisation-quality"],
+        milestone: {
+          title: "Data people can trust",
+          description: "You can enforce a data contract and quarantine failures, test pipeline code and data, and monitor volume, freshness and drift, tracing any failure to everything it affects.",
+        },
+      },
+      {
+        slug: "de-scale",
+        title: "Warehouses & scale",
+        summary: "The systems behind analytics at large organisations: lakes and warehouses, partitions, star schemas, and batch vs streaming.",
+        labs: ["de-warehouse", "de-dimensional", "de-streaming", "mobile-money-pipeline"],
+        milestone: {
+          title: "Data Engineering — complete",
+          description: "You can design and build a pipeline end to end: lake, warehouse, star schema with history, tests that gate publishing, and streaming when minutes matter.",
+        },
+      },
+    ],
+  },
+  {
     slug: "ai-ml",
     name: "AI & Machine Learning",
     shortName: "AI & ML",
-    level: "Intermediate",
+    level: "Advanced",
     tagline: "Train real models on real problems.",
     description:
       "From your first straight-line model to neural networks, language models and responsible deployment — every concept built, run, and tested by you.",
@@ -293,152 +441,6 @@ export const tracks: Track[] = [
           title: "Ready for real ML work",
           description: "You can find and vet pretrained models on Hugging Face, read and reason about PyTorch code, run models in Colab, and run reproducible, well-tracked experiments.",
         },
-      },
-    ],
-  },
-  {
-    slug: "data-science",
-    name: "Data Science",
-    shortName: "Data Science",
-    level: "Intermediate",
-    tagline: "Turn messy real-world data into decisions people trust.",
-    description:
-      "Clean and join messy records, measure uncertainty honestly, run experiments, and work in the tools teams actually use — Excel, SQL, survey data and maps — ending with an investigation of real World Bank data.",
-    status: "active",
-    requires: ["python-essentials"],
-    cover: { src: "/images/students-laptops.jpg", alt: "Students working on laptops together" },
-    modules: [
-      {
-        slug: "ds-scientific",
-        title: "Scientific Python",
-        summary: "NumPy, pandas and matplotlib — the toolkit every analysis is built on. Shared with the AI & ML track.",
-        labs: ["np-arrays", "pd-dataframes", "viz-basics", "eda"],
-        milestone: {
-          title: "From raw CSV to first insight",
-          description: "You can load, summarise and chart a dataset — and say what it does and doesn't show.",
-        },
-      },
-      {
-        slug: "ds-wrangling",
-        title: "Wrangling real-world data",
-        summary: "Turn a vague question into an answerable one, and messy multi-table records into data you can trust.",
-        labs: ["ds-question", "ds-cleaning", "ds-joins", "ds-dates", "clinic-cleanup"],
-        milestone: {
-          title: "Clean data you can defend",
-          description: "You can frame a precise question, clean messy records with logged rules, join and reshape tables safely, and parse dates without silent errors.",
-        },
-      },
-      {
-        slug: "ds-visual",
-        title: "Visual storytelling",
-        summary: "See the shape of the data, find real relationships, and design charts that make the point honestly.",
-        labs: ["ds-distributions", "ds-relationships", "ds-chart-design"],
-        milestone: {
-          title: "Charts that tell the truth",
-          description: "You can describe distributions, read relationships without being fooled by them, and design clear, honest charts.",
-        },
-      },
-      {
-        slug: "ds-inference",
-        title: "Statistics & inference",
-        summary: "How sure can you be? Sampling, uncertainty and tests — building on the shared Statistics and Probability labs.",
-        labs: ["math-stats", "math-probability", "ds-sampling", "ds-confidence", "ds-hypothesis", "school-results"],
-        milestone: {
-          title: "Numbers with honest error bars",
-          description: "You can say how sure an estimate is, test whether a difference is real, and spot regression to the mean before it fools a decision-maker.",
-        },
-      },
-      {
-        slug: "ds-causal",
-        title: "Experiments & causal thinking",
-        summary: "Telling \"causes\" from \"goes along with\" — with experiments when you can, and careful comparisons when you can't.",
-        labs: ["ds-ab-tests", "ds-confounding", "ds-did", "sms-experiment"],
-        milestone: {
-          title: "Cause, not just correlation",
-          description: "You can design and analyse an A/B test, adjust for confounders, and evaluate a policy with difference-in-differences.",
-        },
-      },
-      {
-        slug: "ds-real-data",
-        title: "Real-world data & tools",
-        summary: "The tools analysts use every day — Excel, SQL, survey weights and maps — on data shaped like the real thing.",
-        labs: ["ds-excel", "ds-sql", "ds-surveys", "ds-maps", "survey-report"],
-        milestone: {
-          title: "Fluent in the working toolkit",
-          description: "You can read and write Excel workbooks, query databases with SQL, produce weighted survey estimates and map data honestly.",
-        },
-      },
-      {
-        slug: "ds-communication",
-        title: "Communicating with data",
-        summary: "Findings only matter if people understand and act on them.",
-        labs: ["ds-storytelling", "ds-dashboards", "open-data-investigation"],
-        milestone: {
-          title: "Data scientist",
-          description: "You can take a real question from raw open data to a clear brief, chart and workbook that a decision-maker can act on.",
-        },
-      },
-    ],
-  },
-  {
-    slug: "data-engineering",
-    name: "Data Engineering",
-    shortName: "Data Eng.",
-    level: "Intermediate",
-    tagline: "Pipelines, warehouses, and the systems that feed ML models.",
-    description: "Pipelines, warehouses, and the systems that feed ML models.",
-    status: "coming-soon",
-    requires: ["python-essentials"],
-    cover: { src: "/images/laptop-code.jpg", alt: "Code on a laptop screen" },
-    modules: [
-      {
-        slug: "de-foundations",
-        title: "Data foundations",
-        summary: "NumPy and pandas (shared with the other tracks), file formats, and modelling data into tables that can't contradict themselves.",
-        labs: ["np-arrays", "pd-dataframes", "de-formats", "de-modelling", "sacco-digitise"],
-        milestone: {
-          title: "Data that holds together",
-          description: "You can choose the right file format, normalise messy exports into linked tables, and load them into a database that enforces the rules.",
-        },
-      },
-      {
-        slug: "de-sql",
-        title: "SQL in depth",
-        summary: "The language every data system speaks — from everyday queries to window functions, query plans and DuckDB.",
-        labs: ["ds-sql", "de-windows", "de-performance", "ledger-analytics"],
-        milestone: {
-          title: "Fluent in analytical SQL",
-          description: "You can write joins, CTEs and window functions, read query plans, add the right indexes, and choose between row and column stores.",
-        },
-      },
-      {
-        slug: "de-pipelines",
-        title: "Pipelines & orchestration",
-        summary: "Move data reliably from where it’s made to where it’s used: extract from APIs, load idempotently, and orchestrate with Airflow-style DAGs and dbt.",
-        labs: ["de-extract", "de-load", "de-orchestration", "crop-prices-pipeline"],
-        milestone: {
-          title: "Pipelines that run themselves",
-          description: "You can build an incremental, idempotent ETL pipeline that survives outages and re-runs, schedule it as a DAG, and organise SQL transforms the dbt way.",
-        },
-      },
-      {
-        slug: "de-quality",
-        title: "Data quality & testing",
-        summary: "Catch bad data before it reaches a dashboard or a model: contracts with JSON Schema and pydantic, pytest and data tests, monitoring and lineage.",
-        labs: ["de-validation", "de-testing", "de-monitoring", "immunisation-quality"],
-        milestone: {
-          title: "Data people can trust",
-          description: "You can enforce a data contract and quarantine failures, test pipeline code and data, and monitor volume, freshness and drift, tracing any failure to everything it affects.",
-        },
-      },
-      {
-        slug: "de-scale",
-        title: "Warehouses & scale",
-        summary: "The systems behind analytics at large organisations: lakes and warehouses, partitions, star schemas, and batch vs streaming.",
-        labs: ["de-warehouse", "de-dimensional", "de-streaming"],
-        planned: [
-          { title: "Capstone: mobile-money analytics pipeline", summary: "Build an end-to-end pipeline from raw transactions to a daily report." },
-        ],
       },
     ],
   },

@@ -105,7 +105,7 @@ def run(con, client):
     return len(records)
 `;
 
-const ORCHESTRATOR = `from graphlib import TopologicalSorter
+export const ORCHESTRATOR = `from graphlib import TopologicalSorter
 
 
 def run_dag(deps, tasks, retries=1):

@@ -8,8 +8,9 @@ const columns = [
     links: [
       { href: "/tracks", label: "Choose a track" },
       { href: "/tracks/python-essentials", label: "Python Essentials" },
-      { href: "/tracks/ai-ml", label: "AI & Machine Learning" },
       { href: "/tracks/data-science", label: "Data Science" },
+      { href: "/tracks/data-engineering", label: "Data Engineering" },
+      { href: "/tracks/ai-ml", label: "AI & Machine Learning" },
       { href: "/placement/python-essentials", label: "Python placement check" },
     ],
   },
