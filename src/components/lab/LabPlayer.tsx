@@ -81,11 +81,11 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
     if (isLast) {
       markLabComplete(lab.slug);
       setFinished(true);
-      window.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0, behavior: "instant" });
       return;
     }
     setIndex(index + 1);
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   if (finished) return <LabComplete lab={lab} />;
@@ -96,7 +96,7 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
         done={done}
         onStart={() => {
           setShowOverview(false);
-          window.scrollTo({ top: 0 });
+          window.scrollTo({ top: 0, behavior: "instant" });
         }}
       />
     );

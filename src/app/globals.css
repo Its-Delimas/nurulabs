@@ -69,6 +69,20 @@
   --font-mono: var(--font-jetbrains-mono);
 }
 
+/* Smooth scrolling for in-page links (e.g. the landing nav's #how, #why).
+   scroll-padding keeps targets clear of the fixed nav. Route changes still
+   jump straight to the top (data-scroll-behavior="smooth" on <html>). */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
