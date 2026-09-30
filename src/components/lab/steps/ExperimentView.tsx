@@ -100,6 +100,8 @@ const DagRunner = dynamic<WidgetProps>(() => import("../widgets/DagRunner"), { l
 const QualityRules = dynamic<WidgetProps>(() => import("../widgets/QualityRules"), { loading, ssr: false });
 const TestMutants = dynamic<WidgetProps>(() => import("../widgets/TestMutants"), { loading, ssr: false });
 const VolumeMonitor = dynamic<WidgetProps>(() => import("../widgets/VolumeMonitor"), { loading, ssr: false });
+const PartitionPruner = dynamic<WidgetProps>(() => import("../widgets/PartitionPruner"), { loading, ssr: false });
+const ScdHistory = dynamic<WidgetProps>(() => import("../widgets/ScdHistory"), { loading, ssr: false });
 
 const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "variable-boxes": VariableBoxes,
@@ -190,6 +192,8 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "quality-rules": QualityRules,
   "test-mutants": TestMutants,
   "volume-monitor": VolumeMonitor,
+  "partition-pruner": PartitionPruner,
+  "scd-history": ScdHistory,
 };
 
 /** How much play before the takeaway is revealed. */

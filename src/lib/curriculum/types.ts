@@ -120,7 +120,9 @@ export type WidgetId =
   | "dag-runner"
   | "quality-rules"
   | "test-mutants"
-  | "volume-monitor";
+  | "volume-monitor"
+  | "partition-pruner"
+  | "scd-history";
 
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";
