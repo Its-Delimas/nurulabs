@@ -60,42 +60,72 @@ export default function PlacementCheck({ track }: { track: Track }) {
   if (phase === "intro") {
     const already = passedPlacement(track, progress);
     return (
-      <div className="max-w-3xl py-6">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime text-onlime">
-          <ClipboardCheck size={22} />
-        </span>
-        <p className="eyebrow mt-6 text-lime-deep">Placement check</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink">
-          Already know {track.shortName}?
-        </h1>
-        <p className="mt-4 leading-relaxed text-ink/65">
-          If you&apos;ve written {track.shortName} before, you don&apos;t have to sit through {track.name}.
-          Answer {questions.length} questions covering the whole track — get {needed} right and you can enroll
-          straight into {unlocks.map((t) => t.name).join(" or ") || "the next track"}.
-        </p>
-        <ul className="mt-6 space-y-2 text-sm text-ink/60">
-          <li>• Mostly &ldquo;what does this code print?&rdquo; — read carefully, there&apos;s no time limit.</li>
-          <li>• It doesn&apos;t mark any labs complete. You can still open {track.name} any time later.</li>
-          <li>• Wrong answers point you to the exact lab that covers them.</li>
-        </ul>
-        {already && (
-          <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-lime-soft px-4 py-2.5 text-sm font-semibold text-lime-deep">
-            <Check size={15} /> You&apos;ve already passed this check.
-          </p>
-        )}
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setPhase("quiz")}
-            className="inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-paper"
-          >
-            Start the check
-            <ArrowRight size={16} />
-          </button>
-          <Link href="/tracks" className="text-sm font-semibold text-ink/55 hover:text-ink">
-            Back to tracks
-          </Link>
-        </div>
+      <div>
+        <section className="overflow-hidden rounded-[28px] bg-paper ring-1 ring-ink/10">
+          <div className="grid gap-10 p-7 md:p-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime text-onlime">
+                <ClipboardCheck size={22} />
+              </span>
+              <p className="eyebrow mt-6 text-lime-deep">Placement check · {track.name}</p>
+              <h1 className="mt-2 font-display text-4xl font-semibold leading-tight tracking-tight text-ink md:text-5xl">
+                Already know {track.shortName}?
+              </h1>
+              <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink/65">
+                If you&apos;ve written {track.shortName} before, you don&apos;t have to sit through {track.name}. Pass this check and go
+                straight to {unlocks.map((t) => t.name).join(", ").replace(/, ([^,]*)$/, " or $1") || "the next track"}.
+              </p>
+              {already && (
+                <p className="mt-6 inline-flex items-center gap-2 rounded-xl bg-lime-soft px-4 py-2.5 text-sm font-semibold text-lime-deep">
+                  <Check size={15} /> You&apos;ve already passed this check.
+                </p>
+              )}
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPhase("quiz")}
+                  className="inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime"
+                >
+                  {already ? "Take it again" : "Start the check"}
+                  <ArrowRight size={16} />
+                </button>
+                <Link href={`/tracks/${track.slug}`} className="text-sm font-semibold text-ink/55 hover:text-ink">
+                  See the {track.name} syllabus instead
+                </Link>
+              </div>
+            </div>
+            <dl className="grid grid-cols-3 gap-px self-start overflow-hidden rounded-2xl bg-ink/10 lg:grid-cols-1">
+              {[
+                ["Questions", String(questions.length), "covering the whole track"],
+                ["To pass", `${needed} of ${questions.length}`, "about 80% right"],
+                ["Time limit", "None", "read each one carefully"],
+              ].map(([label, value, note]) => (
+                <div key={label} className="bg-cream px-5 py-4">
+                  <dt className="text-xs font-medium text-ink/50">{label}</dt>
+                  <dd className="mt-1 font-display text-2xl font-semibold text-ink">{value}</dd>
+                  <dd className="mt-0.5 hidden text-xs text-ink/45 sm:block">{note}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <p className="eyebrow text-lime-deep">How it works</p>
+          <ol className="mt-5 grid gap-4 md:grid-cols-3">
+            {[
+              ["Read the code", "Most questions show a few lines of Python and ask what they print. No running, no tricks."],
+              ["See where you stand", "Every wrong answer links to the exact lab that teaches it, so you know what to brush up on."],
+              ["Move on, or don't", "Passing lets you enroll in the next track. It doesn't mark any labs complete, and you can open them any time."],
+            ].map(([title, body], i) => (
+              <li key={title} className="rounded-2xl bg-paper p-6 ring-1 ring-ink/10">
+                <span className="font-display text-3xl font-semibold text-lime-deep/40">{String(i + 1).padStart(2, "0")}</span>
+                <p className="mt-3 font-display text-lg font-semibold text-ink">{title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink/60">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
       </div>
     );
   }

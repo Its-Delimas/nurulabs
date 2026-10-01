@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Lock, X } from "lucide-react";
@@ -225,51 +226,96 @@ function LockedLab({
 }) {
   const track = trackOfLab(lab.slug, progress);
   const current = enrolledTrack(progress);
+  const notEnrolled = access.reason === "not-enrolled";
+
   return (
-    <div className="flex min-h-screen flex-col bg-cream">
-      <header className="border-b border-ink/10 bg-paper px-6 py-4">
-        <Logo />
-      </header>
-      <main className="flex w-full flex-1 flex-col items-start justify-center px-6 md:px-10 xl:px-16 py-20">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime text-onlime">
-          <Lock size={22} />
-        </span>
-        <h1 className="mt-6 font-display text-3xl font-semibold text-ink">{lab.title} is locked</h1>
-        {access.reason === "not-enrolled" ? (
-          <>
-            <p className="mt-3 text-ink/60">
-              {current
-                ? `This lab is part of ${access.track.name}. You're enrolled in ${current.name} — one track at a time, so finish it first.`
-                : `This lab is part of ${access.track.name}. Enroll in a track to start learning.`}
-            </p>
-            <Link
-              href={current ? "/dashboard" : `/tracks/${access.track.slug}`}
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-paper"
-            >
-              {current ? `Continue ${current.name}` : `See ${access.track.name}`}
-              <ArrowRight size={16} />
-            </Link>
-          </>
-        ) : (
-          <>
-            <p className="mt-3 text-ink/60">
-              Labs build on each other. Finish <span className="font-semibold text-ink">{access.first.title}</span>{" "}
-              first — this one uses what you&apos;ll learn there.
-            </p>
-            <Link
-              href={`/labs/${access.first.slug}`}
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-paper"
-            >
-              Open {access.first.title}
-              <ArrowRight size={16} />
-            </Link>
-          </>
-        )}
+    <div className="flex min-h-screen flex-col bg-cream text-ink">
+      <header className="flex items-center gap-4 border-b border-ink/10 bg-paper px-6 py-3 md:px-10 xl:px-16">
+        <Logo withWordmark={false} />
         {track && (
-          <Link href={`/tracks/${track.slug}`} className="mt-4 text-sm font-medium text-ink/50 hover:text-ink">
-            View the {track.name} syllabus
+          <Link href={`/tracks/${track.slug}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink">
+            <ArrowLeft size={15} />
+            {track.name} syllabus
           </Link>
         )}
+      </header>
+
+      <main className="w-full flex-1 px-6 py-8 md:px-10 md:py-10 xl:px-16">
+        <section className="overflow-hidden rounded-[28px] bg-paper ring-1 ring-ink/10">
+          <div className={`relative isolate flex items-end ${lab.cover ? "min-h-[15rem] md:min-h-[19rem]" : ""}`}>
+            {lab.cover && (
+              <>
+                <Image src={lab.cover.src} alt={lab.cover.alt} fill priority sizes="100vw" className="-z-20 object-cover object-[center_40%] grayscale" />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
+              </>
+            )}
+            <div className={`w-full p-7 md:p-10 ${lab.cover ? "text-white" : ""}`}>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1 text-xs font-semibold text-onlime">
+                <Lock size={12} /> Locked
+              </span>
+              <p className={`eyebrow mt-4 ${lab.cover ? "text-white/70" : "text-ink/50"}`}>
+                {labLabel(lab, track)} · {lab.subject}
+              </p>
+              <h1 className="mt-2 max-w-4xl font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">{lab.title}</h1>
+            </div>
+          </div>
+        </section>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <section className="rounded-3xl bg-paper p-7 ring-1 ring-ink/10 md:p-8">
+            <p className="eyebrow text-lime-deep">{notEnrolled ? "Not in your track" : "One step at a time"}</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">
+              {notEnrolled
+                ? current
+                  ? `This lab is part of ${access.track.name}`
+                  : `Enroll in ${access.track.name} to open this lab`
+                : `Finish ${access.first.title} first`}
+            </h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-ink/60">
+              {notEnrolled
+                ? current
+                  ? `You're enrolled in ${current.name}. Nurulabs works one track at a time, so every lab builds on the last. Finish ${current.name}${current.placement ? ", or pass its placement check," : ""} and you can move on to ${access.track.name}.`
+                  : `Labs open as you work through a track's syllabus, starting from the first one. The track page shows what you need to enroll.`
+                : "Labs build on each other, and this one uses what you'll learn there. It opens as soon as you've finished it."}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {notEnrolled ? (
+                <Link
+                  href={current ? "/dashboard" : `/tracks/${access.track.slug}`}
+                  className="inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-paper"
+                >
+                  {current ? `Continue ${current.name}` : `See ${access.track.name}`}
+                  <ArrowRight size={16} />
+                </Link>
+              ) : (
+                <Link href={`/labs/${access.first.slug}`} className="inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime">
+                  Open {access.first.title}
+                  <ArrowRight size={16} />
+                </Link>
+              )}
+              {track && (
+                <Link href={`/tracks/${track.slug}`} className="inline-flex items-center rounded-md px-6 py-3 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-cream">
+                  View the syllabus
+                </Link>
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-3xl bg-paper p-7 ring-1 ring-ink/10 md:p-8">
+            <p className="eyebrow text-ink/45">What you&apos;ll learn here</p>
+            <p className="mt-3 leading-relaxed text-ink/70">{lab.summary}</p>
+            <ul className="mt-5 space-y-2.5">
+              {lab.skills.map((s) => (
+                <li key={s} className="flex items-start gap-3 text-sm text-ink/75">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cream text-ink/40">
+                    <Lock size={10} />
+                  </span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </main>
     </div>
   );
