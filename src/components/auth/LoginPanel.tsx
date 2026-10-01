@@ -3,15 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, Loader2, Mail } from "lucide-react";
+import { ArrowRight, Loader2, LogOut, Mail, Sparkles } from "lucide-react";
 import { authEnabled, safeNext } from "@/lib/supabase/config";
 import { displayName, sendSignInLink, signInWithGoogle, signOut, useAuth } from "@/lib/auth";
-
-const BENEFITS = [
-  "Pick up where you left off on any phone or computer",
-  "Keep your labs, milestones and streak if you clear your browser",
-  "Still free, with no card and no fees",
-];
 
 function GoogleMark() {
   return (
@@ -55,98 +49,123 @@ export default function LoginPanel() {
   }
 
   return (
-    <section className="grid overflow-hidden rounded-[28px] bg-paper ring-1 ring-ink/10 lg:grid-cols-2">
-      <div className="bg-cream/60 p-7 md:p-10">
-        <p className="eyebrow text-lime-deep">Your account</p>
-        <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink md:text-4xl">Save your progress</h1>
-        <p className="mt-3 max-w-md leading-relaxed text-ink/60">
-          You can learn without an account: progress is kept in this browser. Sign in to keep it safe and take it with you.
+    <div>
+      {!authEnabled ? (
+        <div>
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lime text-onlime">
+            <Sparkles size={22} />
+          </span>
+          <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">Accounts are coming soon</h1>
+          <p className="mt-3 leading-relaxed text-ink/60">
+            You don&apos;t need one to learn. Your progress is saved in this browser, and nothing will be lost when accounts arrive.
+          </p>
+          <Link href="/dashboard" className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-ink px-5 py-3.5 text-sm font-semibold text-paper">
+            Go to my learning <ArrowRight size={16} />
+          </Link>
+          <Link href="/tracks" className="mt-3 inline-flex w-full items-center justify-center rounded-md px-5 py-3.5 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-paper">
+            Browse the tracks
+          </Link>
+        </div>
+      ) : !ready ? (
+        <p className="flex items-center gap-2 text-sm text-ink/55">
+          <Loader2 size={16} className="animate-spin" /> Checking your session…
         </p>
-        <ul className="mt-7 space-y-3">
-          {BENEFITS.map((b) => (
-            <li key={b} className="flex items-start gap-3 text-sm text-ink/75">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lime text-onlime">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              {b}
-            </li>
-          ))}
-        </ul>
-      </div>
+      ) : user ? (
+        <div>
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-lime font-display text-xl font-semibold text-onlime">
+            {displayName(user).charAt(0).toUpperCase()}
+          </span>
+          <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">You&apos;re signed in</h1>
+          <p className="mt-3 text-ink/60">
+            as <strong className="text-ink">{displayName(user)}</strong>
+            {user.email && displayName(user) !== user.email ? ` (${user.email})` : ""}. Your progress is saved to your account.
+          </p>
+          <Link href={next} className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-md bg-ink px-5 py-3.5 text-sm font-semibold text-paper">
+            Continue learning <ArrowRight size={16} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => signOut()}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md px-5 py-3.5 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-paper"
+          >
+            <LogOut size={15} /> Sign out
+          </button>
+        </div>
+      ) : sentTo ? (
+        <div>
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-soft text-lime-deep">
+            <Mail size={24} />
+          </span>
+          <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">Check your email</h1>
+          <p className="mt-3 leading-relaxed text-ink/60">
+            We sent a sign-in link to <strong className="text-ink">{sentTo}</strong>. Open it on this device to finish signing in.
+          </p>
+          <p className="mt-4 rounded-2xl bg-paper px-4 py-3 text-sm text-ink/60 ring-1 ring-ink/10">
+            It can take a minute to arrive. If it doesn&apos;t, check your spam or promotions folder.
+          </p>
+          <button type="button" onClick={() => setSentTo(null)} className="mt-6 text-sm font-semibold text-ink underline-offset-4 hover:underline">
+            Use a different email
+          </button>
+        </div>
+      ) : (
+        <div>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Sign in to Nurulabs</h1>
+          <p className="mt-2 text-ink/60">New here? This creates your account. No password needed.</p>
 
-      <div className="p-7 md:p-10">
-        {!authEnabled ? (
-          <div className="max-w-sm">
-            <h2 className="font-display text-xl font-semibold text-ink">Accounts are coming soon</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink/60">For now, your progress is saved in this browser. Keep learning: nothing will be lost when accounts arrive.</p>
-            <Link href="/dashboard" className="mt-6 inline-flex rounded-md bg-ink px-5 py-3 text-sm font-semibold text-paper">Go to my learning</Link>
-          </div>
-        ) : !ready ? (
-          <p className="flex items-center gap-2 text-sm text-ink/55"><Loader2 size={16} className="animate-spin" /> Checking your session…</p>
-        ) : user ? (
-          <div className="max-w-sm">
-            <h2 className="font-display text-xl font-semibold text-ink">You&apos;re signed in</h2>
-            <p className="mt-2 text-sm text-ink/60">
-              as <strong className="text-ink">{displayName(user)}</strong>{user.email ? ` (${user.email})` : ""}.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={next} className="rounded-md bg-ink px-5 py-3 text-sm font-semibold text-paper">Continue learning</Link>
-              <button type="button" onClick={() => signOut()} className="rounded-md px-5 py-3 text-sm font-semibold text-ink ring-1 ring-ink/15 hover:bg-cream">Sign out</button>
-            </div>
-          </div>
-        ) : sentTo ? (
-          <div className="max-w-sm">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-lime-soft text-lime-deep"><Mail size={20} /></span>
-            <h2 className="mt-4 font-display text-xl font-semibold text-ink">Check your email</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink/60">
-              We sent a sign-in link to <strong className="text-ink">{sentTo}</strong>. Open it on this device to finish signing in. It can take a minute; check spam too.
-            </p>
-            <button type="button" onClick={() => setSentTo(null)} className="mt-5 text-sm font-semibold text-ink underline-offset-4 hover:underline">Use a different email</button>
-          </div>
-        ) : (
-          <div className="max-w-sm">
-            <h2 className="font-display text-xl font-semibold text-ink">Sign in or create an account</h2>
-            <p className="mt-1 text-sm text-ink/55">One step. No password to remember.</p>
+          <button
+            type="button"
+            onClick={google}
+            disabled={busy !== null}
+            className="mt-8 flex w-full items-center justify-center gap-3 rounded-md bg-paper px-5 py-3.5 text-sm font-semibold text-ink ring-1 ring-ink/20 transition-colors hover:ring-ink/40 disabled:opacity-60"
+          >
+            {busy === "google" ? <Loader2 size={18} className="animate-spin" /> : <GoogleMark />}
+            Continue with Google
+          </button>
 
+          <div className="my-6 flex items-center gap-3 text-xs text-ink/40">
+            <span className="h-px flex-1 bg-ink/10" /> or use your email <span className="h-px flex-1 bg-ink/10" />
+          </div>
+
+          <form onSubmit={emailLink} className="space-y-3">
+            <label htmlFor="email" className="block text-sm font-medium text-ink/75">
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-md bg-paper px-4 py-3.5 text-sm text-ink ring-1 ring-ink/20 outline-none placeholder:text-ink/35 focus:ring-2 focus:ring-lime-deep"
+            />
             <button
-              type="button"
-              onClick={google}
-              disabled={busy !== null}
-              className="mt-6 flex w-full items-center justify-center gap-3 rounded-md bg-paper px-5 py-3 text-sm font-semibold text-ink ring-1 ring-ink/20 transition-colors hover:bg-cream disabled:opacity-60"
+              type="submit"
+              disabled={busy !== null || !email.trim()}
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-5 py-3.5 text-sm font-semibold text-paper disabled:opacity-50"
             >
-              {busy === "google" ? <Loader2 size={18} className="animate-spin" /> : <GoogleMark />}
-              Continue with Google
+              {busy === "email" && <Loader2 size={16} className="animate-spin" />}
+              Email me a sign-in link
             </button>
+          </form>
 
-            <div className="my-6 flex items-center gap-3 text-xs text-ink/40">
-              <span className="h-px flex-1 bg-ink/10" /> or use your email <span className="h-px flex-1 bg-ink/10" />
-            </div>
+          <p className="mt-8 text-sm text-ink/55">
+            Prefer not to?{" "}
+            <Link href="/dashboard" className="font-semibold text-ink underline-offset-4 hover:underline">
+              Keep learning without an account
+            </Link>
+            . Progress stays in this browser.
+          </p>
+        </div>
+      )}
 
-            <form onSubmit={emailLink} className="space-y-3">
-              <label htmlFor="email" className="block text-sm font-medium text-ink/75">Email address</label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                inputMode="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-md bg-paper px-4 py-3 text-sm text-ink ring-1 ring-ink/20 outline-none placeholder:text-ink/35 focus:ring-2 focus:ring-lime-deep"
-              />
-              <button type="submit" disabled={busy !== null || !email.trim()} className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-5 py-3 text-sm font-semibold text-paper disabled:opacity-60">
-                {busy === "email" && <Loader2 size={16} className="animate-spin" />}
-                Email me a sign-in link
-              </button>
-            </form>
-          </div>
-        )}
-
-        {error && (
-          <p role="alert" className="mt-5 max-w-sm rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{error}</p>
-        )}
-      </div>
-    </section>
+      {error && (
+        <p role="alert" className="mt-6 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

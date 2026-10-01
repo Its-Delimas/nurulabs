@@ -39,6 +39,8 @@ Photos from Unsplash, used under the [Unsplash License](https://unsplash.com/lic
 | city-dusk.webp | Malik Buraimoh | https://unsplash.com/photos/hF5bIFQ62Hw |
 | graduation-nairobi.webp | Oscar Omondi — Nairobi, Kenya | https://unsplash.com/photos/BZbPR9JbalA |
 | learner-library.webp | Makmot Robin | https://unsplash.com/photos/APU7etSy58k |
+| signin-learner.webp | Kagou Dicko — Abuja, Nigeria | https://unsplash.com/photos/uABuB3onLW0 |
+| lost-page.webp | Oluwatobi Fasipe | https://unsplash.com/photos/e8etaVo85AY |
 
 The hero's Africa-shaped crop uses hero-students.webp and circle-class.webp.
 

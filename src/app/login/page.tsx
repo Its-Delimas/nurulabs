@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import AppShell from "@/components/dashboard/AppShell";
+import AuthLayout from "@/components/auth/AuthLayout";
 import LoginPanel from "@/components/auth/LoginPanel";
 
 export const metadata: Metadata = { title: "Sign in — Nurulabs", robots: { index: false } };
 
 export default function LoginPage() {
   return (
-    <AppShell>
+    <AuthLayout>
       <Suspense>
         <LoginPanel />
       </Suspense>
-    </AppShell>
+    </AuthLayout>
   );
 }
