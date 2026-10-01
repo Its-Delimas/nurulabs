@@ -245,22 +245,45 @@ print(round(sum(g * w for g, w in zip(gaps, weights)), 2))`,
     },
     {
       id: "naive",
-      kind: "code",
-      title: "The naive gap — and why it's suspicious",
-      brief: "Store the difference in mean score between students with and without tuition in `naive_gap`, and the share of students taking tuition in each income band in `tuition_rate` (a Series).",
-      starterCode: LOAD_STUDENTS + `
-`,
-      checks: [
-        { expr: "abs(naive_gap - (st.loc[st['tuition'] == 1, 'score'].mean() - st.loc[st['tuition'] == 0, 'score'].mean())) < 1e-12", label: "`naive_gap`", failHint: "Mean score where `tuition == 1` minus where `tuition == 0`." },
-        { expr: "np.allclose(tuition_rate.sort_index(), st.groupby('income_band')['tuition'].mean().sort_index())", label: "`tuition_rate` per band", failHint: "`st.groupby(\"income_band\")[\"tuition\"].mean()`" },
+      kind: "scenario",
+      title: "Is the 9-point gap real?",
+      situation: [
+        "An education charity plans to pay for private tuition for 500 students, citing your survey: students with tuition score **62.7** on average, those without **53.8**. Before they commit the money, they ask whether the gap is really tuition's doing.",
+        "You split the survey by household income and get the table below.",
       ],
-      hints: ["The mean of a 0/1 column is a rate."],
-      why: "Only about one low-income student in ten takes tuition, against most high-income students. Treatment wasn't random — it followed income. That's the warning sign of confounding.",
-      solution: LOAD_STUDENTS + `
-naive_gap = st.loc[st["tuition"] == 1, "score"].mean() - st.loc[st["tuition"] == 0, "score"].mean()
-tuition_rate = st.groupby("income_band")["tuition"].mean()
-print(round(naive_gap, 2))
-print(tuition_rate.round(3))`,
+      exhibit: {
+        caption: "Survey of 1,200 secondary students. Score out of 100.",
+        table: {
+          columns: ["Income band", "Students", "Take tuition", "Average score"],
+          rows: [
+            ["Low", 552, "10%", "49.0"],
+            ["Middle", 451, "33%", "59.4"],
+            ["High", 197, "63%", "69.5"],
+          ],
+        },
+      },
+      question: "What does this table tell you about the 9-point gap?",
+      options: [
+        {
+          text: "Nothing new: tuition students score 9 points more, so tuition adds about 9 points.",
+          feedback: "The table shows tuition isn't spread evenly: richer students take it far more often, and they score higher anyway. The 9 points mixes the two.",
+        },
+        {
+          text: "Income drives both who takes tuition and how students score, so part of the gap is likely income, not tuition. Compare students within each income band before advising.",
+          feedback: "Yes. Income is a confounder: it raises the chance of tuition and, separately, the score. Comparing like with like is the next step, and that's what you'll do in code.",
+          best: true,
+        },
+        {
+          text: "Tuition must be useless, since high-income students would have scored well without it.",
+          feedback: "Too far the other way. Confounding means the naive gap is unreliable, not that the true effect is zero. You need to measure it within groups.",
+        },
+        {
+          text: "Only fund high-income students, because they score highest.",
+          feedback: "That confuses who scores highest with who would benefit from tuition. The charity's question is about the effect of tuition, not who is already doing well.",
+        },
+      ],
+      debrief:
+        "When people choose their own \"treatment\", check whether the choice follows something that also affects the outcome. Here only one low-income student in ten takes tuition, against six in ten high-income students. That's the warning sign: the raw gap compares different kinds of families, so any honest estimate has to hold income fixed.",
     },
     {
       id: "stratify",

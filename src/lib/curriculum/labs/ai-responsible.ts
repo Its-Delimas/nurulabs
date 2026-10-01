@@ -30,8 +30,9 @@ export const fairnessLab: Lab = {
   subject: "Who does the model fail?",
   summary:
     "A digital lender's model never sees where applicants live — yet it turns down rural customers who repay just as reliably. Measure the bias, find where it comes from, and reduce it.",
-  minutes: 45,
+  minutes: 40,
   kind: "lab",
+  format: "thinking",
   packages: ["numpy", "pandas", "scikit-learn"],
   files: LOANS,
   skills: [
@@ -88,24 +89,44 @@ approved_repayers = approved[test["repaid"] == 1]
     },
     {
       id: "approval-rates",
-      kind: "code",
-      title: "Audit the approval rates",
-      brief: "Train `model` — a pipeline of `StandardScaler()` and `LogisticRegression()` — on the training data using only the `F4` features. On the test set, make `approved`: a boolean array, True where the probability of repaying is at least 0.5. Then store the approval rate per region as a Series `rates` indexed by region.",
-      starterCode: LOAD + `
-`,
-      checks: [
-        { expr: "type(model).__name__ == 'Pipeline' and list(model.feature_names_in_) == F4", label: "`model` trained on the F4 features", failHint: "`model = make_pipeline(StandardScaler(), LogisticRegression()).fit(train[F4], train[\"repaid\"])`" },
-        { expr: "np.array_equal(np.asarray(approved), model.predict_proba(test[F4])[:, 1] >= 0.5)", label: "`approved` for every test applicant", failHint: "`approved = model.predict_proba(test[F4])[:, 1] >= 0.5`" },
-        { expr: "abs(rates['rural'] - np.asarray(approved)[test['region'].values == 'rural'].mean()) < 1e-9 and abs(rates['urban'] - np.asarray(approved)[test['region'].values == 'urban'].mean()) < 1e-9", label: "`rates` per region", failHint: "`rates = pd.Series(approved, index=test.index).groupby(test[\"region\"]).mean()`" },
+      kind: "scenario",
+      title: "Is the model unfair?",
+      situation: [
+        "The lender's model scores applicants on recorded income, time as a customer, existing loans and age. It never sees region. On 180 test applicants, at the usual 0.5 threshold, you get the figures below.",
+        "The head of credit says: \"Rural people are approved less, but that's just because they're riskier. The model doesn't even know who's rural.\"",
       ],
-      hints: ["Wrap `approved` in a Series with the test index so you can group it by `test[\"region\"]`."],
-      why: "Urban applicants are approved about 84% of the time, rural ones about 55% — and the model was never told anyone's region. Before concluding it's unfair, though, check whether rural applicants actually repay less.",
-      solution: LOAD + `
-model = make_pipeline(StandardScaler(), LogisticRegression()).fit(train[F4], train["repaid"])
-approved = model.predict_proba(test[F4])[:, 1] >= 0.5
-rates = pd.Series(approved, index=test.index).groupby(test["region"]).mean()
-print(rates.round(3))
-print(test.groupby("region")["repaid"].mean().round(3))`,
+      exhibit: {
+        caption: "Test set, threshold 0.5. Repayment is what actually happened.",
+        table: {
+          columns: ["Region", "Applicants", "Approved", "Actually repaid"],
+          rows: [
+            ["Urban", 113, "84%", "59%"],
+            ["Rural", 67, "55%", "72%"],
+          ],
+        },
+      },
+      question: "How do you respond?",
+      options: [
+        {
+          text: "Agree: the model can't discriminate by region if region isn't one of its inputs.",
+          feedback: "Other inputs can carry region with them. If rural income is mostly informal and unrecorded, \"recorded income\" is partly a stand-in for where people live.",
+        },
+        {
+          text: "Disagree: rural applicants repaid more often, so lower approval isn't explained by risk. Check how often people who did repay were approved in each region.",
+          feedback: "Yes. The data contradicts \"riskier\", and the fair comparison is among people who repaid: were equally good borrowers treated alike? That's equal opportunity, which you'll measure next.",
+          best: true,
+        },
+        {
+          text: "The fix is simple: approve exactly the same share in both regions.",
+          feedback: "Equal approval rates (demographic parity) is one definition of fairness, but forcing it ignores who actually repays. First find out where the model goes wrong.",
+        },
+        {
+          text: "The test set is too small to say anything, so leave the model as it is.",
+          feedback: "180 applicants is small, so be careful with decimals, but a 29-point approval gap running against repayment is a strong signal. \"Not enough data\" isn't a reason to stop looking.",
+        },
+      ],
+      debrief:
+        "Removing a sensitive column doesn't remove its influence: other features can act as proxies. Start a fairness audit by comparing outcomes with what really happened, group by group, and choose the fairness definition that fits the decision. For lending, \"are good borrowers approved equally?\" is usually the right first question.",
     },
     {
       id: "equal-opportunity",
@@ -134,38 +155,44 @@ print(tpr.round(3), round(gap, 3))`,
     },
     {
       id: "better-data",
-      kind: "code",
-      challenge: true,
-      title: "Fix the data, not just the model",
-      brief: "Mobile-money activity reflects informal income too. Train a second pipeline on `F5` (which adds `mobile_money_txns`). Store both models' test accuracy (`acc4`, `acc5`) and their equal-opportunity gaps (`gap4`, `gap5`), all at threshold 0.5.",
-      starterCode: LOAD + `
-def audit(model, features):
-    approved = pd.Series(model.predict_proba(test[features])[:, 1] >= 0.5, index=test.index)
-    # return (accuracy, urban TPR minus rural TPR)
-    pass
-
-`,
-      checks: [
-        { expr: `abs(acc4 - ${SK("pipeline")}.make_pipeline(${SK("preprocessing")}.StandardScaler(), ${SK("linear_model")}.LogisticRegression()).fit(train[F4], train['repaid']).score(test[F4], test['repaid'])) < 1e-9`, label: "`acc4` from the F4 model", failHint: "Accuracy is `(approved == (test[\"repaid\"] == 1)).mean()` — or `model.score(test[F4], test[\"repaid\"])`." },
-        { expr: "gap5 < gap4 - 0.1", label: "The better data shrinks the gap", failHint: "Train the second model on `F5` and measure its gap the same way." },
-        { expr: "acc5 > acc4", label: "…and improves accuracy too", failHint: "Both accuracies should be measured on the test set at threshold 0.5." },
+      kind: "scenario",
+      title: "Choose the fix",
+      situation: [
+        "Your audit shows the gap clearly: nearly all urban applicants who repaid were approved, but only about six in ten rural ones. The lender wants to fix it before scaling to a million customers.",
+        "The data team tried one option already: adding each applicant's **mobile-money activity**, which captures informal income that never shows up on a payslip.",
       ],
-      hints: ["Fill in `audit` so it returns both numbers, then call it once for each model."],
-      why: "Better data made the model both **more accurate and fairer**: the gap drops from about 38 to 22 points. Fairness problems often come from what the data fails to see. The gap isn't gone, though — there's still work (and a decision) left, which the capstone takes on.",
-      solution: LOAD + `
-def audit(model, features):
-    approved = pd.Series(model.predict_proba(test[features])[:, 1] >= 0.5, index=test.index)
-    acc = (approved == (test["repaid"] == 1)).mean()
-    repaid = test["repaid"] == 1
-    tpr = approved[repaid].groupby(test.loc[repaid, "region"]).mean()
-    return acc, tpr["urban"] - tpr["rural"]
-
-m4 = make_pipeline(StandardScaler(), LogisticRegression()).fit(train[F4], train["repaid"])
-m5 = make_pipeline(StandardScaler(), LogisticRegression()).fit(train[F5], train["repaid"])
-acc4, gap4 = audit(m4, F4)
-acc5, gap5 = audit(m5, F5)
-print(round(acc4, 3), round(gap4, 3))
-print(round(acc5, 3), round(gap5, 3))`,
+      exhibit: {
+        caption: "Test set, threshold 0.5. Equal-opportunity gap = urban minus rural approval rate among people who repaid.",
+        table: {
+          columns: ["Model", "Accuracy", "Repayers approved, urban", "Repayers approved, rural", "Gap"],
+          rows: [
+            ["Recorded income only", "68%", "98%", "60%", "38 points"],
+            ["+ mobile-money activity", "73%", "91%", "69%", "22 points"],
+          ],
+        },
+      },
+      question: "What do you recommend?",
+      options: [
+        {
+          text: "Drop recorded income from the model, since it's the proxy causing the problem.",
+          feedback: "Income is genuinely informative about repayment. Throwing it away costs accuracy for everyone, and other features may pick up the same pattern.",
+        },
+        {
+          text: "Keep the first model but use a lower approval threshold for rural applicants.",
+          feedback: "Separate thresholds can close the gap on paper, but treating applicants differently by region on purpose may be unlawful, and it hides the real problem: the data can't see rural income.",
+        },
+        {
+          text: "Adopt the mobile-money model, keep auditing the remaining 22-point gap, and write down which fairness measure you're tracking and why.",
+          feedback: "Yes. Better data made the model more accurate and fairer at the same time, and the remaining gap is a decision the lender must own openly, not a solved problem.",
+          best: true,
+        },
+        {
+          text: "Ship the first model now and fix fairness in the next version.",
+          feedback: "At a million customers, a 38-point gap means many reliable rural borrowers refused credit. A fix that improves accuracy too is already on the table.",
+        },
+      ],
+      debrief:
+        "Fairness problems often come from what the data fails to see, so the best fixes improve the data. Adjusting thresholds by group is a last resort with legal and ethical weight. And fairness work doesn't end with one fix: measure, decide which definition matters, document it, and keep monitoring. The capstone asks you to make that decision for real.",
     },
     {
       id: "explain-fairness",
@@ -345,15 +372,16 @@ export const privacyLab: Lab = {
   title: "Privacy & Data Ethics",
   subject: "Protecting the people in the data",
   summary:
-    "Removing names doesn't make data anonymous. Re-identify people in a \"de-identified\" dataset, then pseudonymise, generalise and suppress until it's safe to share.",
-  minutes: 40,
+    "Removing names doesn't make data anonymous. Re-identify people in a \"de-identified\" dataset, then decide what can safely be shared, and in what form.",
+  minutes: 35,
   kind: "lab",
+  format: "thinking",
   packages: ["numpy", "pandas"],
   files: LOANS,
   skills: [
     "Apply data-protection principles to ML projects",
     "Measure re-identification risk with k-anonymity",
-    "Pseudonymise, generalise and suppress data before sharing",
+    "Choose a safe way to share: pseudonymise, generalise, suppress or aggregate",
   ],
   steps: [
     {
@@ -391,39 +419,34 @@ print(t.groupby(["age_band", "region"]).size().min())`,
     },
     {
       id: "pseudonymise",
-      kind: "code",
-      title: "Pseudonymise the IDs",
-      brief:
-        "Make `shared`, a copy of `df` in which `applicant_id` is replaced by a `pid` column: the first 12 hex characters of the SHA-256 hash of `SALT + applicant_id`. The original `applicant_id` column must not appear in `shared`.",
-      starterCode: `import hashlib
-import pandas as pd
-
-df = pd.read_csv("loans.csv")
-SALT = "keep-this-secret-2026"      # stored separately from the data
-
-def pseudonym(applicant_id):
-    pass
-
-`,
-      checks: [
-        { expr: "pseudonym('A0001') == hashlib.sha256((SALT + 'A0001').encode()).hexdigest()[:12]", label: "`pseudonym` hashes salt + ID", failHint: "`hashlib.sha256((SALT + applicant_id).encode()).hexdigest()[:12]`" },
-        { expr: "'applicant_id' not in shared.columns and list(shared['pid']) == [pseudonym(i) for i in df['applicant_id']]", label: "`shared` has `pid` and no raw IDs", failHint: "`shared = df.assign(pid=df[\"applicant_id\"].map(pseudonym)).drop(columns=\"applicant_id\")`" },
-        { expr: "shared['pid'].is_unique", label: "Each person keeps a distinct pseudonym", failHint: "Use all of the ID in the hash, plus the salt." },
+      kind: "scenario",
+      title: "The researcher's request",
+      situation: [
+        "A university researcher emails the lender: \"We're studying whether mobile-money use predicts loan repayment. Could you send us your full applicant file, all 600 rows and every column? We'll sign whatever you need.\"",
+        "The file holds applicant IDs, age, gender, region, recorded income, mobile-money transactions, months as a customer, existing loans and whether each person repaid. Customers gave it to the lender to get a loan.",
       ],
-      hints: ["`.encode()` turns the string into bytes, which `hashlib` needs."],
-      why:
-        "The same person always gets the same `pid`, so records can still be linked across tables — but nobody without the salt can reverse it. That's **pseudonymisation**, not anonymisation: the law usually still treats it as personal data, because the other columns can re-identify people. Which you'll now measure.",
-      solution: `import hashlib
-import pandas as pd
-
-df = pd.read_csv("loans.csv")
-SALT = "keep-this-secret-2026"
-
-def pseudonym(applicant_id):
-    return hashlib.sha256((SALT + applicant_id).encode()).hexdigest()[:12]
-
-shared = df.assign(pid=df["applicant_id"].map(pseudonym)).drop(columns="applicant_id")
-print(shared.head())`,
+      question: "What's the right response?",
+      options: [
+        {
+          text: "Send the full file. It's for research, and they'll sign an agreement.",
+          feedback: "An agreement doesn't change why customers gave their data. Sending every column for a new purpose breaks purpose limitation and data minimisation, whatever the paperwork says.",
+        },
+        {
+          text: "Delete the applicant_id column and send the rest.",
+          feedback: "Removing the ID isn't anonymisation. As the experiment showed, age, gender, region and tenure together single out almost everyone.",
+        },
+        {
+          text: "Check there's a lawful basis for research use, then share only what the question needs (mobile-money activity, repayment and a few coarse controls), with IDs replaced by salted pseudonyms or, better, as aggregate tables.",
+          feedback: "Yes. Start from the legal basis, minimise to the research question, and choose the least revealing form that still answers it. Pseudonyms let records link without exposing who's who, though the data still counts as personal.",
+          best: true,
+        },
+        {
+          text: "Refuse. Personal data must never leave the company.",
+          feedback: "Data protection laws allow sharing with a lawful basis and proper safeguards. A blanket refusal blocks useful research that could be done safely.",
+        },
+      ],
+      debrief:
+        "Data protection laws such as Kenya's Data Protection Act share the same questions: is there a lawful basis, is this the purpose people agreed to, and is every column needed? Then pick the safest form that answers the question: aggregates first, then pseudonymised and coarsened rows. A **salted hash** of each ID (SHA-256 of a secret salt plus the ID) is a common way to pseudonymise: the same person always gets the same code, and nobody without the salt can reverse it.",
     },
     {
       id: "uniqueness",
@@ -467,39 +490,45 @@ df["tenure_years"] = (df["months_as_customer"] - 1) // 12 + 1`,
     },
     {
       id: "k-anon",
-      kind: "code",
-      challenge: true,
-      title: "Make it safe to share",
-      brief:
-        "Build `safe`: add `age_band` and `tenure_years` as above, drop `applicant_id`, `age` and `months_as_customer`, then **remove every row** whose (`age_band`, `gender`, `region`, `tenure_years`) group has fewer than 5 people. Store the number of rows removed in `removed`.",
-      starterCode: `import pandas as pd
-
-df = pd.read_csv("loans.csv")
-QUASI = ["age_band", "gender", "region", "tenure_years"]
-
-`,
-      checks: [
-        { expr: "not {'applicant_id', 'age', 'months_as_customer'} & set(safe.columns) and set(QUASI) <= set(safe.columns)", label: "Identifiers removed, generalised columns added", failHint: "Add the two bands, then `.drop(columns=[\"applicant_id\", \"age\", \"months_as_customer\"])`." },
-        { expr: "safe.groupby(QUASI).size().min() >= 5", label: "`safe` is 5-anonymous", failHint: "`sizes = g.groupby(QUASI)[\"gender\"].transform(\"size\")`, then keep `g[sizes >= 5]`." },
-        { expr: "removed == len(df) - len(safe) and removed < 0.2 * len(df)", label: "Only a small share of rows removed", failHint: "Generalise *before* suppressing, so few groups are too small." },
+      kind: "scenario",
+      title: "What should you release?",
+      situation: [
+        "The lender agrees to support the study. You test a release of row-level data with ages in decades and tenure in whole years, removing anyone whose (age band, gender, region, tenure) group has fewer than five people, so the table is **5-anonymous**.",
+        "It works, but you notice who gets removed.",
       ],
-      hints: ["Compute group sizes on the generalised table, then filter."],
-      why:
-        "Removing about 60 of 600 rows makes the table 5-anonymous: every row now hides among at least four others. Suppression without generalisation would have deleted almost everything. It's still not a guarantee — combining it with other data can leak — which is why the safest release is usually aggregates, or differential privacy.",
-      solution: `import pandas as pd
-
-df = pd.read_csv("loans.csv")
-QUASI = ["age_band", "gender", "region", "tenure_years"]
-
-g = df.assign(
-    age_band=df["age"] // 10 * 10,
-    tenure_years=(df["months_as_customer"] - 1) // 12 + 1,
-).drop(columns=["applicant_id", "age", "months_as_customer"])
-
-sizes = g.groupby(QUASI)["gender"].transform("size")
-safe = g[sizes >= 5]
-removed = len(df) - len(safe)
-print(removed, safe.groupby(QUASI).size().min())`,
+      exhibit: {
+        caption: "Loan applicants, before and after generalising and suppressing small groups (k = 5).",
+        table: {
+          columns: ["Region", "Applicants", "Rows kept", "Rows removed"],
+          rows: [
+            ["Urban", 355, 339, "16 (5%)"],
+            ["Rural", 245, 202, "43 (18%)"],
+            ["All", 600, 541, "59 (10%)"],
+          ],
+        },
+      },
+      question: "What do you do?",
+      options: [
+        {
+          text: "Release the 541 rows. It's 5-anonymous, so the job is done.",
+          feedback: "It's safer, but nearly one rural applicant in five has gone, against one urban applicant in twenty. Rural borrowers, whose income is mostly informal, are exactly the people a study of mobile money and repayment needs, so the release would bias the very question it's meant to answer.",
+        },
+        {
+          text: "Release all 600 rows with the coarsened columns but no suppression.",
+          feedback: "Coarsening alone leaves small groups that can still be singled out. Suppression is there for a reason.",
+        },
+        {
+          text: "Give the researchers aggregate tables (repayment rate by mobile-money band, region and age band) with any cell under five people hidden, and offer supervised access to row-level data on the lender's systems if they need more.",
+          feedback: "Yes. Aggregates answer the research question without exposing anyone, nobody is silently dropped, and the extra access stays under the lender's control.",
+          best: true,
+        },
+        {
+          text: "Add random noise to every income value, then release all rows.",
+          feedback: "Noise on one column doesn't protect against re-identification through the others. Done properly, noise belongs in the published statistics (differential privacy), not sprinkled on raw rows.",
+        },
+      ],
+      debrief:
+        "Privacy protections have side effects: suppression removes the people who stand out, who are often the minorities a study cares about. Before releasing rows, ask whether aggregates would do; if rows are needed, check who was removed, and consider controlled access instead of open release. For published statistics at scale, differential privacy gives mathematical guarantees.",
     },
     {
       id: "explain-privacy",

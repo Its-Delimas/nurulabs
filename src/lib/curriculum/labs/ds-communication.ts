@@ -39,8 +39,9 @@ export const dsStorytellingLab: Lab = {
   subject: "From analysis to message",
   summary:
     "Kenya went from 15% to 76% electricity access in two decades — the fastest gain among 20 African countries. Turn real World Bank data into a message a busy reader gets in one glance: the right numbers, in context, on an annotated chart.",
-  minutes: 40,
+  minutes: 35,
   kind: "lab",
+  format: "thinking",
   packages: ["numpy", "pandas", "matplotlib"],
   files: WB,
   skills: [
@@ -81,26 +82,48 @@ print(round(after - before, 1), round((after / before - 1) * 100))`,
       explanation: "A rise of 60.8 percentage points is a 400% increase (five times the starting level). Both are correct; mixing them up is one of the most common errors in reporting. For shares, \"percentage points\" is usually clearer.",
     },
     {
-      id: "facts",
-      kind: "code",
-      title: "Gather the key facts",
-      brief: "From `elec` (countries × years), store Kenya's access in 2000 and 2022 as `kenya_2000` and `kenya_2022`, the gain in points as `gain`, Kenya's rank among the countries in 2022 (1 = highest) as `rank_2022`, and Kenya's rural access in 2022 (from `wb`) as `rural_2022`.",
-      starterCode: LOAD_WB + `
-`,
-      checks: [
-        { expr: "kenya_2000 == elec.loc['Kenya', 2000] and kenya_2022 == elec.loc['Kenya', 2022] and abs(gain - (kenya_2022 - kenya_2000)) < 1e-9", label: "Kenya's 2000 and 2022 values and gain", failHint: "`elec.loc[\"Kenya\", 2000]` — years are integers." },
-        { expr: "rank_2022 == elec[2022].rank(ascending=False)['Kenya']", label: "`rank_2022`", failHint: "`elec[2022].rank(ascending=False)[\"Kenya\"]`" },
-        { expr: "rural_2022 == wb.loc[(wb['country'] == 'Kenya') & (wb['year'] == 2022), 'electricity_rural_pct'].iloc[0]", label: "`rural_2022`", failHint: "Filter `wb` to Kenya in 2022 and take `electricity_rural_pct`." },
+      id: "headline",
+      kind: "scenario",
+      title: "Pick the headline",
+      situation: [
+        "The Ministry of Energy has asked for one slide on electricity access. The minister will read the headline and glance at the chart, nothing more.",
+        "Your analysis of World Bank data for 20 African countries found the facts below.",
       ],
-      hints: ["`.rank(ascending=False)` gives 1 to the largest value."],
-      why: "Five facts carry the whole story: 15% → 76%, a 61-point gain, 5th of 20 countries in 2022, and 68% in rural areas. Everything else in a brief should support or qualify these.",
-      solution: LOAD_WB + `
-kenya_2000 = elec.loc["Kenya", 2000]
-kenya_2022 = elec.loc["Kenya", 2022]
-gain = kenya_2022 - kenya_2000
-rank_2022 = elec[2022].rank(ascending=False)["Kenya"]
-rural_2022 = wb.loc[(wb["country"] == "Kenya") & (wb["year"] == 2022), "electricity_rural_pct"].iloc[0]
-print(kenya_2000, kenya_2022, round(gain, 1), rank_2022, rural_2022)`,
+      exhibit: {
+        caption: "Electricity access, % of population. Source: World Bank, World Development Indicators.",
+        table: {
+          columns: ["", "2000", "2022", "Change (points)"],
+          rows: [
+            ["Kenya", "15%", "76%", "+61"],
+            ["Uganda", "7%", "47%", "+40"],
+            ["Tanzania", "9%", "46%", "+37"],
+            ["Ethiopia", "13%", "55%", "+42"],
+            ["Kenya, rural areas", "", "68%", ""],
+          ],
+        },
+      },
+      question: "Which headline should go on the slide?",
+      options: [
+        {
+          text: "\"Electricity access in East Africa, 2000–2022\"",
+          feedback: "That's a label, not a message. The minister has to work out the finding for themselves, and most won't.",
+        },
+        {
+          text: "\"Kenya's access rose fastest of 20 countries, from 15% to 76%, but nearly a third of rural Kenyans are still without power\"",
+          feedback: "Yes. It leads with the finding, gives the numbers that prove it, and carries the one caveat that matters for policy.",
+          best: true,
+        },
+        {
+          text: "\"Kenya's electricity access grew by 400%\"",
+          feedback: "True (76 is five times 15), but a percent change on a percentage confuses readers, and it leaves out the rural gap.",
+        },
+        {
+          text: "\"Kenya's Last Mile programme connected the country faster than its neighbours\"",
+          feedback: "The data shows how fast access rose, not why. Crediting one programme is a causal claim this analysis can't support.",
+        },
+      ],
+      debrief:
+        "A headline should state the finding in words a busy reader can repeat. Lead with the result, use the clearest unit (percentage points for shares), and include the caveat that changes the decision. Claims about causes need evidence about causes.",
     },
     {
       id: "annotated",
@@ -142,41 +165,77 @@ plt.xlim(2000, 2025)`,
     },
     {
       id: "brief",
-      kind: "code",
-      challenge: true,
-      title: "Write the brief with code",
-      brief:
-        "Build `brief`, a string of at most 90 words, using f-strings with your computed facts. It must include Kenya's 2022 and 2000 access (rounded to whole numbers), the gain in points, Kenya's rank, the rural figure, and name the source (\"World Bank\").",
-      starterCode: LOAD_WB + `kenya_2000 = elec.loc["Kenya", 2000]
-kenya_2022 = elec.loc["Kenya", 2022]
-gain = kenya_2022 - kenya_2000
-rank_2022 = int(elec[2022].rank(ascending=False)["Kenya"])
-n_countries = elec[2022].notna().sum()
-rural_2022 = wb.loc[(wb["country"] == "Kenya") & (wb["year"] == 2022), "electricity_rural_pct"].iloc[0]
-
-`,
-      checks: [
-        { expr: "all(s in brief for s in [f'{kenya_2022:.0f}', f'{kenya_2000:.0f}', f'{gain:.0f}', f'{rural_2022:.0f}'])", label: "The key numbers, written by code", failHint: "Use f-strings like `f\"{kenya_2022:.0f}%\"` so the numbers come from the data." },
-        { expr: "str(rank_2022) in brief and 'World Bank' in brief", label: "Rank and source named", failHint: "Include `rank_2022` and the words \"World Bank\"." },
-        { expr: "len(brief.split()) <= 90", label: "90 words or fewer", failHint: "Cut the method; keep the finding, the facts and one caveat." },
+      kind: "scenario",
+      title: "Which brief goes to the minister?",
+      situation: [
+        "Three colleagues drafted the short brief that goes with your slide. You can send one, unchanged, in the next ten minutes.",
       ],
-      hints: ["Start with the finding, then the comparison, then the caveat about rural areas."],
-      why: "A brief that updates itself when the World Bank publishes next year's figures, with no numbers typed by hand. Short enough to be read, specific enough to be useful, honest about who is still left out.",
-      solution: LOAD_WB + `kenya_2000 = elec.loc["Kenya", 2000]
-kenya_2022 = elec.loc["Kenya", 2022]
-gain = kenya_2022 - kenya_2000
-rank_2022 = int(elec[2022].rank(ascending=False)["Kenya"])
-n_countries = elec[2022].notna().sum()
-rural_2022 = wb.loc[(wb["country"] == "Kenya") & (wb["year"] == 2022), "electricity_rural_pct"].iloc[0]
-
-brief = (
-    f"Kenya's electricity access rose from {kenya_2000:.0f}% in 2000 to {kenya_2022:.0f}% in 2022 — "
-    f"a gain of {gain:.0f} percentage points, the largest among {n_countries} African countries compared, "
-    f"placing Kenya {rank_2022}th overall. The job isn't finished: only {rural_2022:.0f}% of rural Kenyans have access. "
-    f"Source: World Bank, World Development Indicators."
-)
-print(brief)
-print(len(brief.split()), "words")`,
+      question: "Which draft do you send?",
+      options: [
+        {
+          text: "\"We downloaded World Development Indicators, reshaped them with pandas and ranked 20 countries by their 2022 values. Kenya came 5th. Charts are attached.\"",
+          feedback: "Method first, finding buried. The minister doesn't need to know about pandas, and \"5th\" undersells the real story, which is the speed of the gain.",
+        },
+        {
+          text: "\"Kenya's electricity access rose from 15% in 2000 to 76% in 2022, up 61 percentage points, the largest gain of 20 African countries compared. The work isn't finished: 68% of rural Kenyans have access, against 98% in towns. Source: World Bank, World Development Indicators.\"",
+          feedback: "Yes. Finding first, two supporting facts in unambiguous units, one honest caveat, and a named source. Under 60 words.",
+          best: true,
+        },
+        {
+          text: "\"Great news! Kenya has almost solved electricity access, with 76% of people connected, and will reach everyone within a few years.\"",
+          feedback: "Cheerleading, and a forecast nobody made. It hides the rural gap and invents a promise the minister might repeat in public.",
+        },
+        {
+          text: "\"Access: 15.2% (2000), 24.5% (2005), 19.2% (2010), 36.0% (2014), 53.1% (2016), 61.2% (2018), 71.5% (2020), 76.0% (2022).\"",
+          feedback: "Accurate but not a brief. A list of numbers makes the reader do the analysis, and the odd dip in 2010 invites questions without an answer.",
+        },
+      ],
+      debrief:
+        "A brief is a headline, two or three supporting facts, one caveat and a source, in that order. Write numbers so they can't be misread (\"61 percentage points\", \"76% in 2022\"), cut the method, and never promise more than the data shows. In practice, generate the numbers with f-strings from your analysis, so the brief updates itself when the data does.",
+    },
+    {
+      id: "forecast",
+      kind: "scenario",
+      title: "\"So, 100% by 2026?\"",
+      situation: [
+        "After the briefing, a journalist calls. \"Access grew about 5 points a year from 2016 to 2021. At that pace Kenya reaches 100% by 2026. Can I quote you on that?\"",
+      ],
+      exhibit: {
+        caption: "Kenya, electricity access (% of population). Source: World Bank.",
+        table: {
+          columns: ["Year", "National", "Rural"],
+          rows: [
+            ["2016", "53.1%", "42.1%"],
+            ["2018", "61.2%", "51.6%"],
+            ["2020", "71.5%", "62.7%"],
+            ["2021", "76.5%", "68.2%"],
+            ["2022", "76.0%", "68.4%"],
+            ["2023", "76.2%", "67.9%"],
+          ],
+        },
+      },
+      question: "What do you tell the journalist?",
+      options: [
+        {
+          text: "\"Yes, the trend is clear.\"",
+          feedback: "Look at the last three years: access has been flat at about 76% since 2021. A straight line through 2016–2021 ignores exactly the part that matters most.",
+        },
+        {
+          text: "\"No comment. We don't make forecasts.\"",
+          feedback: "Safe, but unhelpful. The journalist will print the 2026 claim anyway. You can say what the data does show.",
+        },
+        {
+          text: "\"Progress was fast until 2021 but has stalled at about 76% since. The last quarter is mostly rural households, which are harder and costlier to reach, so I wouldn't predict a date.\"",
+          feedback: "Yes. It corrects the premise with the data, explains why the easy gains may be over, and declines to invent a date without refusing to help.",
+          best: true,
+        },
+        {
+          text: "\"Using the 2000–2023 average instead, it will take until about 2035.\"",
+          feedback: "A different straight line is still a straight line. Any single date you give will be quoted as a promise.",
+        },
+      ],
+      debrief:
+        "Extrapolating a trend assumes the future looks like the chosen past, and the choice of window decides the answer. When the recent data has changed direction, say so. Explaining what's happening, and what's uncertain, is more useful than a date.",
     },
     {
       id: "explain-story",

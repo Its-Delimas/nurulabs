@@ -901,6 +901,37 @@ print("late:", late_runs)
 print(drift)`,
     },
     {
+      id: "first-response",
+      kind: "scenario",
+      title: "06:10, an alert fires",
+      situation: [
+        "Your new volume monitor fires at 06:10 on 4 May: last night's load brought in **about half** the usual rows for a Saturday. The job itself reported success.",
+        "The cooperative's dashboard refreshes from this table at 07:00, and the manager reads it at 08:00 to set the day's buying prices. SMS price alerts to farmers go out at 09:00.",
+      ],
+      question: "What do you do first?",
+      options: [
+        {
+          text: "Re-run the job straight away and see whether the numbers come back.",
+          feedback: "If the source is still incomplete, a re-run loads the same partial data, and if the load isn't idempotent it may duplicate what's there. Act on the cause, not the symptom.",
+        },
+        {
+          text: "Let the 07:00 refresh go ahead, then investigate during working hours.",
+          feedback: "That publishes numbers you already suspect are wrong to someone who will act on them at 08:00, and to farmers at 09:00.",
+        },
+        {
+          text: "Hold the 07:00 refresh so the dashboard keeps yesterday's data with a \"delayed\" notice, tell the dashboard and SMS owners, then investigate the source.",
+          feedback: "Yes. Contain first: stop bad data reaching decisions, tell the people downstream, then find the cause. A short delay is far cheaper than wrong prices.",
+          best: true,
+        },
+        {
+          text: "Delete last night's rows so nobody sees partial data.",
+          feedback: "Deleting removes the evidence you need to diagnose the problem, and an empty day can look like \"no sales\" downstream. Hold publication instead.",
+        },
+      ],
+      debrief:
+        "Incident response has an order: **contain** (stop bad data reaching people who act on it), **communicate** (tell the owners of everything downstream), **diagnose** (find the root cause at the source), then **repair** (re-run or backfill, safely, because loads are idempotent). Monitors are only useful if they're wired to that first step, which is why many teams let a failing check block the next task. Next you'll build the lineage that tells you exactly who to call.",
+    },
+    {
       id: "lineage",
       kind: "code",
       challenge: true,
