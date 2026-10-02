@@ -3,14 +3,20 @@ import { Fragment } from "react";
 const KEYWORDS = new Set([
   "def", "return", "if", "elif", "else", "for", "while", "in", "not", "and",
   "or", "import", "from", "as", "True", "False", "None", "with", "break",
-  "continue", "pass", "lambda", "try", "except", "is", "class",
+  "continue", "pass", "lambda", "try", "except", "finally", "raise", "is",
+  "class", "yield", "global", "nonlocal", "assert", "del", "async", "await",
+  "match", "case",
 ]);
 const BUILTINS = new Set([
   "print", "len", "sum", "range", "round", "abs", "max", "min", "int",
-  "float", "str", "list", "dict", "open", "sorted", "type", "enumerate",
+  "float", "str", "list", "dict", "set", "tuple", "bool", "open", "sorted",
+  "type", "enumerate", "zip", "map", "filter", "any", "all", "input",
+  "isinstance", "divmod", "reversed", "iter", "next", "super", "repr",
 ]);
 
-const TOKEN = /(#[^\n]*)|(f?"[^"\n]*"|f?'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)|(\s+)|(.)/g;
+// Strings may have a prefix (f, r, b…) and escaped quotes inside them.
+const TOKEN =
+  /(#[^\n]*)|((?:\b[rRbBfFuU]{1,2})?(?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)|(\s+)|(.)/g;
 
 function highlightLine(line: string) {
   const out: React.ReactNode[] = [];
