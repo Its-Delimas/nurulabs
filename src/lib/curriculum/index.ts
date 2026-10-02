@@ -153,8 +153,11 @@ export type LabAccess =
 
 /**
  * A lab is open when a track that includes it is workable and every lab
- * before it on that track is done. Shared labs can be opened from any of
- * their tracks; the reason given when closed comes from the learner's track.
+ * before it on that track is done. A lab added to a syllabus after a learner
+ * had already moved past that point is open too (they've finished a later
+ * lab), so new labs never lock anyone out of where they were. Shared labs can
+ * be opened from any of their tracks; the reason given when closed comes from
+ * the learner's track.
  */
 export function labAccess(slug: string, progress: Progress | null): LabAccess {
   const preferred = trackOfLab(slug, progress);
@@ -172,7 +175,8 @@ export function labAccess(slug: string, progress: Progress | null): LabAccess {
     const labs = bonus.has(slug) ? trackLabs(track) : requiredLabs(track);
     const idx = labs.findIndex((l) => l.slug === slug);
     const firstUndone = labs.slice(0, idx).find((l) => !isLabDone(progress, l.slug));
-    if (!firstUndone) return { open: true };
+    const pastIt = labs.slice(idx + 1).some((l) => isLabDone(progress, l.slug));
+    if (!firstUndone || pastIt) return { open: true };
     if (!closed || closed.reason === "not-enrolled") closed = { open: false, reason: "order", first: firstUndone };
   }
   return closed!;

@@ -8,6 +8,7 @@ import type { LabSummary, Module, Track } from "@/lib/curriculum/types";
 import { isLabDone, isModuleDone, labAccess, labLabel, moduleLabs } from "@/lib/curriculum";
 import type { Progress } from "@/lib/progress";
 import { stepMeta, stepTone as tone, stepTones as tones } from "@/components/lab/StepRail";
+import RichText from "@/components/lab/RichText";
 import SectionHeading from "./SectionHeading";
 import { plural } from "./format";
 import { isModuleLocked } from "./moduleLock";
@@ -154,7 +155,9 @@ function ModuleSection({
               <Hammer size={12} /> Being built
             </span>
             <p className="mt-3 font-display text-base font-semibold text-ink/55">{p.title}</p>
-            <p className="mt-1 text-sm text-ink/45">{p.summary}</p>
+            <p className="mt-1 text-sm text-ink/45">
+              <RichText text={p.summary} />
+            </p>
           </li>
         ))}
       </ul>
