@@ -7,13 +7,15 @@ export const pyLists: Lab = {
   title: "Lists: Many Values, One Name",
   subject: "Lists & slicing",
   summary:
-    "A dataset is many values in order. Store them in lists, reach any item by position, and slice out ranges — the exact move used to split training and test data.",
-  minutes: 25,
+    "A dataset is many values in order. Store them in lists, reach any item by position, slice out ranges, change lists with every method they have, and build tables out of lists of lists.",
+  minutes: 40,
   kind: "lab",
   skills: [
-    "Store a column of data in a list",
-    "Reach items by position — from the front or the back",
-    "Slice a list to split data into parts",
+    "Store a column of data in a list, and reach items from the front or the back",
+    "Slice a list, including with a step, to split or reverse it",
+    "Change lists with append, insert, pop, remove, extend and sort",
+    "Know when a method changes a list in place and when you get a new one",
+    "Store a table as a list of lists",
   ],
   steps: [
     {
@@ -158,6 +160,117 @@ test = rainfall[8:]
 print("First:", first_week, "Last:", last_week)
 print("Train:", train)
 print("Test:", test)`,
+    },
+    {
+      id: "more-tools",
+      kind: "concept",
+      title: "Every way to change a list",
+      body: [
+        "Adding: `append(x)` puts one item at the end, `insert(i, x)` puts it at position `i`, and `extend(other)` adds every item of another list. `a + b` builds a new list from two lists, and `[0] * 5` repeats one.",
+        "Removing: `pop()` takes the last item off **and hands it back**; `pop(0)` takes the first. `remove(x)` deletes the first item equal to `x`, and `del data[i]` deletes by position. Asking: `index(x)` gives the position of `x`, and `count(x)` how many times it appears.",
+        "Sorting: `data.sort()` puts the list itself in order and returns **nothing** (`None`); `sorted(data)` leaves `data` alone and gives you a new sorted list. Both take `reverse=True`. A slice can take a step too: `data[::2]` is every second item, and `data[::-1]` is a reversed copy.",
+      ],
+      code: `queue = ["Achieng", "Otieno"]
+queue.append("Kamau")          # ['Achieng', 'Otieno', 'Kamau']
+queue.insert(0, "Mama Njeri")  # she goes to the front
+first = queue.pop(0)           # 'Mama Njeri' is served
+queue.remove("Otieno")         # he left the queue
+print(first, queue)
+
+prices = [140, 95, 120, 95]
+print(prices.index(120), prices.count(95))   # 2 2
+print(sorted(prices), prices)                # new list; prices unchanged
+prices.sort(reverse=True)                     # changes prices itself
+print(prices)                                 # [140, 120, 95, 95]
+print(prices[::-1])                           # reversed copy`,
+      keyIdea: "Methods like `append`, `pop` and `sort` change the list itself; `sorted()`, `+` and slices make new lists.",
+    },
+    {
+      id: "predict-sort",
+      kind: "predict",
+      title: "Where did the sorted list go?",
+      prompt: "This is one of the most common list bugs. What does it print?",
+      code: `prices = [140, 95, 120]
+result = prices.sort()
+print(result, prices)`,
+      options: ["None [95, 120, 140]", "[95, 120, 140] [140, 95, 120]", "[95, 120, 140] [95, 120, 140]", "None [140, 95, 120]"],
+      answer: 0,
+      explanation:
+        "`prices.sort()` sorts `prices` **in place** and returns `None`, so `result` is `None` while `prices` is now in order. If you want a sorted copy in a new name, use `result = sorted(prices)`.",
+    },
+    {
+      id: "queue",
+      kind: "code",
+      title: "Run the matatu queue",
+      brief:
+        "A queue of passengers waits for a matatu. Apply the four events below, in order, with list methods: don't rebuild the list by hand. Store the passenger who boards in `boarded`.",
+      instructions: [
+        "Kamau joins the back of the queue.",
+        "The first passenger boards: take them off the front and store them in `boarded`.",
+        "Mama Njeri, an elderly passenger, is let in at the front.",
+        "Otieno gives up and leaves.",
+      ],
+      starterCode: `queue = ["Achieng", "Otieno", "Wanjiru"]
+
+boarded = None
+
+print("Boarded:", boarded)
+print("Queue:", queue)
+`,
+      checks: [
+        { expr: "boarded == 'Achieng'", label: "Achieng boards", failHint: "`boarded = queue.pop(0)` takes the first passenger off and keeps them." },
+        { expr: "queue == ['Mama Njeri', 'Wanjiru', 'Kamau']", label: "The queue ends as Mama Njeri, Wanjiru, Kamau", failHint: "Do the events in order: `append`, `pop(0)`, `insert(0, ...)`, `remove(...)`." },
+        {
+          expr: "all(m in _source for m in ['append', 'pop', 'insert', 'remove'])",
+          label: "Uses append, pop, insert and remove",
+          failHint: "Change the list with its methods instead of writing a new list by hand.",
+        },
+      ],
+      hints: ["`queue.append(\"Kamau\")` adds to the end.", "`queue.insert(0, \"Mama Njeri\")` puts her at position 0, and `queue.remove(\"Otieno\")` takes him out."],
+      why:
+        "Each method changed the same list in place, and `pop(0)` handed back the passenger it removed, so you could keep them in `boarded`. Queues, stacks and to-do lists in real programs work exactly like this.",
+      solution: `queue = ["Achieng", "Otieno", "Wanjiru"]
+
+queue.append("Kamau")
+boarded = queue.pop(0)
+queue.insert(0, "Mama Njeri")
+queue.remove("Otieno")
+
+print("Boarded:", boarded)
+print("Queue:", queue)`,
+    },
+    {
+      id: "nested",
+      kind: "concept",
+      title: "Tables: lists of lists",
+      body: [
+        "A list can hold anything, including other lists. A table is a list of **rows**, and each row is a list: `sales[0]` is the first row, and `sales[0][2]` is the third value in that row. Read the brackets left to right: row first, then column.",
+        "This is how a spreadsheet, a week of readings from several stations, or an image (rows of pixels) can live in plain Python. In the data tracks, pandas and NumPy give these tables superpowers, but the idea is the same.",
+      ],
+      code: `# Sales (KSh) for three stalls over four days
+sales = [
+    [1200, 950, 1100, 1400],   # Achieng's stall
+    [800, 1050, 990, 1210],    # Otieno's stall
+    [1500, 1320, 1250, 1600],  # Wanjiru's stall
+]
+
+print(sales[1])          # Otieno's whole row
+print(sales[2][0])       # Wanjiru, day 1: 1500
+print(sum(sales[0]))     # Achieng's total: 4650
+print(len(sales), len(sales[0]))   # 3 rows, 4 columns`,
+      keyIdea: "A table is a list of rows. `table[row][column]` reaches one value; `table[row]` is a whole row.",
+    },
+    {
+      id: "predict-nested",
+      kind: "predict",
+      title: "Row, then column",
+      prompt: "A small table of readings. What's printed?",
+      code: `grid = [[1, 2, 3], [4, 5, 6]]
+print(grid[1][0], grid[0][-1], len(grid))`,
+      options: ["4 3 2", "2 3 2", "4 3 6", "2 6 3"],
+      answer: 0,
+      explanation:
+        "`grid[1]` is the second row, `[4, 5, 6]`, and `[0]` of that is `4`. `grid[0][-1]` is the last item of the first row, `3`. `len(grid)` counts rows, not values: `2`.",
     },
     {
       id: "temps",
