@@ -1,6 +1,7 @@
 import type { Lab } from "../types";
 import { pyValues, pyDecisions } from "./python-basics";
 import { pyNumbers, pyTextInput, pyTruth } from "./python-first-steps";
+import { pyWhile } from "./python-lists-loops";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
@@ -39,6 +40,7 @@ export const pythonLabs: Lab[] = [
   pyTruth,
   pyLists,
   pyLoops,
+  pyWhile,
   pyStrings,
   pyToolkit,
   pyFunctions,

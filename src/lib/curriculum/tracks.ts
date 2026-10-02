@@ -26,9 +26,8 @@ export const tracks: Track[] = [
         slug: "py-lists-loops",
         title: "Lists & loops",
         summary: "One name for many values, and code that repeats for every one of them.",
-        labs: ["py-lists", "py-loops", "py-toolkit"],
+        labs: ["py-lists", "py-loops", "py-while", "py-toolkit"],
         planned: [
-          { title: "while, break & continue", summary: "Loops that run until something changes, leaving early, skipping ahead, and the loop's else." },
           { title: "Looping like a pro", summary: "enumerate, zip, reversed and sorted, and min, max and sum with a key." },
         ],
         milestone: {
