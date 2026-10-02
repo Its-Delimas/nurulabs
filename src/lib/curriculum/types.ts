@@ -25,8 +25,15 @@ export interface ConceptStep extends BaseStep {
   kind: "concept";
   /** Short paragraphs. Inline `code` in backticks is rendered as code. */
   body: string[];
-  /** Optional read-only code sample shown beside the idea. */
+  /** Optional code sample shown beside the idea. */
   code?: string;
+  /**
+   * Whether learners can run and edit the sample. Defaults to the lab's
+   * `runExamples`; set false for fragments, shell commands or file contents.
+   */
+  run?: boolean;
+  /** The sample fails on purpose with this error type (e.g. "NameError"), to make a point. */
+  runError?: string;
   /** One sentence the learner should walk away with. */
   keyIdea?: string;
   /** Optional photo under /public/images. */
@@ -183,6 +190,8 @@ export interface CodeCheck {
    * `_stdout` holds printed output, `_source` the code, and
    * `_with(name=value)` re-runs the code with that variable changed and
    * returns the resulting namespace — for testing logic on other inputs.
+   * `_with_inputs("a", "b")` re-runs it answering input() with those values;
+   * the namespace it returns has the printed output in `_stdout`.
    * `_charts` lists each matplotlib chart (one entry per axes): title,
    * xlabel, ylabel, counts of lines, bars, scatter points and text labels,
    * bar_heights / bar_widths, bar_colors (distinct bar colours), xlim, ylim.
@@ -206,6 +215,11 @@ export interface CodeStep extends BaseStep {
   brief: string;
   instructions?: string[];
   starterCode: string;
+  /**
+   * Lines the program reads with input(), one per call. Shown in an editable
+   * "Program input" box. Checks can try other answers with `_with_inputs(...)`.
+   */
+  inputs?: string[];
   checks: CodeCheck[];
   /** Progressive hints, from gentle to specific. */
   hints: string[];
@@ -279,6 +293,8 @@ export interface Lab {
    * teaches mainly through scenarios, with little or no code.
    */
   format?: "thinking";
+  /** Lesson code samples can be run and edited (each sample can opt out with `run: false`). */
+  runExamples?: boolean;
   /** Optional photo under /public/images, for cards and headers. */
   cover?: { src: string; alt: string };
   /** What the learner can do after finishing — powers the skill map. */

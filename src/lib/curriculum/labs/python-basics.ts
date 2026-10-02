@@ -2,6 +2,7 @@ import type { Lab } from "../types";
 
 export const pyValues: Lab = {
   slug: "py-values",
+  runExamples: true,
   number: "01",
   title: "Values & Variables",
   subject: "Python basics",
@@ -172,6 +173,7 @@ print("Total:", total)`,
 
 export const pyDecisions: Lab = {
   slug: "py-decisions",
+  runExamples: true,
   number: "02",
   title: "Making Decisions",
   subject: "Conditions",

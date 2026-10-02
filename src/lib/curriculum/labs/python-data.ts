@@ -2,6 +2,7 @@ import type { Lab } from "../types";
 
 export const pyFunctions: Lab = {
   slug: "py-functions",
+  runExamples: true,
   number: "07",
   title: "Functions: Reusable Recipes",
   subject: "def & return",
@@ -82,6 +83,7 @@ print(result)`,
 avg = mean([2, 4, 6])
 print(avg)      # 4.0
 print(total)    # NameError: total only existed inside mean()`,
+      runError: "NameError",
       keyIdea: "Arguments go in through parameters; only the `return` value comes out. Everything else stays inside the function.",
     },
     {
@@ -218,6 +220,7 @@ print(mae([10, 20, 30], [12, 18, 30]))`,
 
 export const pyDicts: Lab = {
   slug: "py-dicts",
+  runExamples: true,
   number: "08",
   title: "Dictionaries: Data With Labels",
   subject: "Dicts & records",
@@ -501,6 +504,7 @@ Eldoret Main,Uasin Gishu,2025-07,53
 
 export const pyFiles: Lab = {
   slug: "py-files",
+  runExamples: true,
   number: "09",
   title: "Reading Real Data",
   subject: "CSV files",

@@ -160,7 +160,7 @@ self.onmessage = async (event) => {
       stdoutLines = [];
       postMessage({ type: "run-start", runId });
       const runner = pyodide.globals.get("_nl_run");
-      const result = runner(code, ns);
+      const result = runner(code, ns, pyodide.toPy(inputs || []));
       runner.destroy();
       const figs = pyodide.globals.get("_nl_figures")(ns);
       const images = figs.toJs();
@@ -168,12 +168,13 @@ self.onmessage = async (event) => {
       ns.set("_stdout", stdoutLines.join("\n"));
       ns.set("_source", code);
       lastNamespace = ns;
+      const stdout = stdoutLines.join("\n");
       if (result) {
         const error = result.toJs({ dict_converter: Object.fromEntries });
         result.destroy();
-        postMessage({ type: "run-end", runId, ok: false, error, images });
+        postMessage({ type: "run-end", runId, ok: false, error, images, stdout });
       } else {
-        postMessage({ type: "run-end", runId, ok: true, images });
+        postMessage({ type: "run-end", runId, ok: true, images, stdout });
       }
     } catch (err) {
       const text = String(err);

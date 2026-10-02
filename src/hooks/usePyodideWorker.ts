@@ -26,6 +26,8 @@ export interface RunResult {
   error?: PyError;
   /** matplotlib figures produced by the run, as base64 PNGs. */
   images?: string[];
+  /** Everything the run printed. */
+  stdout?: string;
 }
 
 /** A value in a traced program: shown inline (`v`, with its type `t`), or a reference `r` to a heap object. */
@@ -117,6 +119,7 @@ interface WorkerMessage {
   error?: PyError;
   results?: boolean[];
   images?: string[];
+  stdout?: string;
 }
 
 /** Code that runs longer than this is almost always an infinite loop. */
@@ -181,7 +184,7 @@ export function usePyodideWorker() {
           if (timeoutRef.current) clearTimeout(timeoutRef.current);
           setRunning(false);
           setLoadingPackages(null);
-          runResolverRef.current?.({ ok: !!msg.ok, error: msg.error, images: msg.images ?? [] });
+          runResolverRef.current?.({ ok: !!msg.ok, error: msg.error, images: msg.images ?? [], stdout: msg.stdout ?? "" });
           runResolverRef.current = null;
           break;
         case "check-result":
@@ -236,7 +239,7 @@ export function usePyodideWorker() {
   }, [startWorker]);
 
   const run = useCallback(
-    (code: string, files?: Record<string, string>, packages?: string[]) => {
+    (code: string, files?: Record<string, string>, packages?: string[], inputs?: string[]) => {
       return new Promise<RunResult>((resolve) => {
         if (!workerRef.current) {
           resolve({ ok: false, error: { ...TIMEOUT_ERROR, type: "InternalError", summary: "The Python worker isn't available." } });
@@ -246,7 +249,7 @@ export function usePyodideWorker() {
         setRunning(true);
         runIdRef.current += 1;
         runResolverRef.current = resolve;
-        workerRef.current.postMessage({ type: "run", code, files, packages, runId: runIdRef.current });
+        workerRef.current.postMessage({ type: "run", code, files, packages, inputs, runId: runIdRef.current });
 
         // A worker stuck in a loop can't be interrupted, only replaced.
         startTimeoutRef.current = () => {

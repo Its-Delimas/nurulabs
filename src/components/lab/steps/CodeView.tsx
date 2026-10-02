@@ -33,7 +33,7 @@ export interface PythonApi {
   running: boolean;
   output: string;
   loadingPackages: string | null;
-  run: (code: string, files?: Record<string, string>, packages?: string[]) => Promise<RunResult>;
+  run: (code: string, files?: Record<string, string>, packages?: string[], inputs?: string[]) => Promise<RunResult>;
   check: (exprs: string[]) => Promise<boolean[]>;
 }
 
@@ -57,6 +57,8 @@ export default function CodeView({
   python: PythonApi;
 }) {
   const [code, setCode] = useState(savedCode ?? step.starterCode);
+  /** Lines typed in answer to input(), one per call. */
+  const [inputText, setInputText] = useState((step.inputs ?? []).join("\n"));
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [results, setResults] = useState<boolean[] | null>(null);
   const [lastRun, setLastRun] = useState<RunResult | null>(null);
@@ -71,7 +73,8 @@ export default function CodeView({
   async function handleRun() {
     saveCode(labSlug, step.id, code);
     setRanCode(code);
-    const result = await python.run(code, files, packages);
+    const inputs = inputText === "" ? [] : inputText.split("\n");
+    const result = await python.run(code, files, packages, inputs);
     setLastRun(result);
     if (!result.ok && result.error) {
       setResults(null);
@@ -284,6 +287,23 @@ export default function CodeView({
           <div className="min-h-[260px] flex-1 overflow-hidden">
             <CodeEditor value={code} onChange={setCode} />
           </div>
+
+          {(step.inputs || code.includes("input(")) && (
+            <div className="border-t border-white/10 px-4 py-2.5">
+              <label htmlFor={`${step.id}-input`} className="text-[11px] font-semibold uppercase tracking-wide text-white/45">
+                Program input <span className="font-normal normal-case tracking-normal text-white/35">· one line per input() call</span>
+              </label>
+              <textarea
+                id={`${step.id}-input`}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                rows={Math.min(4, Math.max(2, inputText.split("\n").length))}
+                spellCheck={false}
+                className="mt-1.5 w-full resize-none rounded-lg bg-white/5 px-3 py-2 font-mono text-xs text-white outline-none ring-1 ring-white/10 focus:ring-lime/50"
+                placeholder="What the user types, one answer per line"
+              />
+            </div>
+          )}
 
           <div className={`${lastRun?.images?.length ? "h-[60%]" : "h-[40%]"} min-h-40 overflow-y-auto border-t border-white/10`}>
             <div className="sticky top-0 flex items-center justify-between bg-code px-4 py-2">

@@ -4,6 +4,7 @@
 //   - predict steps: the marked answer must match what the code really prints
 //   - explain steps: the model answer must cover every key idea
 //   - scenario steps: exactly one best option, and feedback on every option
+//   - runnable lesson samples: run cleanly, or raise exactly the error they demonstrate
 //   - visualiser experiments: the code steps through to the end without an error
 //   - playground experiments: the setup runs and every goal can be met
 // Run with `npm run validate:labs`. Exits non-zero on any failure.
@@ -45,7 +46,7 @@ async function prepare(packages = []) {
   missing.forEach((p) => prepared.add(p));
 }
 
-function run(code, files) {
+function run(code, files, inputs = []) {
   for (const [name, source] of Object.entries(files ?? {})) {
     // Datasets are published under /data/ (see scripts/export-data.mjs).
     const content = /^\/(data|datasets|notebooks)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
@@ -53,7 +54,7 @@ function run(code, files) {
   }
   out = [];
   const ns = py.toPy({});
-  const err = py.globals.get("_nl_run")(code, ns);
+  const err = py.globals.get("_nl_run")(code, ns, py.toPy(inputs));
   py.globals.get("_nl_figures")(ns);
   ns.set("_stdout", out.join("\n"));
   ns.set("_source", code);
@@ -81,15 +82,20 @@ for (const lab of labs) {
       const got = r.error ? r.error.summary : r.stdout;
       const want = s.options[s.answer];
       report(got === want, tag, `got ${JSON.stringify(got)} want ${JSON.stringify(want)}`);
+    } else if (s.kind === "concept" && s.code && (s.run ?? lab.runExamples)) {
+      // Runnable lesson samples run cleanly, or fail with exactly the error they're there to show.
+      const r = run(s.code, lab.files);
+      const ok = s.runError ? r.error?.type === s.runError : !r.error;
+      report(ok, tag, `sample ${s.runError ? `should raise ${s.runError}` : "should run"}: ${r.error?.summary ?? "no error"}`);
     } else if (s.kind === "code") {
       const exprs = s.checks.map((c) => c.expr);
-      const st = run(s.starterCode, lab.files);
+      const st = run(s.starterCode, lab.files, s.inputs);
       const r0 = st.error ? exprs.map(() => false) : check(exprs, st.ns);
       if (!s.solution) {
         report(false, tag, "no solution");
         continue;
       }
-      const so = run(s.solution, lab.files);
+      const so = run(s.solution, lab.files, s.inputs);
       const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
       const ok = r1.every(Boolean) && !r0.every(Boolean);
       report(ok, tag, `starter=${JSON.stringify(r0)} solution=${JSON.stringify(r1)} solutionError=${so.error?.summary ?? "none"}`);

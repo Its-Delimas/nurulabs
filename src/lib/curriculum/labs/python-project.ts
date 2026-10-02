@@ -75,6 +75,7 @@ const AVERAGE_FOR = `def average_for(market):
 
 export const pyProjectMarket: Lab = {
   slug: "py-project-market",
+  runExamples: true,
   number: "P1",
   title: "Maize Price Tracker",
   subject: "Capstone",
@@ -105,6 +106,7 @@ export const pyProjectMarket: Lab = {
 2025-01,Kibuye,Kisumu,53
 ...
 2025-04,Kongowea,Mombasa,        <- missing!`,
+      run: false,
       image: { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya, stalls piled with bananas and vegetables" },
       keyIdea: "A project is a real question, messy data, and your judgement. The code is how you get to an answer you can defend.",
     },

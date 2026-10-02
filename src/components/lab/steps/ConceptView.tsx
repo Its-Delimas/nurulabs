@@ -1,10 +1,25 @@
 import Image from "next/image";
 import { BookOpen, Lightbulb } from "lucide-react";
 import type { ConceptStep } from "@/lib/curriculum/types";
+import type { PythonWorker } from "@/hooks/usePyodideWorker";
 import RichText from "../RichText";
 import PythonCode from "../PythonCode";
+import RunnableCode from "../RunnableCode";
 
-export default function ConceptView({ step }: { step: ConceptStep }) {
+export default function ConceptView({
+  step,
+  runnable = false,
+  files,
+  packages,
+  python,
+}: {
+  step: ConceptStep;
+  /** The code sample can be run and edited. */
+  runnable?: boolean;
+  files?: Record<string, string>;
+  packages?: string[];
+  python?: Pick<PythonWorker, "status" | "run">;
+}) {
   const hasSide = !!(step.code || step.image);
   return (
     <div
@@ -38,7 +53,7 @@ export default function ConceptView({ step }: { step: ConceptStep }) {
       </div>
 
       {hasSide && (
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {step.image && (
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-ink/10">
               <Image
@@ -50,7 +65,15 @@ export default function ConceptView({ step }: { step: ConceptStep }) {
               />
             </div>
           )}
-          {step.code && <PythonCode code={step.code} lineNumbers />}
+          {step.code &&
+            (runnable && python ? (
+              <>
+                <RunnableCode code={step.code} files={files} packages={packages} expectError={step.runError} python={python} />
+                <p className="text-xs text-ink/45">Press Run to try it, or Edit to change it and see what happens.</p>
+              </>
+            ) : (
+              <PythonCode code={step.code} lineNumbers />
+            ))}
         </div>
       )}
     </div>

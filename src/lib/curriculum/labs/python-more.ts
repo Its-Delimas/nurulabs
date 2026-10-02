@@ -2,6 +2,7 @@ import type { Lab } from "../types";
 
 export const pyStrings: Lab = {
   slug: "py-strings",
+  runExamples: true,
   number: "05",
   title: "Text & Strings",
   subject: "String methods",
@@ -207,6 +208,7 @@ print(total_sent)`,
 
 export const pyToolkit: Lab = {
   slug: "py-toolkit",
+  runExamples: true,
   number: "06",
   title: "The Collections Toolkit",
   subject: "while, comprehensions, tuples, sets",
@@ -412,6 +414,7 @@ print(top3)`,
 
 export const pyErrors: Lab = {
   slug: "py-errors",
+  runExamples: true,
   number: "10",
   title: "Errors & Exceptions",
   subject: "try / except",
@@ -656,6 +659,7 @@ with open("weather.json") as f:
 
 export const pyModules: Lab = {
   slug: "py-modules",
+  runExamples: true,
   number: "11",
   title: "Modules, JSON & APIs",
   subject: "import & json",
@@ -808,6 +812,7 @@ print(report)`,
 
 export const pyClasses: Lab = {
   slug: "py-classes",
+  runExamples: true,
   number: "12",
   title: "Classes & Objects",
   subject: "class, self, methods",
@@ -1023,6 +1028,7 @@ print(model.predict(3))`,
 
 export const pyDebugging: Lab = {
   slug: "py-debugging",
+  runExamples: true,
   number: "13",
   title: "Debugging & Testing",
   subject: "assert & debugging",

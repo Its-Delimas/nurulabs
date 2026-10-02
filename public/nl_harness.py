@@ -26,6 +26,7 @@ def _nl_preview(v):
 
 
 def _nl_snapshot(ns):
+    # (Variables shown alongside an error, to help the learner see what went wrong.)
     out = []
     for name, v in list(ns.items()):
         if name.startswith("_") or type(v).__name__ == "module":
@@ -150,16 +151,43 @@ def _nl_figures(ns=None):
 
 
 # The source of the latest run, for tools that need the learner's code as a
-# file (testkit.py writes it out so pytest can collect its tests).
-_nl_state = {"source": ""}
+# file (testkit.py writes it out so pytest can collect its tests), and the
+# lines it was given to read with input().
+_nl_state = {"source": "", "inputs": []}
 
 
-def _nl_run(code, ns):
+@_ctx.contextmanager
+def _nl_inputs(values):
+    """Answer input() from a list, echoing each prompt and answer like a
+    terminal does. Running out raises a clear EOFError instead of hanging."""
+    import builtins
+
+    queue = [str(v) for v in values]
+    real = builtins.input
+
+    def fake_input(prompt=""):
+        if not queue:
+            print(prompt)
+            raise EOFError("the program asked for more input than it was given")
+        value = queue.pop(0)
+        print(f"{prompt}{value}")
+        return value
+
+    builtins.input = fake_input
+    try:
+        yield
+    finally:
+        builtins.input = real
+
+
+def _nl_run(code, ns, inputs=None):
     _nl_state["source"] = code
+    _nl_state["inputs"] = list(inputs or [])
     # Learner code runs as the main program, so `if __name__ == "__main__":` works.
     ns.setdefault("__name__", "__main__")
     try:
-        exec(compile(code, "main.py", "exec"), ns)
+        with _nl_inputs(_nl_state["inputs"]):
+            exec(compile(code, "main.py", "exec"), ns)
         return None
     except BaseException as e:
         te = _tb.TracebackException.from_exception(e)
@@ -173,6 +201,22 @@ def _nl_run(code, ns):
             "line": line,
             "vars": _nl_snapshot(ns),
         }
+
+
+def _nl_make_with_inputs(source):
+    """Re-run the learner's code answering input() with other values, so
+    checks can test an interactive program on several answers."""
+
+    def _with_inputs(*values):
+        ns = {"__name__": "__main__"}
+        out = _io.StringIO()
+        with _ctx.redirect_stdout(out), _nl_inputs(values):
+            exec(compile(source, "main.py", "exec"), ns)
+        _nl_figures()
+        ns["_stdout"] = out.getvalue()
+        return ns
+
+    return _with_inputs
 
 
 def _nl_make_with(source):
@@ -194,7 +238,7 @@ def _nl_make_with(source):
             out.append(line)
             out.extend(inserts.get(i, []))
         ns = {"__name__": "__main__"}
-        with _ctx.redirect_stdout(_io.StringIO()):
+        with _ctx.redirect_stdout(_io.StringIO()), _nl_inputs(_nl_state["inputs"]):
             exec(compile("\n".join(out), "main.py", "exec"), ns)
         _nl_figures()
         return ns
@@ -204,6 +248,7 @@ def _nl_make_with(source):
 
 def _nl_check(exprs, ns):
     ns["_with"] = _nl_make_with(ns.get("_source", ""))
+    ns["_with_inputs"] = _nl_make_with_inputs(ns.get("_source", ""))
     results = []
     for expr in exprs:
         try:

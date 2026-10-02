@@ -46,6 +46,7 @@ if __name__ == "__main__":
 
 export const pyLocalLab: Lab = {
   slug: "py-local",
+  runExamples: true,
   number: "14",
   title: "Python on Your Computer",
   subject: "Editors, terminals and scripts",
@@ -218,6 +219,7 @@ print(main(["--file", "prices.csv", "--market", "Kisumu"]))`,
 
 export const pyPackagesLab: Lab = {
   slug: "py-packages",
+  runExamples: true,
   number: "15",
   title: "Packages & Virtual Environments",
   subject: "pip, versions and requirements",
@@ -245,6 +247,7 @@ export const pyPackagesLab: Lab = {
 pip install "pandas==2.2.2"     # an exact version
 pip freeze > requirements.txt   # record everything installed
 pip install -r requirements.txt # recreate it elsewhere`,
+      run: false,
       keyIdea: "Install from PyPI with pip, and pin the versions each project needs in requirements.txt.",
     },
     {
@@ -402,6 +405,7 @@ print(satisfies("1.10.0", ">=1.9"))`,
 
 export const pyNotebooksLab: Lab = {
   slug: "py-notebooks",
+  runExamples: true,
   number: "16",
   title: "Notebooks: Jupyter & Colab",
   subject: "The data scientist's lab book",
@@ -569,6 +573,7 @@ print(check_notebook(clean), check_notebook(messy))`,
 
 export const pyGitLab: Lab = {
   slug: "py-git",
+  runExamples: true,
   number: "17",
   title: "Git & GitHub",
   subject: "Version control",
@@ -596,6 +601,7 @@ git add analysis.py           # stage a change
 git commit -m "Add price analysis"
 git switch -c add-chart       # a new branch
 git push origin add-chart     # share it on GitHub`,
+      run: false,
       keyIdea: "Commits are snapshots, branches are labels, merges join histories — and GitHub shares it all.",
     },
     {
@@ -774,6 +780,7 @@ print(is_ancestor(commits, "d4", "e5"))`,
 
 export const shipProjectCapstone: Lab = {
   slug: "py-ship-project",
+  runExamples: true,
   number: "P2",
   title: "Ship Your Project",
   subject: "Capstone",

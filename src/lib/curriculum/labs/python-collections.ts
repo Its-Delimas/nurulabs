@@ -2,6 +2,7 @@ import type { Lab } from "../types";
 
 export const pyLists: Lab = {
   slug: "py-lists",
+  runExamples: true,
   number: "03",
   title: "Lists: Many Values, One Name",
   subject: "Lists & slicing",
@@ -206,6 +207,7 @@ print(hottest, coolest, temp_range)`,
 
 export const pyLoops: Lab = {
   slug: "py-loops",
+  runExamples: true,
   number: "04",
   title: "Loops: Do It For Every Item",
   subject: "for loops",

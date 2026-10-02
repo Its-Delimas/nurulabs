@@ -141,7 +141,15 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-1 flex-col"
           >
-            {step.kind === "concept" && <ConceptView step={step} />}
+            {step.kind === "concept" && (
+              <ConceptView
+                step={step}
+                runnable={step.run ?? !!lab.runExamples}
+                files={lab.files}
+                packages={lab.packages}
+                python={python}
+              />
+            )}
             {step.kind === "experiment" && (
               <ExperimentView step={step} done={stepDone} onComplete={complete} python={python} />
             )}
