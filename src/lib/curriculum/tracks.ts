@@ -16,9 +16,8 @@ export const tracks: Track[] = [
         slug: "py-first-steps",
         title: "First steps",
         summary: "Values, numbers, text, input and decisions: the building blocks of every program.",
-        labs: ["py-values", "py-decisions"],
+        labs: ["py-values", "py-numbers", "py-decisions"],
         planned: [
-          { title: "Numbers & Arithmetic", summary: "Whole numbers and decimals, // % and **, rounding, and why 0.1 + 0.2 isn't 0.3." },
           { title: "Text, Input & Conversion", summary: "Strings, quotes and escapes, reading what a user types with input(), and converting between types." },
           { title: "Truth, None & Logic", summary: "Truthy and falsy values, None, `is` versus `==`, and conditions that short-circuit." },
         ],

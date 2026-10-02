@@ -1,5 +1,6 @@
 import type { Lab } from "../types";
 import { pyValues, pyDecisions } from "./python-basics";
+import { pyNumbers } from "./python-first-steps";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
@@ -32,6 +33,7 @@ import { deCapstoneLabs } from "./de-capstone";
 
 export const pythonLabs: Lab[] = [
   pyValues,
+  pyNumbers,
   pyDecisions,
   pyLists,
   pyLoops,
