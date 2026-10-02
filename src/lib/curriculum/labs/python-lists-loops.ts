@@ -270,3 +270,263 @@ else:
     },
   ],
 };
+
+export const pyLoopTools: Lab = {
+  slug: "py-loop-tools",
+  runExamples: true,
+  number: "09",
+  title: "Looping Like a Pro",
+  subject: "enumerate, zip and key functions",
+  summary:
+    "Python's built-in helpers make loops shorter and safer: number items with enumerate, walk lists side by side with zip, sort and pick the best by any rule with key=, and ask any() or all() about a whole list at once.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Number items as you loop with enumerate",
+    "Walk two or more lists together with zip",
+    "Sort, and find the biggest or smallest, by any rule with key=",
+    "Ask about a whole list at once with any() and all()",
+  ],
+  steps: [
+    {
+      id: "enumerate-zip",
+      kind: "concept",
+      title: "Positions and pairs, without range(len())",
+      body: [
+        "`for i in range(len(data))` works, but it's easy to get wrong. `enumerate(data)` hands you the position **and** the item together: `for i, market in enumerate(markets):`. Add `start=1` to count from 1, the way people number things.",
+        "`zip(a, b)` walks two lists side by side, pairing the first items, then the second items, and so on: `for market, price in zip(markets, prices):`. It stops at the end of the **shortest** list.",
+        "Writing two names after `for` unpacks each pair into them. Each pair is a **tuple**, a fixed group of values in round brackets; you'll meet tuples properly in the next module.",
+      ],
+      code: `markets = ["Gikomba", "Kongowea", "Kibuye"]
+prices = [58, 65, 53]
+
+for i, market in enumerate(markets, start=1):
+    print(i, market)
+
+for market, price in zip(markets, prices):
+    print(f"{market}: KSh {price}/kg")
+
+print(list(zip(markets, prices)))   # the pairs themselves`,
+      keyIdea: "`enumerate` gives you (position, item); `zip` gives you items from several lists side by side.",
+    },
+    {
+      id: "tools-playground",
+      kind: "experiment",
+      title: "Try the toolkit",
+      prompt:
+        "Real Python, real market data. `zip` and `enumerate` hand back their pairs one at a time, so wrap them in `list(...)` to see them all at once. Work through the goals.",
+      widget: "playground",
+      playground: {
+        setup: `markets = ["Gikomba", "Kongowea", "Kibuye", "Marikiti"]
+prices = [58, 65, 53, 61]          # KSh per kg, same order
+rain_mm = [12, 30, 45, 8, 0, 22]   # six weeks`,
+        goals: [
+          { text: "Pair every market with its price, as a list.", answer: "list(zip(markets, prices))", uses: "zip", hint: "`list(zip(markets, prices))`." },
+          {
+            text: "Number the markets from 1, as a list of pairs.",
+            answer: "list(enumerate(markets, start=1))",
+            uses: "enumerate",
+            hint: "`list(enumerate(markets, start=1))`.",
+          },
+          { text: "Get the prices from highest to lowest.", answer: "sorted(prices, reverse=True)", uses: "sorted", hint: "`sorted(prices, reverse=True)`." },
+          { text: "Find the market with the **shortest** name.", answer: "min(markets, key=len)", uses: "key", hint: "`min(markets, key=len)` compares the names by their length." },
+          { text: "Ask whether **any** week had no rain at all.", answer: "any(r == 0 for r in rain_mm)", uses: "any\\(", hint: "`any(r == 0 for r in rain_mm)` reads as \"is any r equal to 0?\"" },
+          { text: "Ask whether **every** week had some rain.", answer: "all(r > 0 for r in rain_mm)", uses: "all\\(", hint: "`all(r > 0 for r in rain_mm)`." },
+        ],
+        suggestions: ["list(reversed(markets))", "sorted(markets)", "max(prices)", "sum(prices) / len(prices)", "list(zip(markets, rain_mm))"],
+      },
+      observe:
+        "`zip` and `enumerate` produce pairs: `('Gikomba', 58)`, `(1, 'Gikomba')`. `key=` changes what's compared without changing what you get back: `min(markets, key=len)` compares lengths but returns the name. And `any`/`all` answer a yes/no question about every item in one line. Notice `list(zip(markets, rain_mm))` stopped after four pairs: `zip` stops at the shortest list.",
+    },
+    {
+      id: "predict-zip",
+      kind: "predict",
+      title: "Uneven lists",
+      prompt: "Three students, but only two scores. What's printed?",
+      code: `names = ["Achieng", "Otieno", "Wanjiru"]
+scores = [78, 85]
+for name, score in zip(names, scores):
+    print(name, score)`,
+      options: ["Achieng 78\nOtieno 85", "Achieng 78\nOtieno 85\nWanjiru None", "IndexError: list index out of range", "Achieng 78\nOtieno 85\nWanjiru 0"],
+      answer: 0,
+      explanation:
+        "`zip` stops at the end of the shortest list, so Wanjiru is silently left out: no error, no `None`. That's convenient, and dangerous: if two lists should be the same length, check `len` first, or use `zip(a, b, strict=True)`, which raises an error when they differ.",
+    },
+    {
+      id: "key",
+      kind: "concept",
+      title: "Sorting and choosing by a rule: key=",
+      body: [
+        "`sorted`, `min` and `max` compare items directly, so `sorted` puts capital letters first and compares numbers by size. Pass `key=` a function to compare by something else: `key=len` compares lengths, `key=str.lower` ignores capitals. You still get the original items back.",
+        "Sorting pairs sorts by their first item, then the second: `sorted(zip(prices, markets))` orders markets by price. Soon you'll write tiny key functions of your own with `lambda`.",
+        "`any(...)` is True if at least one item passes a test, `all(...)` if every item does: `any(r > 40 for r in rain_mm)` reads as \"is any reading over 40?\". The same shape works inside `sum`: `sum(1 for r in rain_mm if r > 20)` counts.",
+      ],
+      code: `markets = ["gikomba", "Kongowea", "kibuye"]
+print(sorted(markets))                  # capitals sort first!
+print(sorted(markets, key=str.lower))   # alphabetical, ignoring case
+print(min(markets, key=len))            # kibuye: the shortest name
+
+prices = [58, 65, 53]
+pairs = sorted(zip(prices, markets))    # sorted by price
+print(pairs[0])                         # (53, 'kibuye')
+
+rain_mm = [12, 30, 45, 8, 0, 22]
+print(any(r > 40 for r in rain_mm))     # True
+print(all(r > 5 for r in rain_mm))      # False
+print(sum(1 for r in rain_mm if r > 20))   # 3 weeks over 20 mm`,
+      keyIdea: "`key=` decides what's compared; `any` and `all` ask one question about every item.",
+    },
+    {
+      id: "predict-key",
+      kind: "predict",
+      title: "Sorted by what?",
+      prompt: "Three fruits, sorted with a key. What's printed?",
+      code: `fruits = ["mango", "fig", "banana"]
+print(sorted(fruits, key=len))`,
+      options: ["['fig', 'mango', 'banana']", "['banana', 'fig', 'mango']", "[3, 5, 6]", "['banana', 'mango', 'fig']"],
+      answer: 0,
+      explanation:
+        "`key=len` compares the lengths, 5, 3 and 6, so the order is fig (3), mango (5), banana (6). But `sorted` returns the fruits themselves, not their lengths: the key only decides the order.",
+    },
+    {
+      id: "rank",
+      kind: "code",
+      title: "Rank the markets",
+      brief:
+        "A cooperative wants to sell where maize pays most. Rank the markets from the **highest** price to the lowest: print lines like `1. Kongowea: 65`, and build `ranking`, the market names in that order. It's tested with other prices too.",
+      starterCode: `markets = ["Gikomba", "Kongowea", "Kibuye", "Marikiti"]
+prices = [58, 65, 53, 61]   # KSh per kg, same order as markets
+
+ranking = []
+# Pair them up, sort from the highest price, then number them from 1
+
+`,
+      checks: [
+        { expr: "ranking == ['Kongowea', 'Marikiti', 'Gikomba', 'Kibuye']", label: "`ranking` runs from Kongowea down to Kibuye", failHint: "Sort the (price, market) pairs with `reverse=True`, then collect the market of each pair." },
+        { expr: "'1. Kongowea: 65' in _stdout and '4. Kibuye: 53' in _stdout", label: "Prints a numbered ranking", failHint: "Number the lines with `enumerate(..., start=1)` and print `f\"{position}. {market}: {price}\"`." },
+        {
+          expr: "_with(prices=[10, 20, 30, 40])['ranking'] == ['Marikiti', 'Kibuye', 'Kongowea', 'Gikomba']",
+          label: "Works with other prices",
+          failHint: "Build the ranking from `prices` and `markets`, not by hand.",
+        },
+      ],
+      hints: [
+        "`pairs = sorted(zip(prices, markets), reverse=True)` puts the highest price first.",
+        "`for position, (price, market) in enumerate(pairs, start=1):` gives you all three at once.",
+      ],
+      why:
+        "`zip` paired each price with its market so they could be sorted together, `reverse=True` put the best first, and `enumerate(..., start=1)` numbered the result. Three helpers, no `range(len())`, and no chance of a price drifting away from its market.",
+      solution: `markets = ["Gikomba", "Kongowea", "Kibuye", "Marikiti"]
+prices = [58, 65, 53, 61]
+
+ranking = []
+pairs = sorted(zip(prices, markets), reverse=True)
+for position, (price, market) in enumerate(pairs, start=1):
+    print(f"{position}. {market}: {price}")
+    ranking.append(market)`,
+    },
+    {
+      id: "forecast-errors",
+      kind: "code",
+      title: "How far off were the forecasts?",
+      brief:
+        "A model forecast five weeks of maize prices. Pair each forecast with what really happened using `zip`, and work out `errors` (how far off each one was, ignoring direction), `mean_error` (their average), and `all_close`, `True` only if **every** error is 5 or less.",
+      starterCode: `predicted = [62, 58, 70, 66, 61]   # KSh per kg
+actual    = [60, 61, 69, 72, 61]
+
+errors = []
+mean_error = 0
+all_close = False
+
+print(errors, mean_error, all_close)
+`,
+      checks: [
+        { expr: "errors == [2, 3, 1, 6, 0]", label: "`errors` is `[2, 3, 1, 6, 0]`", failHint: "For each pair, append `abs(p - a)`: the size of the miss, without its sign." },
+        { expr: "mean_error == 2.4", label: "`mean_error` is 2.4", failHint: "Average the errors: `sum(errors) / len(errors)`." },
+        {
+          expr: "all_close is False and _with(actual=[62, 58, 70, 66, 61])['all_close'] is True",
+          label: "`all_close` checks every error",
+          failHint: "`all(e <= 5 for e in errors)` is True only when every error is 5 or less.",
+        },
+        { expr: "'zip' in _source", label: "Pairs the lists with `zip`", failHint: "Walk both lists together: `for p, a in zip(predicted, actual):`." },
+      ],
+      hints: ["`for p, a in zip(predicted, actual):` then `errors.append(abs(p - a))`.", "After the loop: `mean_error = sum(errors) / len(errors)` and `all_close = all(e <= 5 for e in errors)`."],
+      why:
+        "That's the **mean absolute error**, one of the standard ways to score a forecast, built with `zip`, `abs`, `sum` and `all`. In the AI track you'll compute it for real models; the loop stays exactly this simple.",
+      solution: `predicted = [62, 58, 70, 66, 61]
+actual    = [60, 61, 69, 72, 61]
+
+errors = []
+for p, a in zip(predicted, actual):
+    errors.append(abs(p - a))
+
+mean_error = sum(errors) / len(errors)
+all_close = all(e <= 5 for e in errors)
+
+print(errors, mean_error, all_close)`,
+    },
+    {
+      id: "dry-spell",
+      kind: "code",
+      challenge: true,
+      title: "The longest dry spell",
+      brief:
+        "Farmers worry most about long runs of dry days. From daily rainfall, find `longest_dry`, the most **consecutive** days with 0 mm, and `ends_on`, the day number (counting from 1) on which that spell ended. If there were no dry days, `longest_dry` is 0 and `ends_on` is `None`. It's tested on other months.",
+      starterCode: `rain = [3, 0, 0, 5, 0, 0, 0, 2, 0, 1]   # mm, day by day
+
+longest_dry = 0
+ends_on = None
+
+print(longest_dry, ends_on)
+`,
+      checks: [
+        { expr: "longest_dry == 3 and ends_on == 7", label: "The longest spell is 3 days, ending on day 7", failHint: "Keep a running count of dry days in a row, reset it on a wet day, and remember the best run and where it ended." },
+        {
+          expr: "(lambda ns: ns['longest_dry'] == 4 and ns['ends_on'] == 4)(_with(rain=[0, 0, 0, 0]))",
+          label: "A month that's dry from the start",
+          failHint: "Check the run against the best so far on every dry day, not only when a wet day arrives.",
+        },
+        {
+          expr: "(lambda ns: ns['longest_dry'] == 0 and ns['ends_on'] is None)(_with(rain=[1, 2]))",
+          label: "No dry days at all",
+          failHint: "With no dry days, leave `longest_dry` at 0 and `ends_on` at `None`.",
+        },
+      ],
+      hints: [
+        "Use `for day, mm in enumerate(rain, start=1):` and a counter `run` that grows on dry days and goes back to 0 on wet ones.",
+        "Whenever `run` beats `longest_dry`, update both `longest_dry` and `ends_on = day`.",
+      ],
+      why:
+        "Two pieces of state carried through the loop, the current run and the best run, with `enumerate` providing the day number for free. \"Longest streak\" problems, from dry spells to winning runs to consecutive failed logins, all have this shape.",
+      solution: `rain = [3, 0, 0, 5, 0, 0, 0, 2, 0, 1]
+
+longest_dry = 0
+ends_on = None
+run = 0
+for day, mm in enumerate(rain, start=1):
+    if mm == 0:
+        run += 1
+        if run > longest_dry:
+            longest_dry = run
+            ends_on = day
+    else:
+        run = 0
+
+print(longest_dry, ends_on)`,
+    },
+    {
+      id: "explain-tools",
+      kind: "explain",
+      title: "Why not range(len())?",
+      prompt: "Explain what `enumerate` and `zip` do, and why they're usually better than looping with `range(len(...))`.",
+      ideas: [
+        { label: "enumerate gives the position and the item together", patterns: ["position", "index", "number", "counter"], nudge: "What does `enumerate` hand you on each pass?" },
+        { label: "zip walks several lists together, in pairs", patterns: ["pair", "together", "side by side", "same time", "match up"], nudge: "What does `zip` do with two lists?" },
+        { label: "Fewer indexing mistakes / easier to read", patterns: ["mistake", "error", "off.by.one", "index ?error", "read", "clear", "simpler", "safer"], nudge: "What can go wrong with `range(len())` and `data[i]`?" },
+        { label: "zip stops at the shortest list", patterns: ["shortest", "stops", "uneven", "different length"], nudge: "What happens if the lists are different lengths?" },
+      ],
+      modelAnswer:
+        "`enumerate` gives you each item together with its position, and `zip` walks several lists side by side, handing you their items in pairs. With them you don't index into lists yourself, so there are fewer off-by-one mistakes and IndexErrors, and the code reads like what it means: for each market and its price. One thing to watch: `zip` stops at the shortest list, so if the lists should be the same length, check that first or use `strict=True`.",
+    },
+  ],
+};
