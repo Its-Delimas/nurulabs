@@ -7,12 +7,13 @@ export const pyValues: Lab = {
   title: "Values & Variables",
   subject: "Python basics",
   summary:
-    "Make Python do arithmetic on market prices, store results in variables, and learn the one difference that trips up every beginner: numbers vs text.",
-  minutes: 20,
+    "Make Python do arithmetic on market prices, store results in well-named variables, read error messages, and learn the one difference that trips up every beginner: numbers vs text.",
+  minutes: 25,
   kind: "lab",
   skills: [
-    "Store values in named variables",
-    "Tell numbers from text — and convert between them",
+    "Store values in well-named variables, and check their type",
+    "Tell numbers from text, and convert between them",
+    "Read a NameError and fix it",
     "Print clear results with f-strings",
   ],
   steps: [
@@ -65,6 +66,41 @@ print(market, total)`,
       },
       observe:
         "Every name points at a value, and every value has a **type**: `120` is an `int` (whole number), `2.5` a `float` (decimal), `\"Gikomba\"` a `str` (text) and `True` a `bool`. When `price_ksh` changed to 135, `total` stayed 300.0: it was worked out once, from the value `price_ksh` had at that moment. Text without quotes isn't text to Python but a **name**, and using a name nobody has created gives a `NameError`.",
+    },
+    {
+      id: "names",
+      kind: "concept",
+      title: "Naming things well",
+      body: [
+        "Variable names can use letters, digits and underscores, but they can't start with a digit or contain spaces or hyphens: `price_per_kg` works, while `price per kg` and `2nd_price` don't. Python's own words, like `if`, `for` and `class`, can't be names either.",
+        "Names are **case-sensitive**: `price`, `Price` and `PRICE` are three different names. Python style is lowercase words joined by underscores (`snake_case`), with names that say what they hold: `price_per_kg` beats `p`.",
+        "Anything after `#` on a line is a **comment**: Python ignores it, people read it. And `type(x)` tells you what kind of value a name holds.",
+      ],
+      code: `price_per_kg = 80      # good: says what it holds
+kg_sold = 2.5
+market_name = "Kibuye"
+
+print(type(price_per_kg))   # <class 'int'>
+print(type(kg_sold))        # <class 'float'>
+print(type(market_name))    # <class 'str'>
+print(type(True))           # <class 'bool'>`,
+      keyIdea: "Names use letters, digits and underscores, never start with a digit, and are case-sensitive. `#` starts a comment; `type()` shows a value's kind.",
+    },
+    {
+      id: "predict-type",
+      kind: "predict",
+      title: "Three kinds of seven",
+      prompt: "The same digit, written three ways. What does Python print?",
+      code: `print(type(7), type(7.0), type("7"))`,
+      options: [
+        "<class 'int'> <class 'float'> <class 'str'>",
+        "<class 'int'> <class 'int'> <class 'int'>",
+        "<class 'int'> <class 'float'> <class 'int'>",
+        "int float str",
+      ],
+      answer: 0,
+      explanation:
+        "`7` is an `int`, `7.0` is a `float` because of the decimal point, and `\"7\"` is a `str` because of the quotes. They look alike to us, but to Python they're three different kinds of value, and they behave differently.",
     },
     {
       id: "types",
@@ -123,6 +159,26 @@ total = price_per_kg * kg
 print(f"Total: KSh {total}")`,
     },
     {
+      id: "bug-name",
+      kind: "bug",
+      title: "A name Python has never heard of",
+      prompt:
+        "This should print 360, the price of three bags. Run it and read the error message carefully: it tells you almost exactly what's wrong. Then click the line with the bug.",
+      code: `price = 120
+bags = 3
+total = Price * bags
+print(total)`,
+      line: 3,
+      fix: "total = price * bags",
+      explanation:
+        "Names are case-sensitive: the program created `price` with a small p, then asked for `Price`, which doesn't exist. Python said so: `NameError: name 'Price' is not defined. Did you mean: 'price'?`. Reading the last line of an error, and the line number it points to, solves most bugs in seconds.",
+      wrong: {
+        1: "This line creates `price`, with a small p. Is that the spelling the program uses later?",
+        2: "`bags` is created here and used later with exactly the same spelling.",
+        4: "The program never gets this far. Run it: the error points at the line before.",
+      },
+    },
+    {
       id: "fix-receipt",
       kind: "code",
       challenge: true,
@@ -178,12 +234,13 @@ export const pyDecisions: Lab = {
   title: "Making Decisions",
   subject: "Conditions",
   summary:
-    "Teach your code to choose: compare values, branch with if/elif/else — and build the simplest classifier there is, a threshold rule.",
-  minutes: 25,
+    "Teach your code to choose: compare values, branch with if/elif/else, nest one decision inside another, pick between two values in one line, and build the simplest classifier there is, a threshold rule.",
+  minutes: 30,
   kind: "lab",
   skills: [
     "Compare values and reason with True/False",
-    "Branch code with if / elif / else",
+    "Branch code with if / elif / else, and nest decisions",
+    "Choose between two values with a conditional expression",
     "Build a threshold rule — the simplest classifier",
   ],
   steps: [
@@ -252,6 +309,42 @@ if rain_mm > 80 or soil_temp < 5:
 
 is_dry = not rain_mm >= 25   # False`,
       keyIdea: "`and` needs both, `or` needs either, `not` flips. Every condition, however long, still boils down to one True or False.",
+    },
+    {
+      id: "nested",
+      kind: "concept",
+      title: "Decisions inside decisions, and one-line choices",
+      body: [
+        "An `if` can sit inside another `if`'s block. The inner question is only asked when the outer one was True, and each level is indented four more spaces. If you find yourself three levels deep, combining conditions with `and` usually reads better.",
+        "When you're only choosing between two **values**, a **conditional expression** does it in one line: `advice = \"plant\" if rain_mm >= 25 else \"wait\"`. Read it aloud: \"plant if there's enough rain, else wait\".",
+      ],
+      code: `rain_mm = 30
+soil_c = 16
+
+if rain_mm >= 25:
+    if soil_c > 18:
+        print("Plant now")
+    else:
+        print("Wait for warmer soil")
+else:
+    print("Wait for rain")
+
+advice = "plant" if rain_mm >= 25 else "wait"
+print(advice)`,
+      keyIdea: "Nest an `if` to ask a follow-up question; use `a if condition else b` to choose between two values in one line.",
+    },
+    {
+      id: "predict-ternary",
+      kind: "predict",
+      title: "One-line choice",
+      prompt: "A shop's website labels each product. What does this print?",
+      code: `stock = 0
+label = "in stock" if stock > 0 else "sold out"
+print(label)`,
+      options: ["sold out", "in stock", "0", "None"],
+      answer: 0,
+      explanation:
+        "The condition `stock > 0` is False, so the expression takes the value after `else`: `\"sold out\"`. A conditional expression always produces one of its two values, which is why it's perfect for setting a variable.",
     },
     {
       id: "plant-or-wait",
