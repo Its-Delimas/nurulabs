@@ -11,9 +11,12 @@
  *   code       → write and run real Python, checked against the namespace
  *   explain    → put the idea into their own words, checked for key ideas
  *   scenario   → a realistic situation and a judgement call, with feedback on every option
+ *   parsons    → put a program's shuffled lines in order (and indent them), checked by running it
+ *   trace      → fill in a table of variable values as code runs, checked against the real run
+ *   bug        → find the line with the bug in a short program
  */
 
-export type StepKind = "concept" | "experiment" | "predict" | "code" | "explain" | "scenario";
+export type StepKind = "concept" | "experiment" | "predict" | "code" | "explain" | "scenario" | "parsons" | "trace" | "bug";
 
 interface BaseStep {
   id: string;
@@ -49,7 +52,6 @@ export type WidgetId =
   | "comprehension-builder"
   | "try-except"
   | "json-explorer"
-  | "bug-hunt"
   | "array-ops"
   | "dataframe-ops"
   | "chart-chooser"
@@ -271,13 +273,66 @@ export interface ScenarioStep extends BaseStep {
   debrief: string;
 }
 
+/**
+ * A Parsons puzzle: the program's lines, shuffled, to be put back in order
+ * and indented. Any arrangement that passes the checks counts.
+ */
+export interface ParsonsStep extends BaseStep {
+  kind: "parsons";
+  prompt: string;
+  /** The program in a correct order, indented with 4 spaces per level. */
+  lines: string[];
+  /** Lines that don't belong in the program. */
+  distractors?: string[];
+  /** Show each line already indented, so only the order is the puzzle. */
+  keepIndent?: boolean;
+  /** Checks run on the arranged program, as for code steps. */
+  checks: CodeCheck[];
+  /** Shown once the program passes. */
+  explanation: string;
+}
+
+/**
+ * A trace table: predict each variable's value every time `line` has just
+ * run. The answers come from actually running the code.
+ */
+export interface TraceTableStep extends BaseStep {
+  kind: "trace";
+  prompt: string;
+  code: string;
+  /** Variables to track, one column each. Values must be numbers, strings, booleans or None. */
+  columns: string[];
+  /** A row is recorded each time this line (1-based) has just run. */
+  line: number;
+  /** Shown once the table has been checked. */
+  explanation: string;
+}
+
+/** Find the bug: click the line that's wrong. */
+export interface BugStep extends BaseStep {
+  kind: "bug";
+  prompt: string;
+  code: string;
+  /** The 1-based line with the bug. */
+  line: number;
+  /** Why that line is wrong, shown once it's found. */
+  explanation: string;
+  /** The corrected line, shown once it's found. */
+  fix?: string;
+  /** Feedback when a learner picks another line, keyed by line number. */
+  wrong?: Record<number, string>;
+}
+
 export type Step =
   | ConceptStep
   | ExperimentStep
   | PredictStep
   | CodeStep
   | ExplainStep
-  | ScenarioStep;
+  | ScenarioStep
+  | ParsonsStep
+  | TraceTableStep
+  | BugStep;
 
 export interface Lab {
   slug: string;

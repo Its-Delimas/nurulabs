@@ -255,6 +255,25 @@ print("Total:", total)`,
         "`total` starts at 0 **before** the loop, and every pass adds the current price to it. This is the **accumulator pattern**: start with an empty result, update it once per item. Sums, averages, counts — and later, a model's total error — are all computed this way.",
     },
     {
+      id: "trace-sales",
+      kind: "trace",
+      title: "Trace a week of sales",
+      prompt:
+        "Programmers read loops by tracing them: keeping track of every variable, pass by pass. This loop totals a stall's sales and remembers the best day. Fill in `s`, `total` and `best` each time line 5 finishes, without running it.",
+      code: `sales = [300, 450, 200, 600]
+total = 0
+best = 0
+for s in sales:
+    total = total + s
+    if s > best:
+        best = s
+print(total, best)`,
+      columns: ["s", "total", "best"],
+      line: 5,
+      explanation:
+        "`total` grows by each sale: 300, 750, 950, 1550. Look closely at `best`: when line 5 finishes it still holds the best **before** this sale, because lines 6–7 haven't run yet. So it reads 0, 300, 450, 450, and only becomes 600 after the last check. Tracing at the level of single lines is exactly how you'll find bugs in your own loops.",
+    },
+    {
       id: "predict-count",
       kind: "predict",
       title: "Predict the count",

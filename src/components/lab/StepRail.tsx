@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Code2, Eye, FlaskConical, MessageSquareText, Scale, Target } from "lucide-react";
+import { Bug, BookOpen, Code2, Eye, FlaskConical, MessageSquareText, Puzzle, Scale, Table2, Target } from "lucide-react";
 import type { StepSummary } from "@/lib/curriculum/types";
 
 export function stepMeta(step: StepSummary) {
@@ -19,6 +19,12 @@ export function stepMeta(step: StepSummary) {
       return { label: "Reflect", icon: MessageSquareText };
     case "scenario":
       return { label: "Scenario", icon: Scale };
+    case "parsons":
+      return { label: "Puzzle", icon: Puzzle };
+    case "trace":
+      return { label: "Trace", icon: Table2 };
+    case "bug":
+      return { label: "Find the bug", icon: Bug };
   }
 }
 
@@ -27,6 +33,9 @@ export const stepTones = {
   Lesson: "bg-sky",
   Interactive: "bg-sun",
   Quiz: "bg-lime-deep",
+  Trace: "bg-lime-deep/55",
+  Puzzle: "bg-sun/55",
+  "Find the bug": "bg-danger/70",
   Scenario: "bg-violet",
   Practice: "bg-ink/60",
   Challenge: "bg-ink",

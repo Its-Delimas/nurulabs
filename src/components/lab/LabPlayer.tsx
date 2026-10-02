@@ -22,6 +22,9 @@ import PredictView from "./steps/PredictView";
 import CodeView from "./steps/CodeView";
 import ExplainView from "./steps/ExplainView";
 import ScenarioView from "./steps/ScenarioView";
+import ParsonsView from "./steps/ParsonsView";
+import TraceTableView from "./steps/TraceTableView";
+import BugView from "./steps/BugView";
 import LabComplete from "./LabComplete";
 import LabOverview from "./LabOverview";
 
@@ -174,6 +177,13 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
             {step.kind === "scenario" && (
               <ScenarioView step={step} done={stepDone} onComplete={complete} />
             )}
+            {step.kind === "parsons" && (
+              <ParsonsView step={step} done={stepDone} onComplete={complete} python={python} />
+            )}
+            {step.kind === "trace" && (
+              <TraceTableView step={step} done={stepDone} onComplete={complete} python={python} />
+            )}
+            {step.kind === "bug" && <BugView step={step} done={stepDone} onComplete={complete} python={python} />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -204,7 +214,13 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
                       ? "Make a prediction to continue"
                       : step.kind === "scenario"
                         ? "Find the best call to continue"
-                        : "Check your explanation to continue"}
+                        : step.kind === "parsons"
+                          ? "Solve the puzzle to continue"
+                          : step.kind === "trace"
+                            ? "Complete the table to continue"
+                            : step.kind === "bug"
+                              ? "Find the bug to continue"
+                              : "Check your explanation to continue"}
               </span>
             )}
             <button

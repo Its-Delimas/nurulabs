@@ -299,6 +299,32 @@ else:
 print("Advice:", advice)`,
     },
     {
+      id: "puzzle-advice",
+      kind: "parsons",
+      title: "Assemble the planting advice",
+      prompt:
+        "An agronomist's rule: if there's been **less than 25 mm** of rain, `\"wait for rain\"`. Otherwise, if the soil is **above 18 °C**, `\"plant now\"`. Otherwise, `\"wait for warmth\"`. Put the lines in order and indent them so the program follows that rule. It's tested on several days, not just this one.",
+      lines: [
+        "rain_mm = 30",
+        "soil_c = 16",
+        "if rain_mm < 25:",
+        "    advice = \"wait for rain\"",
+        "elif soil_c > 18:",
+        "    advice = \"plant now\"",
+        "else:",
+        "    advice = \"wait for warmth\"",
+        "print(advice)",
+      ],
+      distractors: ["if soil_c > 18:"],
+      checks: [
+        { expr: "advice == 'wait for warmth'", label: "Today (30 mm, 16 °C) is `wait for warmth`", failHint: "Check which branch runs when there's enough rain but the soil is cool." },
+        { expr: "_with(rain_mm=10, soil_c=25)['advice'] == 'wait for rain'", label: "A dry day is `wait for rain`, however warm", failHint: "The rain check has to come first." },
+        { expr: "_with(rain_mm=40, soil_c=22)['advice'] == 'plant now'", label: "A wet, warm day is `plant now`", failHint: "`elif` only runs when the `if` above it was False." },
+      ],
+      explanation:
+        "Python checks the conditions **top to bottom** and runs only the first branch that's True. That's why the rain check comes first, the soil check is an `elif` (it only matters once there's enough rain), and `else` catches everything left. The indented lines are the branches, and `print(advice)` is back at the left edge so it runs whichever branch was chosen.",
+    },
+    {
       id: "grade-harvest",
       kind: "code",
       challenge: true,

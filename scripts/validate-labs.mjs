@@ -7,6 +7,9 @@
 //   - runnable lesson samples: run cleanly, or raise exactly the error they demonstrate
 //   - visualiser experiments: the code steps through to the end without an error
 //   - playground experiments: the setup runs and every goal can be met
+//   - parsons puzzles: the reference order passes every check, an empty program doesn't
+//   - trace tables: the code runs and gives at least two rows of plain values
+//   - find the bug: the marked line exists and the code is valid Python
 // Run with `npm run validate:labs`. Exits non-zero on any failure.
 
 import { readFileSync } from "node:fs";
@@ -64,6 +67,30 @@ function run(code, files, inputs = []) {
 
 function check(exprs, ns) {
   return py.globals.get("_nl_check")(py.toPy(exprs), ns).toJs();
+}
+
+// Same as traceRows() in src/lib/traceRows.ts: each column's value every time `line` has just run.
+function traceRows(trace, line, columns) {
+  const rows = [];
+  const steps = trace.steps;
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    if (s.event !== "line" || s.line !== line) continue;
+    let j = i + 1;
+    while (j < steps.length && steps[j].frames.length > s.frames.length) j++;
+    const after = steps[j];
+    if (!after) break;
+    rows.push(
+      columns.map((name) => {
+        for (let f = after.frames.length - 1; f >= 0; f--) {
+          const hit = after.frames[f].vars.find(([n]) => n === name);
+          if (hit) return "v" in hit[1] ? hit[1].v : "(object)";
+        }
+        return null;
+      }),
+    );
+  }
+  return rows;
 }
 
 let bad = 0;
@@ -126,6 +153,26 @@ for (const lab of labs) {
         if (!r.met.includes(i)) problems.push(`goal ${i + 1} not met by ${JSON.stringify(entry)} (${r.error ?? "no error"})`);
       });
       report(problems.length === 0 && pg.goals.length > 0, tag, problems.join("; "));
+    } else if (s.kind === "parsons") {
+      // The reference order passes every check; an empty program doesn't.
+      const exprs = s.checks.map((c) => c.expr);
+      const so = run(s.lines.join("\n"), lab.files);
+      const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
+      const empty = run("", lab.files);
+      const r0 = check(exprs, empty.ns);
+      const clash = (s.distractors ?? []).some((d) => s.lines.some((l) => l.trim() === d.trim()));
+      report(r1.every(Boolean) && !r0.every(Boolean) && !clash, tag, `solution=${JSON.stringify(r1)} empty=${JSON.stringify(r0)} error=${so.error?.summary ?? "none"}${clash ? " distractor duplicates a line" : ""}`);
+    } else if (s.kind === "trace") {
+      // At least two rows, every cell a plain value (no objects), no error in the code.
+      const t = JSON.parse(py.globals.get("_nl_trace")(s.code, 500, py.toPy([])));
+      const rows = traceRows(t, s.line, s.columns);
+      const plain = rows.every((row) => row.every((v) => v !== "(object)"));
+      report(!t.error && rows.length >= 2 && plain, tag, `rows=${JSON.stringify(rows)} error=${t.error?.summary ?? "none"}`);
+    } else if (s.kind === "bug") {
+      const lines = s.code.replace(/\n$/, "").split("\n");
+      const r = run(s.code, lab.files);
+      const syntaxOk = r.error?.type !== "SyntaxError" && r.error?.type !== "IndentationError";
+      report(s.line >= 1 && s.line <= lines.length && lines[s.line - 1].trim() !== "" && syntaxOk, tag, `line=${s.line} of ${lines.length}; ${r.error?.summary ?? "runs"}`);
     } else if (s.kind === "scenario") {
       const best = s.options.filter((o) => o.best).length;
       const silent = s.options.filter((o) => !o.feedback?.trim()).length;

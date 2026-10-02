@@ -1056,13 +1056,28 @@ export const pyDebugging: Lab = {
     },
     {
       id: "hunt",
-      kind: "experiment",
+      kind: "bug",
       title: "Hunt a logic bug",
       prompt:
-        "This `average` function returns 10.0 for `[10, 20, 30]` — it should be 20.0. No error, just a wrong answer. Step through it, watch the variables, and click the line you think is wrong.",
-      widget: "bug-hunt",
-      observe:
-        "Watching `total` change line by line made the bug obvious: it was *replaced* each time instead of *added to*. Stepping through and inspecting values is how professionals debug — in a real editor it's a debugger; anywhere else, well-placed `print()` calls do the same job.",
+        "This `average` function should give 20.0 for `[10, 20, 30]`. Run it: no error, just a wrong answer. Step through it and watch `total` on every pass of the loop, then click the line you think is wrong.",
+      code: `def average(values):
+    total = 0
+    for v in values:
+        total = v
+    return total / len(values)
+
+print(average([10, 20, 30]))`,
+      line: 4,
+      fix: "        total = total + v",
+      explanation:
+        "`total = v` **replaces** the total with each value instead of **adding** to it, so after the loop `total` is just the last value, 30, and 30 / 3 is 10.0. Watching `total` change line by line made it obvious. Stepping through and inspecting values is how professionals debug: in a real editor it's a debugger, and anywhere else, well-placed `print()` calls do the same job.",
+      wrong: {
+        1: "The function's name and its parameter are fine: `values` receives the list.",
+        2: "Starting the total at 0 is right: an accumulator starts empty.",
+        3: "The loop visits every value, which is what we want. What does each pass do with it?",
+        5: "Dividing by `len(values)` is right for an average. The problem is what `total` holds by the time we get here.",
+        7: "The call is fine: it passes the right list. The wrong answer comes from inside the function.",
+      },
     },
     {
       id: "predict-assert",

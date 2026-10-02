@@ -23,7 +23,6 @@ const LineFit = dynamic<WidgetProps>(() => import("../widgets/LineFit"), { loadi
 const ComprehensionBuilder = dynamic<WidgetProps>(() => import("../widgets/ComprehensionBuilder"), { loading, ssr: false });
 const TryExcept = dynamic<WidgetProps>(() => import("../widgets/TryExcept"), { loading, ssr: false });
 const JsonExplorer = dynamic<WidgetProps>(() => import("../widgets/JsonExplorer"), { loading, ssr: false });
-const BugHunt = dynamic<WidgetProps>(() => import("../widgets/BugHunt"), { loading, ssr: false });
 const ArrayOps = dynamic<WidgetProps>(() => import("../widgets/ArrayOps"), { loading, ssr: false });
 const DataFrameOps = dynamic<WidgetProps>(() => import("../widgets/DataFrameOps"), { loading, ssr: false });
 const ChartChooser = dynamic<WidgetProps>(() => import("../widgets/ChartChooser"), { loading, ssr: false });
@@ -110,7 +109,6 @@ const widgets: Record<Exclude<WidgetId, "visualiser" | "playground">, React.Comp
   "comprehension-builder": ComprehensionBuilder,
   "try-except": TryExcept,
   "json-explorer": JsonExplorer,
-  "bug-hunt": BugHunt,
   "array-ops": ArrayOps,
   "dataframe-ops": DataFrameOps,
   "chart-chooser": ChartChooser,

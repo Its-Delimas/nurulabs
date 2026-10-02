@@ -18,6 +18,9 @@ const nouns: Record<string, [string, string]> = {
   Challenge: ["challenge", "challenges"],
   Reflect: ["reflection", "reflections"],
   Scenario: ["scenario", "scenarios"],
+  Puzzle: ["code puzzle", "code puzzles"],
+  Trace: ["trace table", "trace tables"],
+  "Find the bug": ["bug hunt", "bug hunts"],
 };
 
 const rise = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
