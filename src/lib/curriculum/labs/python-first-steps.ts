@@ -495,3 +495,235 @@ print(f"Average: {average}")`,
     },
   ],
 };
+
+export const pyTruth: Lab = {
+  slug: "py-truth",
+  runExamples: true,
+  number: "05",
+  title: "Truth, None & Logic",
+  subject: "bool, None and truthiness",
+  summary:
+    "Every value in Python counts as either true or false, missing data is None, and `and` and `or` do more than you'd think. Learn the rules behind conditions that read like plain English, and the bug that treats zero as missing.",
+  minutes: 30,
+  kind: "lab",
+  skills: [
+    "Predict whether any value counts as True or False",
+    "Represent and check for missing values with None",
+    "Use and, or and not, including short-circuiting and defaults",
+  ],
+  steps: [
+    {
+      id: "truthiness",
+      kind: "concept",
+      title: "True, False, and everything else",
+      body: [
+        "Comparisons give a `bool`: `True` or `False`. But `if` accepts **any** value, and Python decides whether it counts as true. `bool(x)` shows you the answer.",
+        "The rule: **empty or zero counts as False**: `False`, `None`, `0`, `0.0` and the empty string `\"\"` (and empty collections, which you'll meet soon). Everything else counts as True, including the text `\"0\"` and even the text `\"False\"`, because they aren't empty.",
+        "That's why `if phone:` reads naturally as \"if there's a phone number\": an empty string skips the branch.",
+      ],
+      code: `print(bool(0), bool(25))         # False True
+print(bool(""), bool("Amina"))   # False True
+print(bool("0"), bool("False"))  # True True: they're not empty
+
+phone = ""
+if phone:
+    print("We'll send an SMS")
+else:
+    print("No phone number given")`,
+      keyIdea: "Zero, empty and None are falsy; everything else is truthy. `if x:` asks \"is x non-empty, non-zero, not None?\"",
+    },
+    {
+      id: "truthy-playground",
+      kind: "experiment",
+      title: "Truthy or falsy?",
+      prompt:
+        "A customer record with some gaps. Use the console to test which values count as True, and work through the goals. Try `bool(...)` on each value first.",
+      widget: "playground",
+      playground: {
+        setup: `name = "Achieng"
+middle_name = ""
+balance = 0
+phone = None      # not given`,
+        goals: [
+          { text: "Show that `middle_name` counts as False.", answer: "bool(middle_name)", uses: "middle_name", hint: "`bool(middle_name)` shows how an `if` would treat it." },
+          { text: "Show that `balance` counts as False too, even though it's a real balance.", answer: "bool(balance)", uses: "balance", hint: "Try `bool(balance)`. Zero is falsy." },
+          {
+            text: "Make a display name: `middle_name`, or `'(none)'` if it's empty. Use `or`.",
+            answer: "middle_name or '(none)'",
+            uses: "\\bor\\b",
+            hint: "`a or b` gives `a` when `a` is truthy, and `b` otherwise.",
+          },
+          {
+            text: "Check whether `phone` is missing, the right way.",
+            answer: "phone is None",
+            uses: "phone\\s+is\\s+None",
+            hint: "Missing values are `None`, and you check for it with `is None`.",
+          },
+          {
+            text: "Show that the text `'0'` counts as True.",
+            answer: "bool('0')",
+            uses: "bool\\(\\s*['\"]0['\"]\\s*\\)",
+            literalOk: true,
+            hint: "`bool('0')`: it's text with one character in it, so it isn't empty.",
+          },
+        ],
+        suggestions: ["bool(name)", "bool(phone)", "not middle_name", "phone == None", "name and balance"],
+      },
+      observe:
+        "Empty and zero values count as False: `\"\"`, `0` and `None`. Everything else counts as True, even the text `\"0\"`, because it isn't empty. Notice `balance`: zero shillings is a real balance, but `if balance:` would treat it like nothing. And `name or default` hands back `name` when it's truthy and the default otherwise, a common way to fill a gap.",
+    },
+    {
+      id: "predict-truthy",
+      kind: "predict",
+      title: "Which are True?",
+      prompt: "Four values, four verdicts. What does this print?",
+      code: `print(bool(""), bool("0"), bool(0), bool(0.1))`,
+      options: ["False True False True", "False False False True", "True True False True", "False True False False"],
+      answer: 0,
+      explanation:
+        "The empty string is falsy; `\"0\"` is a one-character string, so it's truthy; the number `0` is falsy; and `0.1` isn't zero, so it's truthy. Only empty and zero values count as False.",
+    },
+    {
+      id: "none",
+      kind: "concept",
+      title: "None: the value for \"nothing\"",
+      body: [
+        "`None` is Python's value for \"no value\": an answer nobody gave, a reading the sensor missed, a result that doesn't exist. Its type is `NoneType`, and a function that doesn't `return` anything gives back `None`.",
+        "Check for it with `is None` and `is not None`. `is` asks whether two names point at **the very same object**; `==` asks whether two values are **equal**. There's only one `None` in Python, so `is None` is exact. For numbers and text, use `==`.",
+        "Watch out: `if not income:` is True for `None`, but also for `0`. When zero is a real answer, test `income is None` instead.",
+      ],
+      code: `income = None          # we don't know it yet
+if income is None:
+    print("Ask for income")
+
+balance = 0            # we know it: zero
+if not balance:
+    print("not balance is True for 0 as well")
+if balance is not None:
+    print("Balance known:", balance)`,
+      keyIdea: "`None` means missing. Test it with `is None`, and don't let `if not x:` mix up missing with zero or empty.",
+    },
+    {
+      id: "and-or",
+      kind: "concept",
+      title: "and, or and not, up close",
+      body: [
+        "`and` and `or` don't just give `True` or `False`: they hand back one of their two values. `a or b` gives `a` if `a` is truthy, otherwise `b`. `a and b` gives `a` if `a` is falsy, otherwise `b`. `not` always gives a bool.",
+        "They also **short-circuit**: Python stops as soon as it knows the answer. In `stock > 0 and 1000 / stock > 5`, if `stock` is 0 the left side is False, so the division never runs and there's no ZeroDivisionError. Put the guard first.",
+        "Comparisons can be chained like in maths: `18 <= age < 60` means `18 <= age and age < 60`.",
+      ],
+      code: `name = ""
+print(name or "Guest")         # Guest
+print("Amina" or "Guest")      # Amina
+print(0 and 10, 5 and 10)      # 0 10
+print(not "", not "Amina")     # True False
+
+stock = 0
+print(stock > 0 and 1000 / stock > 5)   # False, no ZeroDivisionError
+
+age = 34
+print(18 <= age < 60)          # True`,
+      keyIdea: "`or` picks the first truthy value, `and` stops at the first falsy one, and both stop as soon as the answer is known.",
+    },
+    {
+      id: "predict-short",
+      kind: "predict",
+      title: "Does it crash?",
+      prompt: "A shop has no stock of an item. What does this print?",
+      code: `stock = 0
+safe = stock == 0 or 100 / stock > 2
+print(safe)`,
+      options: ["True", "False", "ZeroDivisionError: division by zero", "None"],
+      answer: 0,
+      explanation:
+        "`stock == 0` is True, and `True or anything` is True, so Python never evaluates `100 / stock`. No division, no error. Short-circuiting is how you write a guard and the risky check in one line, guard first.",
+    },
+    {
+      id: "contacts",
+      kind: "code",
+      title: "Fill in a missing contact",
+      brief:
+        "A sign-up form leaves `phone` empty when the customer doesn't give one. Set `contact` to the phone number, or to `\"no phone given\"` when it's empty. Set `can_sms` to `True` only when there is a number, as a real `bool`. It's tested with other phones too.",
+      starterCode: `phone = ""
+
+contact = phone
+can_sms = True
+
+print(contact, can_sms)
+`,
+      checks: [
+        { expr: "contact == 'no phone given'", label: "An empty phone gives `\"no phone given\"`", failHint: "`phone or \"no phone given\"` gives the default when `phone` is empty." },
+        { expr: "can_sms is False", label: "No phone means `can_sms` is `False`", failHint: "`can_sms` should depend on whether there is a phone: `bool(phone)`." },
+        {
+          expr: "(lambda ns: ns['contact'] == '0712345678' and ns['can_sms'] is True)(_with(phone='0712345678'))",
+          label: "A real number is kept, and `can_sms` is `True`",
+          failHint: "Work both values out from `phone`, so they change when it does.",
+        },
+      ],
+      hints: ["`contact = phone or \"no phone given\"`.", "`bool(phone)` is `True` for any non-empty text and `False` for `\"\"`."],
+      why:
+        "`phone or \"no phone given\"` uses truthiness to fill the gap in one line, and `bool(phone)` turns the same question into a clean `True`/`False`. Writing `can_sms = phone and True` would have looked similar but returned `\"\"` for an empty phone: `and` hands back one of its values, not always a bool.",
+      solution: `phone = ""
+
+contact = phone or "no phone given"
+can_sms = bool(phone)
+
+print(contact, can_sms)`,
+    },
+    {
+      id: "zero-not-unknown",
+      kind: "code",
+      challenge: true,
+      title: "Zero isn't unknown",
+      brief:
+        "A lender records `income` as `None` when an applicant didn't say. The rule: `\"ask for income\"` when it's unknown, `\"decline\"` below KSh 10,000, `\"review\"` otherwise. Someone with **no** income (0) should be declined, not asked again. The code below gets that wrong. Fix it.",
+      starterCode: `income = None
+
+if not income:
+    decision = "ask for income"
+elif income < 10000:
+    decision = "decline"
+else:
+    decision = "review"
+
+print(decision)
+`,
+      checks: [
+        { expr: "decision == 'ask for income'", label: "Unknown income: `\"ask for income\"`", failHint: "When `income` is `None`, ask for it." },
+        { expr: "_with(income=0)['decision'] == 'decline'", label: "An income of 0 is declined, not asked again", failHint: "`not income` is True for 0 as well as None. Test for missing with `income is None`." },
+        {
+          expr: "_with(income=25000)['decision'] == 'review' and _with(income=10000)['decision'] == 'review'",
+          label: "KSh 10,000 or more goes to review",
+          failHint: "Only incomes below 10,000 are declined.",
+        },
+      ],
+      hints: ["Run it with `income = 0` and see which branch runs.", "Change the first condition to `if income is None:`."],
+      why:
+        "`not income` can't tell \"we don't know\" from \"we know it's zero\": both are falsy. `income is None` asks exactly the question you mean. In real data, missing and zero mean different things, and mixing them up quietly corrupts every average and decision built on top.",
+      solution: `income = None
+
+if income is None:
+    decision = "ask for income"
+elif income < 10000:
+    decision = "decline"
+else:
+    decision = "review"
+
+print(decision)`,
+    },
+    {
+      id: "explain-none",
+      kind: "explain",
+      title: "Missing, empty or zero?",
+      prompt: "Explain the difference between `None`, `\"\"` and `0`, and how you'd check whether a value is missing.",
+      ideas: [
+        { label: "None means no value / missing / unknown", patterns: ["none.*(missing|no value|unknown|nothing|absent)", "(missing|unknown|no value).*none"], nudge: "What does `None` represent?" },
+        { label: "\"\" and 0 are real values that count as False", patterns: ["falsy", "count as false", "empty", "zero", "real value"], nudge: "Are `\"\"` and `0` missing, or real values?" },
+        { label: "Check missing with `is None`", patterns: ["is none", "is not none"], nudge: "Which test tells None apart from 0?" },
+        { label: "`if x:` / `not x` can't tell them apart", patterns: ["if not", "if x", "not x", "can.?t tell", "both", "mix"], nudge: "What goes wrong with `if not x:`?" },
+      ],
+      modelAnswer:
+        "`None` means there is no value at all: missing or unknown. `\"\"` and `0` are real values, an empty text and the number zero, but like `None` they count as False in a condition. So `if not x:` can't tell them apart. To check whether a value is missing, use `x is None`, which is only True for `None`, and keeps a genuine zero or empty answer from being treated as missing.",
+    },
+  ],
+};

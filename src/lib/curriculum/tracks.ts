@@ -16,10 +16,7 @@ export const tracks: Track[] = [
         slug: "py-first-steps",
         title: "First steps",
         summary: "Values, numbers, text, input and decisions: the building blocks of every program.",
-        labs: ["py-values", "py-numbers", "py-text-input", "py-decisions"],
-        planned: [
-          { title: "Truth, None & Logic", summary: "Truthy and falsy values, None, `is` versus `==`, and conditions that short-circuit." },
-        ],
+        labs: ["py-values", "py-numbers", "py-text-input", "py-decisions", "py-truth"],
         milestone: {
           title: "Your first programs",
           description: "You can store values, calculate with numbers and text, read what a user types, and make decisions with conditions.",
