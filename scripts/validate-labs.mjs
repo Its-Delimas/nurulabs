@@ -5,6 +5,7 @@
 //   - explain steps: the model answer must cover every key idea
 //   - scenario steps: exactly one best option, and feedback on every option
 //   - visualiser experiments: the code steps through to the end without an error
+//   - playground experiments: the setup runs and every goal can be met
 // Run with `npm run validate:labs`. Exits non-zero on any failure.
 
 import { readFileSync } from "node:fs";
@@ -25,6 +26,7 @@ const py = await loadPyodide({
 });
 py.runPython(readFileSync(path.join(root, "public/nl_harness.py"), "utf8"));
 py.runPython(readFileSync(path.join(root, "public/nl_trace.py"), "utf8"));
+py.runPython(readFileSync(path.join(root, "public/nl_play.py"), "utf8"));
 const prepared = new Set();
 
 // Same self-hosted wheels as public/pyodide-worker.js.
@@ -100,6 +102,24 @@ for (const lab of labs) {
       const t = JSON.parse(py.globals.get("_nl_trace")(s.visualise?.code ?? "", 500, py.toPy(s.visualise?.inputs ?? [])));
       const ok = !!s.visualise?.code && t.steps.length > 1 && !t.error && !t.truncated;
       report(ok, tag, `steps=${t.steps.length} error=${t.error?.summary ?? "none"} truncated=${t.truncated}`);
+    } else if (s.kind === "experiment" && s.widget === "playground") {
+      // The setup runs; each goal is met by its own answer/solution/example on fresh data,
+      // and no check goal is already met before the learner does anything.
+      const pg = s.playground ?? { setup: "", goals: [] };
+      const reset = () => JSON.parse(py.globals.get("_nl_play_reset")("validate", pg.setup, JSON.stringify(pg.goals)));
+      const evalIn = (src) => JSON.parse(py.globals.get("_nl_play_eval")("validate", src));
+      const problems = [];
+      const start = reset();
+      if (start.error) problems.push(`setup: ${start.error}`);
+      if (evalIn("None").met.length) problems.push("a goal is met before the learner does anything");
+      pg.goals.forEach((g, i) => {
+        const entry = g.answer ?? g.solution ?? g.example;
+        if (!entry) return problems.push(`goal ${i + 1} has no answer, solution or example`);
+        reset();
+        const r = evalIn(entry);
+        if (!r.met.includes(i)) problems.push(`goal ${i + 1} not met by ${JSON.stringify(entry)} (${r.error ?? "no error"})`);
+      });
+      report(problems.length === 0 && pg.goals.length > 0, tag, problems.join("; "));
     } else if (s.kind === "scenario") {
       const best = s.options.filter((o) => o.best).length;
       const silent = s.options.filter((o) => !o.feedback?.trim()).length;

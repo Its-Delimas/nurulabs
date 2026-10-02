@@ -38,8 +38,41 @@ print(rainfall)        # [12, 30, 45, 8, 22]`,
       kind: "experiment",
       title: "Reach into a list",
       prompt:
-        "Five markets, one list. Move the position slider — including **negative** positions and ones past the end. Then switch to **A slice** and pick out a range.",
-      widget: "list-explorer",
+        "This console runs real Python against the two lists below. Type an expression at the `>>>` prompt and press Enter, then work through the goals. Try a position past the end too, like `markets[10]`, and read what Python tells you.",
+      widget: "playground",
+      playground: {
+        setup: `markets = ["Gikomba", "Kongowea", "Kibuye", "Marikiti", "Daraja Mbili"]
+rain_mm = [12, 30, 45, 8, 0, 22, 51, 17, 9, 40]   # ten weeks at Machakos`,
+        goals: [
+          { text: "Get the first market.", answer: "markets[0]", hint: "Positions start at 0, so the first item is at position `0`: `markets[0]`." },
+          {
+            text: "Get the **last** market without counting how many there are.",
+            answer: "markets[-1]",
+            uses: "-",
+            hint: "Negative positions count from the back: `-1` is the last item, `-2` the one before it.",
+          },
+          {
+            text: "Get Kongowea, Kibuye and Marikiti as a list, with one slice.",
+            answer: "markets[1:4]",
+            uses: ":",
+            hint: "A slice `[start:stop]` includes `start` but stops **before** `stop`. Kongowea is at position 1, Marikiti at 3.",
+          },
+          { text: "Find how many weeks of rain were recorded.", answer: "len(rain_mm)", hint: "`len(...)` counts the items in a list." },
+          {
+            text: "Get the last three weeks of rain.",
+            answer: "rain_mm[-3:]",
+            uses: ":",
+            hint: "Leave out the stop to go to the end: `rain_mm[-3:]` starts three from the back.",
+          },
+          {
+            text: "Make Python raise an `IndexError`.",
+            raises: "IndexError",
+            example: "markets[10]",
+            hint: "Ask for a position that doesn't exist, like `markets[10]`.",
+          },
+        ],
+        suggestions: ["markets[0]", "markets[-1]", "markets[1:3]", "len(markets)", "rain_mm[:5]", "max(rain_mm)"],
+      },
       observe:
         "Positions start at 0, and negative positions count from the back: `markets[-1]` is always the last item. Past the end you get an `IndexError`. A slice `markets[1:3]` **includes the start but stops before the end** — so `data[:8]` is the first 8 items and `data[8:]` is everything after. That's precisely how you'll split training and test data.",
     },

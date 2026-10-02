@@ -8,6 +8,7 @@ import type { ExperimentStep, WidgetId } from "@/lib/curriculum/types";
 import type { PythonWorker } from "@/hooks/usePyodideWorker";
 import RichText from "../RichText";
 import type { CodeVisualiserProps } from "../visualiser/CodeVisualiser";
+import type { PythonPlaygroundProps } from "../playground/PythonPlayground";
 
 // Each widget is its own chunk, loaded only when its experiment is shown —
 // several carry a dataset, and learners shouldn't download them all up front.
@@ -15,12 +16,10 @@ import type { CodeVisualiserProps } from "../visualiser/CodeVisualiser";
 type WidgetProps = { onInteract: () => void };
 const loading = () => <div className="h-64 animate-pulse rounded-2xl bg-ink/5" />;
 const CodeVisualiser = dynamic<CodeVisualiserProps>(() => import("../visualiser/CodeVisualiser"), { loading, ssr: false });
+const PythonPlayground = dynamic<PythonPlaygroundProps>(() => import("../playground/PythonPlayground"), { loading, ssr: false });
 const DecisionThreshold = dynamic<WidgetProps>(() => import("../widgets/DecisionThreshold"), { loading, ssr: false });
-const ListExplorer = dynamic<WidgetProps>(() => import("../widgets/ListExplorer"), { loading, ssr: false });
-const DictLookup = dynamic<WidgetProps>(() => import("../widgets/DictLookup"), { loading, ssr: false });
 const CsvRows = dynamic<WidgetProps>(() => import("../widgets/CsvRows"), { loading, ssr: false });
 const LineFit = dynamic<WidgetProps>(() => import("../widgets/LineFit"), { loading, ssr: false });
-const StringMethods = dynamic<WidgetProps>(() => import("../widgets/StringMethods"), { loading, ssr: false });
 const ComprehensionBuilder = dynamic<WidgetProps>(() => import("../widgets/ComprehensionBuilder"), { loading, ssr: false });
 const TryExcept = dynamic<WidgetProps>(() => import("../widgets/TryExcept"), { loading, ssr: false });
 const JsonExplorer = dynamic<WidgetProps>(() => import("../widgets/JsonExplorer"), { loading, ssr: false });
@@ -103,14 +102,11 @@ const PartitionPruner = dynamic<WidgetProps>(() => import("../widgets/PartitionP
 const ScdHistory = dynamic<WidgetProps>(() => import("../widgets/ScdHistory"), { loading, ssr: false });
 const StreamWindows = dynamic<WidgetProps>(() => import("../widgets/StreamWindows"), { loading, ssr: false });
 
-// The visualiser runs real Python, so it's rendered separately with the lab's Python worker.
-const widgets: Record<Exclude<WidgetId, "visualiser">, React.ComponentType<WidgetProps>> = {
+// The visualiser and the playground run real Python, so they're rendered separately with the lab's Python worker.
+const widgets: Record<Exclude<WidgetId, "visualiser" | "playground">, React.ComponentType<WidgetProps>> = {
   "decision-threshold": DecisionThreshold,
-  "list-explorer": ListExplorer,
-  "dict-lookup": DictLookup,
   "csv-rows": CsvRows,
   "line-fit": LineFit,
-  "string-methods": StringMethods,
   "comprehension-builder": ComprehensionBuilder,
   "try-except": TryExcept,
   "json-explorer": JsonExplorer,
@@ -210,7 +206,7 @@ export default function ExperimentView({
 }) {
   const [count, setCount] = useState(done ? INTERACTIONS_NEEDED : 0);
   const completedRef = useRef(done);
-  const Widget = step.widget === "visualiser" ? null : widgets[step.widget];
+  const Widget = step.widget === "visualiser" || step.widget === "playground" ? null : widgets[step.widget];
   const revealed = count >= INTERACTIONS_NEEDED;
 
   function onInteract() {
@@ -239,6 +235,14 @@ export default function ExperimentView({
       <div className="mt-10 rounded-[28px] bg-paper p-5 ring-1 ring-ink/10 md:p-8">
         {Widget ? (
           <Widget onInteract={onInteract} />
+        ) : step.widget === "playground" ? (
+          <PythonPlayground
+            setup={step.playground?.setup ?? ""}
+            goals={step.playground?.goals ?? []}
+            suggestions={step.playground?.suggestions}
+            python={python}
+            onInteract={onInteract}
+          />
         ) : (
           <CodeVisualiser
             code={step.visualise?.code ?? ""}

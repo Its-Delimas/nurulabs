@@ -35,12 +35,10 @@ export interface ConceptStep extends BaseStep {
 
 export type WidgetId =
   | "visualiser"
+  | "playground"
   | "decision-threshold"
-  | "list-explorer"
-  | "dict-lookup"
   | "csv-rows"
   | "line-fit"
-  | "string-methods"
   | "comprehension-builder"
   | "try-except"
   | "json-explorer"
@@ -123,10 +121,41 @@ export type WidgetId =
   | "scd-history"
   | "stream-windows";
 
+/**
+ * One goal in a playground (see public/nl_play.py). Exactly one of
+ * `answer`, `check` or `raises` says when it's met.
+ */
+export interface PlaygroundGoal {
+  text: string;
+  /** An expression; met when the learner's value equals what this gives on fresh data. */
+  answer?: string;
+  /** An expression that becomes True once the learner has changed the data correctly. */
+  check?: string;
+  /** For `check` goals: an entry that meets it (used by the validator). */
+  solution?: string;
+  /** An error type the learner should provoke, e.g. "KeyError". */
+  raises?: string;
+  /** For `raises` goals: an entry that raises it (used by the validator). */
+  example?: string;
+  /** A regex the learner's entry must match too, e.g. "\\.get\\(" to insist on .get(). */
+  uses?: string;
+  hint?: string;
+  /** Accept entries that don't mention the data (normally a typed-in literal doesn't count). */
+  literalOk?: boolean;
+}
+
 export interface ExperimentStep extends BaseStep {
   kind: "experiment";
   prompt: string;
   widget: WidgetId;
+  /** For the "playground" widget: a live Python console over some data, with goals. */
+  playground?: {
+    /** Runs first; defines the data the learner works with. Shown above the console. */
+    setup: string;
+    goals: PlaygroundGoal[];
+    /** Entries the learner can click to try. */
+    suggestions?: string[];
+  };
   /** For the "visualiser" widget: real Python the learner steps through line by line. */
   visualise?: {
     code: string;

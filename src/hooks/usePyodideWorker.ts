@@ -78,6 +78,24 @@ export interface TraceResult {
 /** Tracing a program longer than this means it's stuck in one long computation. */
 const TRACE_TIMEOUT_MS = 15000;
 
+/** What one playground entry did (see public/nl_play.py). */
+export interface PlayResult {
+  /** Printed output. */
+  out?: string;
+  /** The value of a final expression, if it wasn't None. */
+  repr?: string;
+  type?: string;
+  error?: string | null;
+  /** Indexes of the goals this entry met. */
+  met?: number[];
+  vars?: { name: string; type: string; preview: string }[];
+  /** The session was lost (Python restarted); start it again. */
+  expired?: boolean;
+}
+
+/** A playground entry running longer than this is stuck (usually `while True`). */
+const PLAY_TIMEOUT_MS = 10000;
+
 interface WorkerMessage {
   type:
     | "ready"
@@ -90,7 +108,9 @@ interface WorkerMessage {
     | "packages-loading"
     | "packages-loaded"
     | "trace-start"
-    | "trace-result";
+    | "trace-result"
+    | "play-start"
+    | "play-result";
   data?: string;
   ok?: boolean;
   runId?: number;
@@ -117,6 +137,9 @@ export function usePyodideWorker() {
   const traceResolverRef = useRef<((result: TraceResult) => void) | null>(null);
   const traceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTraceTimeoutRef = useRef<(() => void) | null>(null);
+  const playResolverRef = useRef<((result: PlayResult) => void) | null>(null);
+  const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startPlayTimeoutRef = useRef<(() => void) | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const runIdRef = useRef(0);
   const startTimeoutRef = useRef<(() => void) | null>(null);
@@ -179,6 +202,21 @@ export function usePyodideWorker() {
           }
           traceResolverRef.current?.(result);
           traceResolverRef.current = null;
+          break;
+        }
+        case "play-start":
+          startPlayTimeoutRef.current?.();
+          break;
+        case "play-result": {
+          if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
+          let result: PlayResult;
+          try {
+            result = JSON.parse(msg.data ?? "");
+          } catch {
+            result = { error: "The result couldn't be read.", met: [] };
+          }
+          playResolverRef.current?.(result);
+          playResolverRef.current = null;
           break;
         }
       }
@@ -273,6 +311,46 @@ export function usePyodideWorker() {
     [startWorker],
   );
 
+  /**
+   * Playground console. "reset" starts a session by running the setup code
+   * (and works out each goal's target); "eval" runs one entry in that session.
+   */
+  const play = useCallback(
+    (
+      action: "reset" | "eval",
+      sid: string,
+      code: string,
+      opts: { goals?: unknown[]; files?: Record<string, string>; packages?: string[] } = {},
+    ) => {
+      return new Promise<PlayResult>((resolve) => {
+        if (!workerRef.current) {
+          resolve({ error: "The Python worker isn't available.", met: [] });
+          return;
+        }
+        playResolverRef.current?.({ error: "Interrupted by a newer entry.", met: [] });
+        playResolverRef.current = resolve;
+        runIdRef.current += 1;
+        workerRef.current.postMessage({ type: `play-${action}`, sid, code, runId: runIdRef.current, ...opts });
+
+        startPlayTimeoutRef.current = () => {
+          if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
+          playTimeoutRef.current = setTimeout(() => {
+            workerRef.current?.terminate();
+            setStatus("loading");
+            playResolverRef.current?.({
+              error: "TimeoutError: that ran for more than 10 seconds and was stopped. Python restarted, so your data has been reloaded.",
+              expired: true,
+              met: [],
+            });
+            playResolverRef.current = null;
+            startWorker();
+          }, PLAY_TIMEOUT_MS);
+        };
+      });
+    },
+    [startWorker],
+  );
+
   const clearOutput = useCallback(() => setOutput(""), []);
 
   /** Start downloading a lab's packages and datasets in the background, before the first run. */
@@ -280,7 +358,7 @@ export function usePyodideWorker() {
     if (packages?.length || files) workerRef.current?.postMessage({ type: "preload", packages, files });
   }, []);
 
-  return { status, output, running, loadingPackages, run, check, trace, preload, clearOutput };
+  return { status, output, running, loadingPackages, run, check, trace, play, preload, clearOutput };
 }
 
 export type PythonWorker = ReturnType<typeof usePyodideWorker>;

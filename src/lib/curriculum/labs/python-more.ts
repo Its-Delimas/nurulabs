@@ -38,8 +38,44 @@ print(market)                   # unchanged!`,
       kind: "experiment",
       title: "Chain methods on messy text",
       prompt:
-        "Pick a messy value, then add methods one at a time. Try `.strip()` then `.title()`. Then try `.split(\",\")` on the CSV line — and add another method after it.",
-      widget: "string-methods",
+        "Real messy text, a real Python console. Call methods on the strings below, one after another, and work through the goals. Then try `row.split(\",\").lower()` and read the error carefully.",
+      widget: "playground",
+      playground: {
+        setup: `name = "  wanjiru KAMAU "
+market = "GIKOMBA Market"
+row = "Kisumu,maize,62.5,2024-03-01"
+sms = "QH47XK2T9 Confirmed. Ksh1,250.00 sent to JOHN OTIENO"`,
+        goals: [
+          {
+            text: "Clean `name` into `'Wanjiru Kamau'`.",
+            answer: "name.strip().title()",
+            hint: "Chain two methods: `.strip()` removes the spaces at both ends, then `.title()` capitalises each word.",
+          },
+          { text: "Make `market` all lowercase.", answer: "market.lower()" },
+          {
+            text: "Split `row` into a list of its four fields.",
+            answer: "row.split(\",\")",
+            hint: "`.split(\",\")` cuts the string at every comma and gives you a **list**.",
+          },
+          {
+            text: "Get just the crop, `'maize'`, out of `row`.",
+            answer: "row.split(\",\")[1]",
+            hint: "Split first, then take the item at position 1 of the list you get back.",
+          },
+          {
+            text: "Check whether `'OTIENO'` appears anywhere in `sms`.",
+            answer: "\"OTIENO\" in sms",
+            hint: "`\"something\" in text` gives `True` or `False`.",
+          },
+          {
+            text: "Call a string method on something that isn't a string, and get an `AttributeError`.",
+            raises: "AttributeError",
+            example: "row.split(\",\").lower()",
+            hint: "`.split()` gives back a list, and lists don't have `.lower()`. Try `row.split(\",\").lower()`.",
+          },
+        ],
+        suggestions: ["name.strip()", "name.upper()", "market.title()", "row.split(\",\")", "len(sms)", "sms[:9]"],
+      },
       observe:
         "Each method hands its result to the next, so order matters: strip first, then change case. And notice `.split()` turns a string into a **list** — after that, string methods no longer apply, which is why `.lower()` after a split raises an `AttributeError`.",
     },

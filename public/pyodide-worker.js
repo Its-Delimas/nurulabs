@@ -20,8 +20,9 @@ async function initPyodide() {
     stderr: (msg) => postMessage({ type: "stderr", data: msg }),
   });
   // One harness shared with the content validator: see public/nl_harness.py
-  // (running and checking code) and public/nl_trace.py (the step-through tracer).
-  for (const file of ["/nl_harness.py", "/nl_trace.py"]) {
+  // (running and checking code), public/nl_trace.py (the step-through tracer)
+  // and public/nl_play.py (playground sessions).
+  for (const file of ["/nl_harness.py", "/nl_trace.py", "/nl_play.py"]) {
     pyodide.runPython(await (await fetch(file)).text());
   }
   return pyodide;
@@ -83,7 +84,27 @@ async function ensurePackages(pyodide, packages) {
 }
 
 self.onmessage = async (event) => {
-  const { type, code, runId, exprs, files, packages, maxSteps, inputs } = event.data;
+  const { type, code, runId, exprs, files, packages, maxSteps, inputs, sid, goals } = event.data;
+
+  if (type === "play-reset" || type === "play-eval") {
+    // Playground console: one persistent namespace per session (see public/nl_play.py).
+    try {
+      const pyodide = await getPyodide();
+      if (type === "play-reset") {
+        await ensurePackages(pyodide, packages);
+        await writeFiles(pyodide, files);
+      }
+      postMessage({ type: "play-start", runId });
+      const fn = pyodide.globals.get(type === "play-reset" ? "_nl_play_reset" : "_nl_play_eval");
+      const data = type === "play-reset" ? fn(sid, code, JSON.stringify(goals || [])) : fn(sid, code);
+      fn.destroy();
+      postMessage({ type: "play-result", runId, data });
+    } catch (err) {
+      const error = String(err && err.message ? err.message : err);
+      postMessage({ type: "play-result", runId, data: JSON.stringify({ error, met: [], vars: [], out: "" }) });
+    }
+    return;
+  }
 
   if (type === "trace") {
     // Run code line by line for the visualiser (see public/nl_trace.py).

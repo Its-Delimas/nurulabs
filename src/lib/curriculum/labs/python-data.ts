@@ -256,8 +256,38 @@ print(len(farm))         # 4`,
       kind: "experiment",
       title: "Look up a farm's details",
       prompt:
-        "Click keys to look them up, or type your own. Try a key that doesn't exist — like `yield` or `Crop` — then switch on `.get()`.",
-      widget: "dict-lookup",
+        "One farm, one dictionary, a real Python console. Look things up by key and work through the goals. Try a key that doesn't exist, like `farm[\"Crop\"]`, and read the error.",
+      widget: "playground",
+      playground: {
+        setup: `farm = {"county": "Nakuru", "crop": "maize", "acres": 2.5, "yield_bags": 40}`,
+        goals: [
+          { text: "Read the farm's crop.", answer: "farm[\"crop\"]", hint: "Square brackets with the key in quotes: `farm[\"crop\"]`." },
+          {
+            text: "Work out the yield per acre (bags ÷ acres).",
+            answer: "farm[\"yield_bags\"] / farm[\"acres\"]",
+            hint: "Look up both values and divide: `farm[\"yield_bags\"] / farm[\"acres\"]`.",
+          },
+          {
+            text: "Ask for a key that isn't there and get a `KeyError`.",
+            raises: "KeyError",
+            example: "farm[\"Crop\"]",
+            hint: "Keys must match exactly. Try `farm[\"Crop\"]` with a capital C.",
+          },
+          {
+            text: "Read `\"owner\"` **safely**: get `\"unknown\"` back instead of an error.",
+            answer: "farm.get(\"owner\", \"unknown\")",
+            uses: "\\.get\\(",
+            hint: "`.get(key, fallback)` returns the fallback when the key is missing.",
+          },
+          {
+            text: "Add the farm's owner, `\"Achieng\"`, under the key `\"owner\"`.",
+            check: "farm.get(\"owner\") == \"Achieng\"",
+            solution: "farm[\"owner\"] = \"Achieng\"",
+            hint: "Assigning to a new key adds it: `farm[\"owner\"] = \"Achieng\"`.",
+          },
+        ],
+        suggestions: ["farm[\"county\"]", "farm.keys()", "\"crop\" in farm", "len(farm)", "farm.get(\"yield\")"],
+      },
       observe:
         "Keys must match **exactly** — `Crop` and `crop` are different, and so are `yield` and `yield_bags`. A missing key raises a `KeyError`. `.get(key, fallback)` returns the fallback instead of crashing — handy with messy real-world data where some rows are missing fields.",
     },
