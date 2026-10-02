@@ -34,11 +34,9 @@ export interface ConceptStep extends BaseStep {
 }
 
 export type WidgetId =
-  | "variable-boxes"
+  | "visualiser"
   | "decision-threshold"
   | "list-explorer"
-  | "loop-stepper"
-  | "function-machine"
   | "dict-lookup"
   | "csv-rows"
   | "line-fit"
@@ -46,7 +44,6 @@ export type WidgetId =
   | "comprehension-builder"
   | "try-except"
   | "json-explorer"
-  | "class-blueprint"
   | "bug-hunt"
   | "array-ops"
   | "dataframe-ops"
@@ -130,6 +127,14 @@ export interface ExperimentStep extends BaseStep {
   kind: "experiment";
   prompt: string;
   widget: WidgetId;
+  /** For the "visualiser" widget: real Python the learner steps through line by line. */
+  visualise?: {
+    code: string;
+    /** Let the learner edit the code and step through their own version (default true). */
+    editable?: boolean;
+    /** Answers typed in to input(), in order. */
+    inputs?: string[];
+  };
   /** The takeaway, revealed once the learner has played with the widget. */
   observe: string;
 }

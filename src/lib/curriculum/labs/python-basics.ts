@@ -52,10 +52,18 @@ print(total)`,
       kind: "experiment",
       title: "Look inside Python's memory",
       prompt:
-        "Each variable is a labelled box holding one value — and every value has a **type**. Write assignments and watch the boxes. Try a whole number, a decimal, text with and without quotes, and `True`.",
-      widget: "variable-boxes",
+        "This is real Python, run one line at a time. Press **Next** and watch the **Frames** panel: each line either creates a name or points an existing name at a new value. The colour shows each value's **type**. Then press **Edit code** and experiment: add `paid = True`, put `Gikomba` without quotes, or use a name before you create it.",
+      widget: "visualiser",
+      visualise: {
+        code: `market = "Gikomba"
+price_ksh = 120
+kg = 2.5
+total = price_ksh * kg
+price_ksh = 135
+print(market, total)`,
+      },
       observe:
-        "Whole numbers are `int`, decimals are `float`, text in quotes is `str` (a string), and `True`/`False` are `bool`. Text without quotes isn't text to Python — it's a **name**, and if no variable has that name, you get a `NameError`. Assigning to an existing name replaces its value.",
+        "Every name points at a value, and every value has a **type**: `120` is an `int` (whole number), `2.5` a `float` (decimal), `\"Gikomba\"` a `str` (text) and `True` a `bool`. When `price_ksh` changed to 135, `total` stayed 300.0: it was worked out once, from the value `price_ksh` had at that moment. Text without quotes isn't text to Python but a **name**, and using a name nobody has created gives a `NameError`.",
     },
     {
       id: "types",

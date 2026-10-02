@@ -143,7 +143,7 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
           >
             {step.kind === "concept" && <ConceptView step={step} />}
             {step.kind === "experiment" && (
-              <ExperimentView step={step} done={stepDone} onComplete={complete} />
+              <ExperimentView step={step} done={stepDone} onComplete={complete} python={python} />
             )}
             {step.kind === "predict" && (
               <PredictView step={step} done={stepDone} onComplete={complete} python={python} packages={lab.packages} />

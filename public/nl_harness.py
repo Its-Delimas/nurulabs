@@ -4,7 +4,8 @@ Loaded once into Pyodide by the browser worker (public/pyodide-worker.js)
 and by the content validator (scripts/validate-labs.mjs), so lab checks
 behave identically in both. It runs learner code, turns failures into
 structured, teachable data, captures matplotlib charts, and evaluates
-check expressions.
+check expressions. The step-through visualiser's tracer lives next to it,
+in nl_trace.py.
 """
 
 import ast as _ast
@@ -155,6 +156,8 @@ _nl_state = {"source": ""}
 
 def _nl_run(code, ns):
     _nl_state["source"] = code
+    # Learner code runs as the main program, so `if __name__ == "__main__":` works.
+    ns.setdefault("__name__", "__main__")
     try:
         exec(compile(code, "main.py", "exec"), ns)
         return None
@@ -190,7 +193,7 @@ def _nl_make_with(source):
         for i, line in enumerate(source.split("\n"), 1):
             out.append(line)
             out.extend(inserts.get(i, []))
-        ns = {}
+        ns = {"__name__": "__main__"}
         with _ctx.redirect_stdout(_io.StringIO()):
             exec(compile("\n".join(out), "main.py", "exec"), ns)
         _nl_figures()

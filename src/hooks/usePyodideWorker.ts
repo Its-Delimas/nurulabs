@@ -28,6 +28,56 @@ export interface RunResult {
   images?: string[];
 }
 
+/** A value in a traced program: shown inline (`v`, with its type `t`), or a reference `r` to a heap object. */
+export type TraceValue = { v: string; t: string } | { r: number };
+
+/** Something a variable can point at: a list, dict, set, object, function, class or generator. */
+export interface TraceObject {
+  k: "list" | "tuple" | "set" | "dict" | "instance" | "function" | "class" | "generator" | "other";
+  /** The Python type name, e.g. "list", "Counter", "Farm". */
+  type: string;
+  items?: TraceValue[];
+  pairs?: [TraceValue, TraceValue][];
+  /** Attributes of an object or class, a closure's captured variables, or a generator's locals. */
+  attrs?: [string, TraceValue][];
+  /** Items not shown because the container is long. */
+  more?: number;
+  name?: string;
+  params?: string;
+  repr?: string;
+  state?: string;
+  line?: number;
+}
+
+export interface TraceFrame {
+  name: string;
+  vars: [string, TraceValue][];
+  /** Set on the frame that is returning, on a "return" step. */
+  ret?: TraceValue;
+}
+
+export interface TraceStep {
+  /** The line about to run (for "line"), or the line being left/raised on. */
+  line: number;
+  event: "line" | "return" | "exception" | "unwind";
+  frames: TraceFrame[];
+  heap: Record<string, TraceObject>;
+  /** How many characters of `TraceResult.out` had been printed by this step. */
+  outLen: number;
+  exc?: string;
+}
+
+export interface TraceResult {
+  steps: TraceStep[];
+  error: { summary: string; line: number | null } | null;
+  /** True when the program was stopped after too many steps (usually an endless loop). */
+  truncated: boolean;
+  out: string;
+}
+
+/** Tracing a program longer than this means it's stuck in one long computation. */
+const TRACE_TIMEOUT_MS = 15000;
+
 interface WorkerMessage {
   type:
     | "ready"
@@ -38,7 +88,9 @@ interface WorkerMessage {
     | "run-end"
     | "check-result"
     | "packages-loading"
-    | "packages-loaded";
+    | "packages-loaded"
+    | "trace-start"
+    | "trace-result";
   data?: string;
   ok?: boolean;
   runId?: number;
@@ -62,6 +114,9 @@ export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
   const runResolverRef = useRef<((result: RunResult) => void) | null>(null);
   const checkResolverRef = useRef<((results: boolean[]) => void) | null>(null);
+  const traceResolverRef = useRef<((result: TraceResult) => void) | null>(null);
+  const traceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startTraceTimeoutRef = useRef<(() => void) | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const runIdRef = useRef(0);
   const startTimeoutRef = useRef<(() => void) | null>(null);
@@ -110,6 +165,22 @@ export function usePyodideWorker() {
           checkResolverRef.current?.(msg.results ?? []);
           checkResolverRef.current = null;
           break;
+        case "trace-start":
+          // Only time the tracing itself, not package downloads.
+          startTraceTimeoutRef.current?.();
+          break;
+        case "trace-result": {
+          if (traceTimeoutRef.current) clearTimeout(traceTimeoutRef.current);
+          let result: TraceResult;
+          try {
+            result = JSON.parse(msg.data ?? "");
+          } catch {
+            result = { steps: [], error: { summary: "The trace couldn't be read.", line: null }, truncated: false, out: "" };
+          }
+          traceResolverRef.current?.(result);
+          traceResolverRef.current = null;
+          break;
+        }
       }
     };
 
@@ -167,6 +238,41 @@ export function usePyodideWorker() {
     });
   }, []);
 
+  /** Runs code line by line and records Python's memory at every step, for the visualiser. */
+  const trace = useCallback(
+    (code: string, opts: { files?: Record<string, string>; packages?: string[]; inputs?: string[]; maxSteps?: number } = {}) => {
+      return new Promise<TraceResult>((resolve) => {
+        if (!workerRef.current) {
+          resolve({ steps: [], error: { summary: "The Python worker isn't available.", line: null }, truncated: false, out: "" });
+          return;
+        }
+        // One trace at a time: a newer request replaces an older one still waiting.
+        traceResolverRef.current?.({ steps: [], error: null, truncated: false, out: "" });
+        traceResolverRef.current = resolve;
+        runIdRef.current += 1;
+        workerRef.current.postMessage({ type: "trace", code, runId: runIdRef.current, ...opts });
+
+        // A worker stuck in one long computation can't be interrupted, only replaced.
+        startTraceTimeoutRef.current = () => {
+          if (traceTimeoutRef.current) clearTimeout(traceTimeoutRef.current);
+          traceTimeoutRef.current = setTimeout(() => {
+            workerRef.current?.terminate();
+            setStatus("loading");
+            traceResolverRef.current?.({
+              steps: [],
+              error: { summary: "TimeoutError: this program ran for too long to step through", line: null },
+              truncated: false,
+              out: "",
+            });
+            traceResolverRef.current = null;
+            startWorker();
+          }, TRACE_TIMEOUT_MS);
+        };
+      });
+    },
+    [startWorker],
+  );
+
   const clearOutput = useCallback(() => setOutput(""), []);
 
   /** Start downloading a lab's packages and datasets in the background, before the first run. */
@@ -174,5 +280,7 @@ export function usePyodideWorker() {
     if (packages?.length || files) workerRef.current?.postMessage({ type: "preload", packages, files });
   }, []);
 
-  return { status, output, running, loadingPackages, run, check, preload, clearOutput };
+  return { status, output, running, loadingPackages, run, check, trace, preload, clearOutput };
 }
+
+export type PythonWorker = ReturnType<typeof usePyodideWorker>;

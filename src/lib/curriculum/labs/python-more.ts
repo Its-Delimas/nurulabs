@@ -813,10 +813,25 @@ print(b.acres)        # 5`,
       kind: "experiment",
       title: "One blueprint, many farms",
       prompt:
-        "Set the acres and rainfall, then create farm objects from the `Farm` class. Each one gets its own data — but they all share the `predicted_bags()` method.",
-      widget: "class-blueprint",
+        "Step through and watch the **Objects** panel. `Farm(...)` makes a new, empty object and runs `__init__` on it, with `self` pointing at that new object. Then watch `predicted_bags()`: which farm does `self` point at each time? Edit the code to add a third farm.",
+      widget: "visualiser",
+      visualise: {
+        code: `class Farm:
+    def __init__(self, name, acres, rain_mm):
+        self.name = name
+        self.acres = acres
+        self.rain_mm = rain_mm
+
+    def predicted_bags(self):
+        per_acre = 0.075 * self.rain_mm - 0.76
+        return round(per_acre * self.acres, 1)
+
+wanjiru = Farm("Wanjiru", 3, 180)
+otieno = Farm("Otieno", 2, 220)
+print(wanjiru.predicted_bags(), otieno.predicted_bags())`,
+      },
       observe:
-        "Every object carries its own `acres` and `rain_mm`, and when you call `predicted_bags()` the method uses **that object's** data through `self`. That's the whole idea of a class: data and behaviour, packaged together.",
+        "One class, two separate objects, each with its own `name`, `acres` and `rain_mm`. Inside `__init__` and `predicted_bags`, `self` is an arrow to whichever object the method is working on, which is how the same method gives Wanjiru 38.2 bags and Otieno 31.5. That's the whole idea of a class: data and behaviour, packaged together.",
     },
     {
       id: "predict-counter",

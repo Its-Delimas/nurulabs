@@ -5,18 +5,18 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Eye, FlaskConical } from "lucide-react";
 import type { ExperimentStep, WidgetId } from "@/lib/curriculum/types";
+import type { PythonWorker } from "@/hooks/usePyodideWorker";
 import RichText from "../RichText";
+import type { CodeVisualiserProps } from "../visualiser/CodeVisualiser";
 
 // Each widget is its own chunk, loaded only when its experiment is shown —
 // several carry a dataset, and learners shouldn't download them all up front.
 // Browser-only: they're interactive, and some start from random samples.
 type WidgetProps = { onInteract: () => void };
 const loading = () => <div className="h-64 animate-pulse rounded-2xl bg-ink/5" />;
-const VariableBoxes = dynamic<WidgetProps>(() => import("../widgets/VariableBoxes"), { loading, ssr: false });
+const CodeVisualiser = dynamic<CodeVisualiserProps>(() => import("../visualiser/CodeVisualiser"), { loading, ssr: false });
 const DecisionThreshold = dynamic<WidgetProps>(() => import("../widgets/DecisionThreshold"), { loading, ssr: false });
 const ListExplorer = dynamic<WidgetProps>(() => import("../widgets/ListExplorer"), { loading, ssr: false });
-const LoopStepper = dynamic<WidgetProps>(() => import("../widgets/LoopStepper"), { loading, ssr: false });
-const FunctionMachine = dynamic<WidgetProps>(() => import("../widgets/FunctionMachine"), { loading, ssr: false });
 const DictLookup = dynamic<WidgetProps>(() => import("../widgets/DictLookup"), { loading, ssr: false });
 const CsvRows = dynamic<WidgetProps>(() => import("../widgets/CsvRows"), { loading, ssr: false });
 const LineFit = dynamic<WidgetProps>(() => import("../widgets/LineFit"), { loading, ssr: false });
@@ -24,7 +24,6 @@ const StringMethods = dynamic<WidgetProps>(() => import("../widgets/StringMethod
 const ComprehensionBuilder = dynamic<WidgetProps>(() => import("../widgets/ComprehensionBuilder"), { loading, ssr: false });
 const TryExcept = dynamic<WidgetProps>(() => import("../widgets/TryExcept"), { loading, ssr: false });
 const JsonExplorer = dynamic<WidgetProps>(() => import("../widgets/JsonExplorer"), { loading, ssr: false });
-const ClassBlueprint = dynamic<WidgetProps>(() => import("../widgets/ClassBlueprint"), { loading, ssr: false });
 const BugHunt = dynamic<WidgetProps>(() => import("../widgets/BugHunt"), { loading, ssr: false });
 const ArrayOps = dynamic<WidgetProps>(() => import("../widgets/ArrayOps"), { loading, ssr: false });
 const DataFrameOps = dynamic<WidgetProps>(() => import("../widgets/DataFrameOps"), { loading, ssr: false });
@@ -104,12 +103,10 @@ const PartitionPruner = dynamic<WidgetProps>(() => import("../widgets/PartitionP
 const ScdHistory = dynamic<WidgetProps>(() => import("../widgets/ScdHistory"), { loading, ssr: false });
 const StreamWindows = dynamic<WidgetProps>(() => import("../widgets/StreamWindows"), { loading, ssr: false });
 
-const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
-  "variable-boxes": VariableBoxes,
+// The visualiser runs real Python, so it's rendered separately with the lab's Python worker.
+const widgets: Record<Exclude<WidgetId, "visualiser">, React.ComponentType<WidgetProps>> = {
   "decision-threshold": DecisionThreshold,
   "list-explorer": ListExplorer,
-  "loop-stepper": LoopStepper,
-  "function-machine": FunctionMachine,
   "dict-lookup": DictLookup,
   "csv-rows": CsvRows,
   "line-fit": LineFit,
@@ -117,7 +114,6 @@ const widgets: Record<WidgetId, React.ComponentType<WidgetProps>> = {
   "comprehension-builder": ComprehensionBuilder,
   "try-except": TryExcept,
   "json-explorer": JsonExplorer,
-  "class-blueprint": ClassBlueprint,
   "bug-hunt": BugHunt,
   "array-ops": ArrayOps,
   "dataframe-ops": DataFrameOps,
@@ -205,14 +201,16 @@ export default function ExperimentView({
   step,
   done,
   onComplete,
+  python,
 }: {
   step: ExperimentStep;
   done: boolean;
   onComplete: () => void;
+  python: PythonWorker;
 }) {
   const [count, setCount] = useState(done ? INTERACTIONS_NEEDED : 0);
   const completedRef = useRef(done);
-  const Widget = widgets[step.widget];
+  const Widget = step.widget === "visualiser" ? null : widgets[step.widget];
   const revealed = count >= INTERACTIONS_NEEDED;
 
   function onInteract() {
@@ -239,7 +237,17 @@ export default function ExperimentView({
       </div>
 
       <div className="mt-10 rounded-[28px] bg-paper p-5 ring-1 ring-ink/10 md:p-8">
-        <Widget onInteract={onInteract} />
+        {Widget ? (
+          <Widget onInteract={onInteract} />
+        ) : (
+          <CodeVisualiser
+            code={step.visualise?.code ?? ""}
+            editable={step.visualise?.editable ?? true}
+            inputs={step.visualise?.inputs}
+            python={python}
+            onInteract={onInteract}
+          />
+        )}
       </div>
 
       <div className="mt-6">

@@ -35,12 +35,21 @@ print(to_usd(129, 129)) # 1.0`,
     {
       id: "machine",
       kind: "experiment",
-      title: "Feed the function machine",
+      title: "Watch a function run",
       prompt:
-        "A function is a machine: values go in, one value comes out. Change the inputs and watch them flow through the code to the return value.",
-      widget: "function-machine",
+        "Step through and watch the **Frames** panel. Lines 1–3 only *define* `to_usd`, so nothing inside it runs yet. Each call then opens a fresh frame where `ksh` and `rate` hold the values passed in, and the frame disappears once it returns. Edit the code and call it with your own amounts.",
+      widget: "visualiser",
+      visualise: {
+        code: `def to_usd(ksh, rate):
+    usd = ksh / rate
+    return round(usd, 2)
+
+price_usd = to_usd(5000, 129)
+fee_usd = to_usd(250, 129)
+print(price_usd, fee_usd)`,
+      },
       observe:
-        "The parameters `ksh` and `rate` take whatever values you pass in; the same recipe works for any of them. Hold on to this picture: when you train a model, what you get at the end is **a function** — `predict(rainfall)` → yield. Training just decides the numbers inside it.",
+        "Every call gets its own frame: `ksh`, `rate` and `usd` exist only inside it, and vanish when the function returns. Only the **return value** comes back out, into `price_usd` and then `fee_usd`. The same recipe works for any inputs. Hold on to this picture: when you train a model, what you get at the end is **a function**, `predict(rainfall)` → yield. Training just decides the numbers inside it.",
     },
     {
       id: "predict-return",

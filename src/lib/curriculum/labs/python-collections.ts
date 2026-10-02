@@ -207,8 +207,15 @@ print("Done")   # not indented: runs once, after the loop`,
       kind: "experiment",
       title: "Watch a loop run, line by line",
       prompt:
-        "Step through this loop one line at a time and watch `price` and `total` change. Then press Play and watch the whole run.",
-      widget: "loop-stepper",
+        "Step through this loop one line at a time and watch `price` and `total` change in the **Frames** panel: line 3 runs once per item, and line 4 adds that item to the total. Press **Play** to watch the whole run, then **Edit code**: add a fifth price, or put an `if` inside the loop.",
+      widget: "visualiser",
+      visualise: {
+        code: `prices = [120, 95, 140, 110]
+total = 0
+for price in prices:
+    total = total + price
+print("Total:", total)`,
+      },
       observe:
         "`total` starts at 0 **before** the loop, and every pass adds the current price to it. This is the **accumulator pattern**: start with an empty result, update it once per item. Sums, averages, counts — and later, a model's total error — are all computed this way.",
     },

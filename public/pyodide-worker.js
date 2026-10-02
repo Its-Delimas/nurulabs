@@ -19,9 +19,11 @@ async function initPyodide() {
     },
     stderr: (msg) => postMessage({ type: "stderr", data: msg }),
   });
-  // One harness shared with the content validator: see public/nl_harness.py.
-  const harness = await (await fetch("/nl_harness.py")).text();
-  pyodide.runPython(harness);
+  // One harness shared with the content validator: see public/nl_harness.py
+  // (running and checking code) and public/nl_trace.py (the step-through tracer).
+  for (const file of ["/nl_harness.py", "/nl_trace.py"]) {
+    pyodide.runPython(await (await fetch(file)).text());
+  }
   return pyodide;
 }
 
@@ -81,7 +83,29 @@ async function ensurePackages(pyodide, packages) {
 }
 
 self.onmessage = async (event) => {
-  const { type, code, runId, exprs, files, packages } = event.data;
+  const { type, code, runId, exprs, files, packages, maxSteps, inputs } = event.data;
+
+  if (type === "trace") {
+    // Run code line by line for the visualiser (see public/nl_trace.py).
+    try {
+      const pyodide = await getPyodide();
+      await ensurePackages(pyodide, packages);
+      await writeFiles(pyodide, files);
+      postMessage({ type: "trace-start", runId });
+      const tracer = pyodide.globals.get("_nl_trace");
+      const data = tracer(code, maxSteps || 500, pyodide.toPy(inputs || []));
+      tracer.destroy();
+      postMessage({ type: "trace-result", runId, data });
+    } catch (err) {
+      const summary = String(err && err.message ? err.message : err);
+      postMessage({
+        type: "trace-result",
+        runId,
+        data: JSON.stringify({ steps: [], error: { summary, line: null }, truncated: false, out: "" }),
+      });
+    }
+    return;
+  }
 
   if (type === "init") {
     try {

@@ -4,6 +4,7 @@
 //   - predict steps: the marked answer must match what the code really prints
 //   - explain steps: the model answer must cover every key idea
 //   - scenario steps: exactly one best option, and feedback on every option
+//   - visualiser experiments: the code steps through to the end without an error
 // Run with `npm run validate:labs`. Exits non-zero on any failure.
 
 import { readFileSync } from "node:fs";
@@ -23,6 +24,7 @@ const py = await loadPyodide({
   stderr: () => {},
 });
 py.runPython(readFileSync(path.join(root, "public/nl_harness.py"), "utf8"));
+py.runPython(readFileSync(path.join(root, "public/nl_trace.py"), "utf8"));
 const prepared = new Set();
 
 // Same self-hosted wheels as public/pyodide-worker.js.
@@ -89,6 +91,15 @@ for (const lab of labs) {
       const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
       const ok = r1.every(Boolean) && !r0.every(Boolean);
       report(ok, tag, `starter=${JSON.stringify(r0)} solution=${JSON.stringify(r1)} solutionError=${so.error?.summary ?? "none"}`);
+    } else if (s.kind === "experiment" && s.widget === "visualiser") {
+      const files = lab.files ?? {};
+      for (const [name, source] of Object.entries(files)) {
+        const content = /^\/(data|datasets|notebooks)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
+        py.FS.writeFile(name, content);
+      }
+      const t = JSON.parse(py.globals.get("_nl_trace")(s.visualise?.code ?? "", 500, py.toPy(s.visualise?.inputs ?? [])));
+      const ok = !!s.visualise?.code && t.steps.length > 1 && !t.error && !t.truncated;
+      report(ok, tag, `steps=${t.steps.length} error=${t.error?.summary ?? "none"} truncated=${t.truncated}`);
     } else if (s.kind === "scenario") {
       const best = s.options.filter((o) => o.best).length;
       const silent = s.options.filter((o) => !o.feedback?.trim()).length;
