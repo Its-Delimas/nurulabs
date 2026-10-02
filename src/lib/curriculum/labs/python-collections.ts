@@ -325,13 +325,15 @@ export const pyLoops: Lab = {
   title: "Loops: Do It For Every Item",
   subject: "for loops",
   summary:
-    "Real datasets have thousands of rows. Loops let you run the same instructions for every item — to total, average, convert, filter and count.",
-  minutes: 30,
+    "Real datasets have thousands of rows. Loops let you run the same instructions for every item: to total, average, convert, filter and count, to count with range, and to walk every cell of a table.",
+  minutes: 40,
   kind: "lab",
   skills: [
     "Repeat work for every item with a for loop",
     "Use the accumulator pattern to total and count",
     "Build a new list by transforming or filtering another",
+    "Count with range(start, stop, step), and loop over strings",
+    "Visit every cell of a table with nested loops",
   ],
   steps: [
     {
@@ -419,6 +421,47 @@ for i in range(len(actual)):
       keyIdea: "`for item in data` gives you values. `for i in range(len(data))` gives you positions — use it when two lists must line up.",
     },
     {
+      id: "range-nested",
+      kind: "concept",
+      title: "Counting on, and loops inside loops",
+      body: [
+        "`range` takes up to three numbers, like a slice: `range(1, 6)` is 1 to 5, `range(0, 100, 10)` counts in tens, and `range(10, 0, -1)` counts down. `reversed(data)` walks a list backwards.",
+        "A `for` loop works on anything you can step through: a list, a `range`, even a string, which hands you one character at a time. (`print(x, end=\" \")` keeps the next print on the same line.)",
+        "Put one loop inside another to visit every cell of a table: the outer loop takes each row, the inner loop each value in that row. The inner loop runs **all the way through** for every single pass of the outer one.",
+      ],
+      code: `for week in range(1, 4):
+    print("Week", week)
+
+for countdown in range(3, 0, -1):
+    print(countdown)
+
+for letter in "maize":
+    print(letter.upper(), end=" ")
+print()
+
+sales = [[1200, 950], [800, 1050]]
+for row in sales:
+    for amount in row:
+        print(amount, end=" ")
+    print("| row total:", sum(row))`,
+      keyIdea: "`range(start, stop, step)` counts any way you need. Nested loops visit every cell: the inner loop finishes for each pass of the outer.",
+    },
+    {
+      id: "predict-nested-loops",
+      kind: "predict",
+      title: "How many times?",
+      prompt: "A loop inside a loop. What's the final count?",
+      code: `count = 0
+for i in range(3):
+    for j in range(4):
+        count += 1
+print(count)`,
+      options: ["12", "7", "4", "3"],
+      answer: 0,
+      explanation:
+        "The inner loop runs 4 times for **each** of the 3 passes of the outer loop: 3 × 4 = 12. That multiplication is worth remembering: nested loops over big data get slow fast.",
+    },
+    {
       id: "total-average",
       kind: "code",
       title: "Total and average — by hand",
@@ -503,6 +546,55 @@ for price in prices_ksh:
     prices_usd.append(round(price / rate, 2))
 
 print(prices_usd)`,
+    },
+    {
+      id: "stall-totals",
+      kind: "code",
+      title: "Every stall's total",
+      brief:
+        "`sales` is a table: one row per stall, one column per day. With loops, build `stall_totals` (each stall's total, in order) and `grand_total` (everything sold). It's tested on another table too.",
+      starterCode: `sales = [
+    [1200, 950, 1100, 1400],   # Achieng
+    [800, 1050, 990, 1210],    # Otieno
+    [1500, 1320, 1250, 1600],  # Wanjiru
+]
+
+stall_totals = []
+grand_total = 0
+
+print(stall_totals, grand_total)
+`,
+      checks: [
+        { expr: "stall_totals == [4650, 4050, 5670]", label: "`stall_totals` is `[4650, 4050, 5670]`", failHint: "For each row, add up its values and `append` the row's total." },
+        { expr: "grand_total == 14370", label: "`grand_total` is 14,370", failHint: "Add each row's total (or every value) into `grand_total`." },
+        {
+          expr: "(lambda ns: ns['stall_totals'] == [3, 7, 11] and ns['grand_total'] == 21)(_with(sales=[[1, 2], [3, 4], [5, 6]]))",
+          label: "Works on another table",
+          failHint: "Compute everything from `sales` with loops, not from fixed numbers.",
+        },
+      ],
+      hints: [
+        "The outer loop is `for row in sales:`. Inside it, start a `row_total` at 0 and loop over `row`.",
+        "After the inner loop finishes (one indent level back), `append` the row total and add it to `grand_total`.",
+      ],
+      why:
+        "The outer loop walked the rows and the inner loop walked each row's values, with a fresh `row_total` for every stall. Notice where each line sits: `row_total = 0` inside the outer loop, `append` after the inner loop. Indentation decides how many times a line runs.",
+      solution: `sales = [
+    [1200, 950, 1100, 1400],
+    [800, 1050, 990, 1210],
+    [1500, 1320, 1250, 1600],
+]
+
+stall_totals = []
+grand_total = 0
+for row in sales:
+    row_total = 0
+    for amount in row:
+        row_total += amount
+    stall_totals.append(row_total)
+    grand_total += row_total
+
+print(stall_totals, grand_total)`,
     },
     {
       id: "rainy-days",
