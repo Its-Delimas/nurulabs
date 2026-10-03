@@ -106,10 +106,7 @@ export const tracks: Track[] = [
         slug: "py-professional",
         title: "Professional Python",
         summary: "Finding bugs, proving code works, type hints, clean code, and async.",
-        labs: ["py-debugging", "py-clean-code"],
-        planned: [
-          { title: "Async & Concurrency", summary: "async and await, running tasks concurrently, and when it helps." },
-        ],
+        labs: ["py-debugging", "py-clean-code", "py-async"],
         milestone: {
           title: "Code you can trust",
           description: "You can debug methodically, test your code, and write Python other people can read and maintain.",

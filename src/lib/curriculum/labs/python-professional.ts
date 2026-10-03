@@ -347,3 +347,381 @@ print("tests pass")`,
     },
   ],
 };
+
+const MARKET_SERVERS = `import asyncio
+import inspect
+import time
+
+DELAYS = {"Gikomba": 0.3, "Kongowea": 0.5, "Kibuye": 0.4, "Eldoret Main": 0.2}
+PRICES = {"Gikomba": 64, "Kongowea": 75, "Kibuye": 57, "Eldoret Main": 53}
+
+
+async def fetch_price(market):
+    """Pretend to ask a market's server for today's maize price (KSh/kg)."""
+    await asyncio.sleep(DELAYS[market])
+    return PRICES[market]
+`;
+
+const SMS_GATEWAY = `import asyncio
+import time
+
+FLAKY = {"0733111222"}      # this number's network is busy at first
+attempts = {}
+running = 0
+peak = 0
+
+
+async def send_sms(phone, message):
+    """Pretend to send an SMS. Invalid numbers always fail; a busy network fails once."""
+    global running, peak
+    running += 1
+    peak = max(peak, running)
+    try:
+        attempts[phone] = attempts.get(phone, 0) + 1
+        await asyncio.sleep(0.1)
+        if not (phone.startswith("07") and len(phone) == 10):
+            raise ValueError(f"invalid number {phone}")
+        if phone in FLAKY and attempts[phone] == 1:
+            raise ConnectionError("network busy, try again")
+        return phone
+    finally:
+        running -= 1
+
+
+phones = ["0712345678", "0733111222", "07123", "0700555666", "0799000111", "0711222333"]
+limit = asyncio.Semaphore(3)      # the gateway allows 3 messages at once
+`;
+
+export const pyAsync: Lab = {
+  slug: "py-async",
+  runExamples: true,
+  number: "36",
+  title: "Async & Concurrency",
+  subject: "async, await, asyncio",
+  summary:
+    "Programs spend most of their time waiting: for a network, a database, a file. `async` and `await` let Python get on with other work while it waits, so ten slow requests take about as long as one. Write coroutines, run them together with `asyncio.gather`, limit how many run at once, handle timeouts and failures, and know when threads or processes are the better tool.",
+  minutes: 45,
+  kind: "lab",
+  skills: [
+    "Write coroutines with async def and await",
+    "Run tasks concurrently with asyncio.gather and create_task",
+    "Handle timeouts, failures and rate limits in concurrent code",
+    "Choose between async, threads and processes for a job",
+  ],
+  steps: [
+    {
+      id: "waiting",
+      kind: "concept",
+      title: "Waiting is the slow part",
+      body: [
+        "Ask three market servers for today's price, one after another, and most of the time is spent **waiting** for answers to travel across the network. While it waits, your program does nothing at all.",
+        "Here, `time.sleep` stands in for that wait. Three requests of 0.4 seconds each take 1.2 seconds, because each one only starts when the one before has finished.",
+      ],
+      code: `import time
+
+def fetch_price(market, seconds):
+    time.sleep(seconds)                # pretend to wait for a slow network
+    return f"{market}: ok"
+
+start = time.perf_counter()
+for market, secs in [("Gikomba", 0.4), ("Kongowea", 0.4), ("Kibuye", 0.4)]:
+    print(fetch_price(market, secs))
+print(f"took {time.perf_counter() - start:.1f}s")    # one wait after another`,
+      keyIdea: "Network and disk work is mostly waiting. Done one after another, the waits add up.",
+    },
+    {
+      id: "async-await",
+      kind: "concept",
+      title: "async and await",
+      body: [
+        "`async def` defines a **coroutine**: a function that can pause. Inside it, `await` means \"wait for this, and let other work run in the meantime\". `asyncio.sleep` is the waiting version of `time.sleep` that allows that.",
+        "`asyncio.gather(...)` runs several coroutines **concurrently** and returns their results in order. The three waits now overlap, so the whole job takes about as long as the slowest request.",
+        "In this browser, as in Jupyter notebooks, you can write `await` at the top level. In a normal `.py` script, put the top-level code in `async def main():` and start it with `asyncio.run(main())`.",
+      ],
+      code: `import asyncio
+import time
+
+async def fetch_price(market, seconds):
+    await asyncio.sleep(seconds)       # wait, letting others run meanwhile
+    return f"{market}: ok"
+
+start = time.perf_counter()
+results = await asyncio.gather(
+    fetch_price("Gikomba", 0.4),
+    fetch_price("Kongowea", 0.4),
+    fetch_price("Kibuye", 0.4),
+)
+print(results)
+print(f"took {time.perf_counter() - start:.1f}s")    # the waits overlap`,
+      keyIdea: "`async def` makes a coroutine; `await` pauses it while it waits; `asyncio.gather` runs several at once.",
+    },
+    {
+      id: "predict-coroutine",
+      kind: "predict",
+      title: "Calling a coroutine",
+      prompt: "`greet` is a coroutine function. What's printed?",
+      code: `import asyncio
+
+async def greet():
+    return "Habari!"
+
+result = greet()
+print(type(result).__name__)
+print(await result)`,
+      options: ["coroutine\nHabari!", "str\nHabari!", "Habari!\nHabari!", "NoneType\nNone"],
+      answer: 0,
+      explanation:
+        "Calling a coroutine function doesn't run it. It returns a **coroutine object**, a paused piece of work. Only `await` (or `gather`, or `create_task`) actually runs it and gives you its result. Forgetting the `await` is the most common async bug, and Python warns \"coroutine was never awaited\" when it happens.",
+    },
+    {
+      id: "predict-order",
+      kind: "predict",
+      title: "Who finishes first?",
+      prompt: "Two jobs run together; A waits longer than B. What's printed?",
+      code: `import asyncio
+
+async def job(name, seconds):
+    print("start", name)
+    await asyncio.sleep(seconds)
+    print("end", name)
+
+await asyncio.gather(job("A", 0.2), job("B", 0.1))`,
+      options: ["start A\nstart B\nend B\nend A", "start A\nend A\nstart B\nend B", "start A\nstart B\nend A\nend B", "start B\nend B\nstart A\nend A"],
+      answer: 0,
+      explanation:
+        "A starts and pauses at its `await`, which lets B start straight away. B's shorter wait finishes first, so `end B` comes before `end A`. With async, work interleaves at every `await`: the order things **finish** depends on how long they wait, not on the order they started.",
+    },
+    {
+      id: "tasks",
+      kind: "concept",
+      title: "Tasks, timeouts and failures",
+      body: [
+        "`asyncio.create_task(coro)` starts a coroutine running in the background straight away; `await task` collects its result later, so you can do other work in between.",
+        "Networks hang. `asyncio.wait_for(coro, timeout=...)` gives up after a time limit and raises `TimeoutError`, so one slow server can't hold everything up.",
+        "By default, if one coroutine in `gather` fails, the error is raised and you lose the other results. Pass `return_exceptions=True` and each failure comes back as an exception object in its place, so you can keep the successes and report the failures.",
+      ],
+      code: `import asyncio
+
+async def fetch(market, seconds, fail=False):
+    await asyncio.sleep(seconds)
+    if fail:
+        raise ConnectionError(f"{market} didn't answer")
+    return f"{market}: ok"
+
+# Start a task now, collect its result later
+task = asyncio.create_task(fetch("Gikomba", 0.2))
+print("doing other work while Gikomba loads...")
+print(await task)
+
+# Give up on a slow call
+try:
+    await asyncio.wait_for(fetch("Kongowea", 2), timeout=0.3)
+except TimeoutError:
+    print("Kongowea timed out")
+
+# Keep the successes, see the failures
+results = await asyncio.gather(
+    fetch("Kibuye", 0.1),
+    fetch("Eldoret", 0.1, fail=True),
+    return_exceptions=True,
+)
+print(results)`,
+      keyIdea: "`create_task` starts work now; `wait_for` adds a timeout; `gather(..., return_exceptions=True)` keeps going when some fail.",
+    },
+    {
+      id: "semaphore",
+      kind: "concept",
+      title: "Not all at once: semaphores",
+      body: [
+        "Running everything at once isn't always polite, or allowed. An SMS gateway might accept 2 messages at a time; a website might block you for sending 500 requests in a second.",
+        "An `asyncio.Semaphore(2)` is a counter of free places. `async with limit:` waits for a free place, holds it while the block runs, and gives it back afterwards. Everything is still started together, but at most 2 run at any moment.",
+      ],
+      code: `import asyncio
+import time
+
+limit = asyncio.Semaphore(2)          # at most 2 messages at once
+
+async def send_sms(phone):
+    async with limit:
+        await asyncio.sleep(0.2)
+        return f"sent to {phone}"
+
+start = time.perf_counter()
+phones = [f"07{n:08}" for n in range(6)]
+results = await asyncio.gather(*(send_sms(p) for p in phones))
+print(len(results), f"took {time.perf_counter() - start:.1f}s")   # 3 rounds of 2`,
+      keyIdea: "`asyncio.Semaphore(n)` with `async with` caps how many coroutines run at once.",
+    },
+    {
+      id: "fetch-all",
+      kind: "code",
+      title: "Fetch every market at once",
+      brief:
+        "`fetch_price(market)` asks one market's server for a price, which takes a while. Write the coroutine `fetch_all(markets)` that fetches every market **concurrently** with `asyncio.gather` and returns a dictionary from market to price. Then `await` it for all four markets, storing the result in `prices`, and time it in `elapsed`, rounded to 1 decimal place.",
+      starterCode: MARKET_SERVERS + `
+
+async def fetch_all(markets):
+    pass
+
+
+start = time.perf_counter()
+prices = {}   # market -> price, fetched concurrently
+elapsed = round(time.perf_counter() - start, 1)
+print(prices, elapsed)
+`,
+      checks: [
+        { expr: "inspect.iscoroutinefunction(fetch_all)", label: "`fetch_all` is a coroutine function", failHint: "Define it with `async def fetch_all(markets):`." },
+        { expr: "prices == PRICES", label: "`prices` has all four markets", failHint: "`prices = await fetch_all(list(DELAYS))`, and `fetch_all` returns `dict(zip(markets, results))`." },
+        { expr: "'gather' in _source and 0 < elapsed < 1.0", label: "The requests overlap: under a second in total", failHint: "Fetching one by one takes 1.4 s. Use `asyncio.gather(*(fetch_price(m) for m in markets))` so the waits overlap." },
+      ],
+      hints: [
+        "`results = await asyncio.gather(*(fetch_price(m) for m in markets))`: the `*` spreads the coroutines into separate arguments.",
+        "`gather` returns results in the same order as the markets, so `dict(zip(markets, results))` pairs them up.",
+      ],
+      errorHints: [{ pattern: "coroutine", hint: "Something is a coroutine object rather than its result. Did you forget an `await`?" }],
+      why:
+        "Four requests took about as long as the slowest one, 0.5 seconds, instead of all four added together, 1.4 seconds. With a hundred markets the difference would be minutes, and that's why web scrapers, API clients and web servers are written with async.",
+      solution: MARKET_SERVERS + `
+
+async def fetch_all(markets):
+    results = await asyncio.gather(*(fetch_price(m) for m in markets))
+    return dict(zip(markets, results))
+
+
+start = time.perf_counter()
+prices = await fetch_all(list(DELAYS))
+elapsed = round(time.perf_counter() - start, 1)
+print(prices, elapsed)`,
+    },
+    {
+      id: "threads-processes",
+      kind: "concept",
+      title: "Threads and processes",
+      body: [
+        "Async works when everything you wait on is written for it: `asyncio.sleep`, async HTTP libraries such as `httpx` or `aiohttp`, async database drivers. Many popular libraries, like `requests`, are **blocking**: they don't `await`, so they'd freeze the event loop.",
+        "For blocking I/O, use **threads**: `concurrent.futures.ThreadPoolExecutor` runs a function in several threads at once, and `asyncio.to_thread` runs one blocking call from async code.",
+        "For **CPU-heavy** work, like resizing thousands of photos or crunching numbers, neither helps much: in standard Python only one thread runs Python code at a time (the Global Interpreter Lock). Use **processes** instead, with `ProcessPoolExecutor`, so each CPU core works separately. Threads don't run in this browser sandbox, so this sample is to read rather than run.",
+      ],
+      code: `from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import requests
+
+# Blocking network calls: threads overlap the waiting
+with ThreadPoolExecutor(max_workers=8) as pool:
+    pages = list(pool.map(requests.get, urls))
+
+# Heavy calculation: one process per CPU core
+with ProcessPoolExecutor() as pool:
+    thumbnails = list(pool.map(resize_photo, photo_paths))`,
+      run: false,
+      keyIdea: "Waiting on I/O: async (or threads for blocking libraries). Heavy CPU work: processes.",
+    },
+    {
+      id: "which-tool",
+      kind: "scenario",
+      title: "Which tool for the job?",
+      situation: [
+        "A data pipeline has to look up 2,000 transactions in a payments company's API every night. Each lookup spends about a second waiting for the network, and the API allows 20 requests at a time.",
+        "Done one after another, the job takes over half an hour, and the overnight window is getting tight.",
+      ],
+      question: "What do you reach for?",
+      options: [
+        {
+          text: "Async requests with `asyncio.gather`, limited by `asyncio.Semaphore(20)`.",
+          feedback: "Yes. The job is almost all waiting, and the semaphore keeps you within the API's limit: about 2,000 ÷ 20 × 1 s, under two minutes.",
+          best: true,
+        },
+        {
+          text: "A `ProcessPoolExecutor`, to use every CPU core.",
+          feedback: "Processes help when the CPU is the bottleneck. Here the CPU sits idle, waiting for the network, so extra cores add overhead without speeding up the wait.",
+        },
+        {
+          text: "Fire all 2,000 requests at once with `gather` and no limit.",
+          feedback: "Fast for a moment, until the API starts rejecting you for breaking its 20-at-a-time limit, or blocks your key. Concurrency needs a limit.",
+        },
+        {
+          text: "Keep it sequential and start the job earlier.",
+          feedback: "It works today, but the job grows with the business, and you'd be paying 30 minutes for something that needs two.",
+        },
+      ],
+      debrief:
+        "First ask what the program is waiting for. I/O-bound work, such as networks, databases and files, spends its time waiting, so async (or threads, for blocking libraries) lets the waits overlap, with a semaphore to respect rate limits. CPU-bound work, such as image processing or heavy maths, needs more cores, which means processes. And if a job is small, the simplest sequential code is still the right answer.",
+    },
+    {
+      id: "bulk-sms",
+      kind: "code",
+      challenge: true,
+      title: "Bulk SMS, politely",
+      brief:
+        "Send the chama's reminder to every number in `phones`. Write `send_with_retry(phone, message, retries=2)`, which retries after a `ConnectionError` (a busy network) up to `retries` more times, but never retries a `ValueError` (a bad number). Then write `send_all(phones, message)`, which sends to every phone concurrently, at most 3 at a time using `limit`, and returns two lists: the numbers that were `sent` and the ones that `failed`, each in the original order. Await it into `sent, failed`, and time it in `elapsed`.",
+      starterCode: SMS_GATEWAY + `
+
+async def send_with_retry(phone, message, retries=2):
+    pass
+
+
+async def send_all(phones, message):
+    pass
+
+
+start = time.perf_counter()
+sent, failed = [], []
+elapsed = round(time.perf_counter() - start, 1)
+print(sent, failed, elapsed)
+`,
+      checks: [
+        { expr: "sent == ['0712345678', '0733111222', '0700555666', '0799000111', '0711222333'] and failed == ['07123']", label: "Five sent, and the invalid number failed", failHint: "`gather(..., return_exceptions=True)`, then split the phones by whether their result is an exception." },
+        { expr: "attempts.get('0733111222') == 2 and attempts.get('07123') == 1", label: "The busy number was retried once; the invalid one wasn't retried", failHint: "Catch only `ConnectionError` in `send_with_retry`, so a `ValueError` goes straight through." },
+        { expr: "1 < peak <= 3", label: "Messages ran concurrently, never more than 3 at once", failHint: "Wrap each send in `async with limit:` and run them all with `gather`." },
+        { expr: "elapsed < 0.6", label: "Done in well under the one-by-one time", failHint: "Six messages one at a time take 0.7 seconds or more. Run them concurrently." },
+      ],
+      hints: [
+        "In `send_with_retry`: `for attempt in range(retries + 1):` with `try: return await send_sms(phone, message)` and `except ConnectionError:` that re-raises on the last attempt.",
+        "In `send_all`, an inner `async def one(phone):` can hold the semaphore with `async with limit:` and call `send_with_retry`.",
+      ],
+      why:
+        "Every real integration needs these three things together: concurrency for speed, a limit to respect the other side, and retries only for errors that might succeed next time. A bad number fails the same way every time, so retrying it would just waste money; a busy network often clears in a moment.",
+      solution: SMS_GATEWAY + `
+
+async def send_with_retry(phone, message, retries=2):
+    for attempt in range(retries + 1):
+        try:
+            return await send_sms(phone, message)
+        except ConnectionError:
+            if attempt == retries:
+                raise
+            await asyncio.sleep(0.05)
+
+
+async def send_all(phones, message):
+    async def one(phone):
+        async with limit:
+            return await send_with_retry(phone, message)
+
+    results = await asyncio.gather(*(one(p) for p in phones), return_exceptions=True)
+    sent = [p for p, r in zip(phones, results) if not isinstance(r, Exception)]
+    failed = [p for p, r in zip(phones, results) if isinstance(r, Exception)]
+    return sent, failed
+
+
+start = time.perf_counter()
+sent, failed = await send_all(phones, "Reminder: contributions are due on Saturday")
+elapsed = round(time.perf_counter() - start, 1)
+print(sent, failed, elapsed)`,
+    },
+    {
+      id: "explain-async",
+      kind: "explain",
+      title: "When does async help?",
+      prompt:
+        "Explain what `async` and `await` do, why `asyncio.gather` makes I/O-heavy programs faster, and when you'd use threads or processes instead.",
+      ideas: [
+        { label: "Coroutines pause at await so others can run", patterns: ["pause", "await", "coroutine", "let.*(others?|other work) run", "event loop", "meanwhile"], nudge: "What happens at an `await`?" },
+        { label: "gather overlaps the waiting", patterns: ["gather", "overlap", "same time", "concurrent", "together", "slowest"], nudge: "Why do three waits take about as long as one?" },
+        { label: "It helps I/O-bound work, not CPU-bound work", patterns: ["i/?o", "network", "waiting", "cpu", "bound"], nudge: "What kind of work does async speed up, and what kind doesn't it?" },
+        { label: "Threads for blocking libraries, processes for heavy CPU", patterns: ["thread", "process", "gil", "blocking", "core"], nudge: "What are the alternatives, and when?" },
+      ],
+      modelAnswer:
+        "`async def` defines a coroutine, a function that can pause, and `await` pauses it while it waits for something like a network reply, letting the event loop run other coroutines meanwhile. `asyncio.gather` starts several coroutines together so their waits overlap, and the whole job takes about as long as the slowest request instead of the sum of all of them. That only helps I/O-bound work that spends its time waiting. For blocking libraries that don't support async I'd use threads, and for CPU-heavy work, like processing thousands of images, processes, because only one thread runs Python code at a time.",
+    },
+  ],
+};
