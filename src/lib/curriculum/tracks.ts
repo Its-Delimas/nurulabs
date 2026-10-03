@@ -46,9 +46,8 @@ export const tracks: Track[] = [
         slug: "py-collections",
         title: "Collections",
         summary: "Dictionaries, sets, comprehensions, the collections module and pattern matching.",
-        labs: ["py-dicts"],
+        labs: ["py-dicts", "py-sets"],
         planned: [
-          { title: "Sets", summary: "Unique values, fast membership, and union, intersection and difference." },
           { title: "Comprehensions", summary: "List, dict and set comprehensions with conditions, and when a plain loop reads better." },
           { title: "The collections Module", summary: "Counter, defaultdict, deque and namedtuple: the standard library's power tools." },
           { title: "Pattern Matching with match", summary: "match and case for values, sequences, dictionaries and guards." },

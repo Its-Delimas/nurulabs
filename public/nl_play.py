@@ -49,6 +49,12 @@ def _nl_play_vars(ns):
 def _nl_play_same(a, b):
     if isinstance(a, bool) or isinstance(b, bool):
         return type(a) is type(b) and a == b
+    # A set answer also accepts the same members as a list, e.g. sorted(s).
+    if isinstance(b, (set, frozenset)) and isinstance(a, (list, tuple)):
+        try:
+            return len(a) == len(set(a)) and set(a) == set(b)
+        except TypeError:
+            return False
     if isinstance(a, (int, float)) and isinstance(b, (int, float)):
         return _math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)
     if type(a) is not type(b):
