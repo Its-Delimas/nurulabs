@@ -577,3 +577,444 @@ print(fines)`,
     },
   ],
 };
+
+// The wallet project's finished parts. Each step's starter is the parts so far.
+const W_TYPES = `from dataclasses import dataclass
+from enum import Enum
+
+
+class TxType(Enum):
+    DEPOSIT = "deposit"
+    WITHDRAW = "withdraw"
+    SEND = "send"
+    RECEIVE = "receive"
+    FEE = "fee"
+
+
+@dataclass(frozen=True)
+class Transaction:
+    kind: TxType
+    amount: int
+    other: str = ""          # the other phone number, for sends and receipts
+
+
+class WalletError(Exception):
+    """Something went wrong with a wallet."""
+
+
+class InsufficientFunds(WalletError):
+    """The wallet doesn't have enough money."""
+`;
+
+const W_FEES = `
+
+WITHDRAW_FEE = 29
+
+
+def send_fee(amount):
+    """An illustrative tiered fee for sending money."""
+    if amount <= 100:
+        return 0
+    if amount <= 500:
+        return 7
+    if amount <= 1000:
+        return 13
+    return 23
+`;
+
+const W_WALLET = `
+
+class Wallet:
+    def __init__(self, owner, phone):
+        self.owner = owner
+        self.phone = phone
+        self.transactions = []
+
+    @property
+    def balance(self):
+        total = 0
+        for t in self.transactions:
+            if t.kind in (TxType.DEPOSIT, TxType.RECEIVE):
+                total += t.amount
+            else:
+                total -= t.amount
+        return total
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise WalletError("deposits must be positive")
+        self.transactions.append(Transaction(TxType.DEPOSIT, amount))
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise WalletError("withdrawals must be positive")
+        if amount + WITHDRAW_FEE > self.balance:
+            raise InsufficientFunds(f"{self.owner} needs KSh {amount + WITHDRAW_FEE:,}, has KSh {self.balance:,}")
+        self.transactions.append(Transaction(TxType.WITHDRAW, amount))
+        self.transactions.append(Transaction(TxType.FEE, WITHDRAW_FEE))
+
+    def __repr__(self):
+        return f"Wallet({self.owner!r}, {self.phone!r}, balance={self.balance})"
+`;
+
+const W_NETWORK = `
+
+class Network:
+    def __init__(self):
+        self.wallets = {}               # phone -> Wallet
+
+    def register(self, owner, phone):
+        if phone in self.wallets:
+            raise WalletError(f"{phone} is already registered")
+        wallet = Wallet(owner, phone)
+        self.wallets[phone] = wallet
+        return wallet
+
+    def find(self, phone):
+        if phone not in self.wallets:
+            raise WalletError(f"no wallet for {phone}")
+        return self.wallets[phone]
+
+    def send(self, from_phone, to_phone, amount):
+        sender = self.find(from_phone)
+        receiver = self.find(to_phone)
+        if amount <= 0:
+            raise WalletError("amounts must be positive")
+        fee = send_fee(amount)
+        if amount + fee > sender.balance:
+            raise InsufficientFunds(f"{sender.owner} can't send KSh {amount:,}")
+        sender.transactions.append(Transaction(TxType.SEND, amount, to_phone))
+        if fee:
+            sender.transactions.append(Transaction(TxType.FEE, fee))
+        receiver.transactions.append(Transaction(TxType.RECEIVE, amount, from_phone))
+`;
+
+const W_REQUESTS = `
+
+from collections import Counter
+
+requests = [
+    "register Amina 0712345678",
+    "register Juma 0733111222",
+    "deposit 0712345678 5000",
+    "send 0712345678 0733111222 1200",
+    "withdraw 0733111222 500",
+    "send 0733111222 0799000111 100",
+    "withdraw 0733111222 2000",
+    "register Juma 0733111222",
+    "deposit 0733111222 -50",
+    "send 0712345678 0733111222 80",
+]
+
+network = Network()
+failed = []
+reasons = Counter()
+`;
+
+export const pyProjectWallet: Lab = {
+  slug: "py-project-wallet",
+  runExamples: true,
+  number: "P2",
+  title: "Mobile-Money Wallet",
+  subject: "Objects project",
+  summary:
+    "Build a small mobile-money system out of objects: wallets that keep their own history, transactions as frozen dataclasses, an enum of transaction types, a family of custom errors, and a network that moves money between phones without ever losing a shilling.",
+  minutes: 50,
+  kind: "project",
+  cover: { src: "/images/mobile-money-kiosk.webp", alt: "A smiling shopkeeper holding a phone at her kiosk, phone numbers written on the wall beside her" },
+  skills: [
+    "Design a small system as classes that work together",
+    "Model records with dataclasses and fixed choices with enums",
+    "Use a hierarchy of custom errors to report what went wrong",
+    "Keep money consistent: check everything before changing anything",
+  ],
+  steps: [
+    {
+      id: "brief",
+      kind: "concept",
+      title: "Your client: a savings group going digital",
+      body: [
+        "A savings group in Mombasa wants a simple wallet for its members, like the mobile money they use every day: deposit cash at an agent, send money to another member's phone, withdraw cash, and check a mini-statement. You're building the engine behind it.",
+        "The rules: every movement of money is a **transaction** that can never be edited afterwards. A wallet's balance is always worked out from its transactions, so the two can never disagree. Withdrawals cost KSh 29, and sending costs a tiered fee (an illustrative tariff: free up to KSh 100, then KSh 7, 13 or 23). And a failed request, such as too little money or an unknown number, must change **nothing**.",
+        "You'll build it in layers: the data types and errors, the `Wallet`, the `Network` that connects wallets, a mini-statement, and finally a day of real requests from the agent. Everything you need is from the objects module and earlier.",
+      ],
+      code: `network = Network()
+amina = network.register("Amina", "0712345678")
+juma = network.register("Juma", "0733111222")
+
+amina.deposit(5000)                                    # cash in at an agent
+network.send("0712345678", "0733111222", 1200)         # KSh 23 fee
+juma.withdraw(500)                                     # KSh 29 fee
+
+print(amina.balance, juma.balance)                     # 3777 671`,
+      run: false,
+      image: { src: "/images/reading-phone.webp", alt: "A man reading a message on his phone" },
+      keyIdea: "Money systems are built from small, strict objects: records that never change, balances worked out from history, and errors that stop bad requests before anything moves.",
+    },
+    {
+      id: "types",
+      kind: "code",
+      title: "Transactions and errors",
+      brief:
+        "Start with the vocabulary. Write an `Enum` called `TxType` with `DEPOSIT`, `WITHDRAW`, `SEND`, `RECEIVE` and `FEE`, each with its lowercase name as the value. Write a **frozen** dataclass `Transaction` with `kind`, `amount` and `other` (the other phone number, defaulting to `\"\"`). Then write `WalletError` (a kind of `Exception`) and `InsufficientFunds` (a kind of `WalletError`).",
+      starterCode: `from dataclasses import dataclass
+from enum import Enum
+
+
+# 1. TxType: an Enum with DEPOSIT, WITHDRAW, SEND, RECEIVE and FEE
+
+
+# 2. Transaction: a frozen dataclass with kind, amount and other (default "")
+
+
+# 3. WalletError, and InsufficientFunds as a kind of WalletError
+`,
+      checks: [
+        { expr: "[t.name for t in TxType] == ['DEPOSIT', 'WITHDRAW', 'SEND', 'RECEIVE', 'FEE'] and TxType.FEE.value == 'fee'", label: "`TxType` has the five kinds, in order", failHint: "`class TxType(Enum):` with `DEPOSIT = \"deposit\"` and so on." },
+        { expr: "Transaction(TxType.DEPOSIT, 500) == Transaction(TxType.DEPOSIT, 500, '') and Transaction(TxType.SEND, 5, '07').other == '07'", label: "`Transaction` has kind, amount and other", failHint: "`@dataclass(frozen=True)` with `kind: TxType`, `amount: int` and `other: str = \"\"`." },
+        { expr: "_raises(lambda: setattr(Transaction(TxType.FEE, 7), 'amount', 0), AttributeError)", label: "A transaction can't be changed", failHint: "Use `@dataclass(frozen=True)`." },
+        { expr: "issubclass(InsufficientFunds, WalletError) and issubclass(WalletError, Exception)", label: "`InsufficientFunds` is a kind of `WalletError`", failHint: "`class WalletError(Exception):` then `class InsufficientFunds(WalletError):`, each with a docstring." },
+      ],
+      hints: [
+        "A docstring is enough of a body for an exception class: `\"\"\"Something went wrong with a wallet.\"\"\"`.",
+        "Frozen dataclasses raise `FrozenInstanceError`, a kind of `AttributeError`, when you try to change them.",
+      ],
+      why:
+        "Frozen transactions mean history can't be quietly rewritten, which is exactly what auditors want. And because `InsufficientFunds` is a kind of `WalletError`, code can catch every wallet problem with one `except WalletError`, or pick out the money problem specifically.",
+      solution: W_TYPES,
+    },
+    {
+      id: "wallet",
+      kind: "code",
+      title: "The wallet",
+      brief:
+        "Give `Wallet` a `balance` **property** worked out from its transactions: deposits and receipts add, everything else subtracts. `deposit(amount)` records a `DEPOSIT`. `withdraw(amount)` records a `WITHDRAW` followed by a `FEE` of `WITHDRAW_FEE`, but raises `InsufficientFunds` if the amount plus the fee is more than the balance. Both raise `WalletError` for amounts of 0 or less, and a refused request changes nothing.",
+      starterCode: W_TYPES + W_FEES + `
+
+class Wallet:
+    def __init__(self, owner, phone):
+        self.owner = owner
+        self.phone = phone
+        self.transactions = []
+
+    # balance (a property), deposit() and withdraw() go here
+
+    def __repr__(self):
+        return f"Wallet({self.owner!r}, {self.phone!r}, balance={self.balance})"
+
+
+amina = Wallet("Amina", "0712345678")
+# When deposit and withdraw work, try:
+# amina.deposit(5000)
+# amina.withdraw(1000)
+# print(amina)
+`,
+      checks: [
+        { expr: "isinstance(Wallet.__dict__.get('balance'), property)", label: "`balance` is a property", failHint: "Decorate `def balance(self):` with `@property`." },
+        { expr: "(lambda w: (w.deposit(5000), w.withdraw(1000), w.balance)[2])(Wallet('Amina', '0712345678')) == 3971", label: "5,000 in, 1,000 out plus the fee leaves 3,971", failHint: "`balance` adds `DEPOSIT` and `RECEIVE` amounts and subtracts the rest." },
+        {
+          expr: "(lambda w: (w.deposit(5000), w.withdraw(1000), [(t.kind.name, t.amount) for t in w.transactions])[2])(Wallet('A', '07')) == [('DEPOSIT', 5000), ('WITHDRAW', 1000), ('FEE', 29)]",
+          label: "Each movement is recorded as a transaction",
+          failHint: "`withdraw` appends a `WITHDRAW` transaction and then a `FEE` one.",
+        },
+        { expr: "_raises(lambda: Wallet('X', '07').deposit(0), WalletError) and _raises(lambda: Wallet('X', '07').withdraw(-1), WalletError)", label: "Amounts of 0 or less raise `WalletError`", failHint: "Check `amount <= 0` first in both methods." },
+        {
+          expr: "(lambda w: (w.deposit(100), _raises(lambda: w.withdraw(100), InsufficientFunds), w.balance, len(w.transactions))[1:])(Wallet('Y', '07')) == (True, 100, 1)",
+          label: "Not enough for the amount plus the fee raises `InsufficientFunds`, and changes nothing",
+          failHint: "Compare `amount + WITHDRAW_FEE` with `self.balance` before appending anything.",
+        },
+      ],
+      hints: [
+        "In `balance`, loop over `self.transactions`: `if t.kind in (TxType.DEPOSIT, TxType.RECEIVE): total += t.amount`, otherwise subtract.",
+        "Raise before you append. Once a transaction is in the list, it's part of the history.",
+      ],
+      why:
+        "The balance is never stored, only calculated from the history, so it can't drift out of step with the statement. And because every check runs before anything is appended, a refused withdrawal leaves no trace. Real ledgers follow both rules.",
+      solution: W_TYPES + W_FEES + W_WALLET + `
+
+amina = Wallet("Amina", "0712345678")
+amina.deposit(5000)
+amina.withdraw(1000)
+print(amina)`,
+    },
+    {
+      id: "network",
+      kind: "code",
+      title: "The network",
+      brief:
+        "Write `Network`, which holds wallets by phone number. `register(owner, phone)` creates, stores and returns a wallet, raising `WalletError` if the number is taken. `find(phone)` returns a wallet or raises `WalletError`. `send(from_phone, to_phone, amount)` moves money: the sender gets a `SEND` (with the receiver's number as `other`) and, if `send_fee(amount)` is more than 0, a `FEE`; the receiver gets a `RECEIVE` (with the sender's number). Refuse non-positive amounts and raise `InsufficientFunds` if the amount plus the fee is too much, changing nothing.",
+      starterCode: W_TYPES + W_FEES + W_WALLET + `
+
+class Network:
+    def __init__(self):
+        self.wallets = {}               # phone -> Wallet
+
+    # register(), find() and send() go here
+
+
+net = Network()
+`,
+      checks: [
+        { expr: "(lambda n: (n.register('A', '01'), n.find('01').owner)[1])(Network()) == 'A'", label: "`register` and `find` work", failHint: "`register` stores the new wallet in `self.wallets[phone]` and returns it." },
+        {
+          expr: "(lambda n: (n.register('A', '01'), _raises(lambda: n.register('B', '01'), WalletError), _raises(lambda: n.find('09'), WalletError))[1:])(Network()) == (True, True)",
+          label: "Taken and unknown numbers raise `WalletError`",
+          failHint: "Check `phone in self.wallets` in both methods.",
+        },
+        {
+          expr: "(lambda n: (n.register('A', '01').deposit(5000), n.register('B', '02'), n.send('01', '02', 1200), n.send('01', '02', 80), n.find('01').balance, n.find('02').balance, len(n.find('01').transactions))[4:])(Network()) == (3697, 1280, 4)",
+          label: "Sending moves the money and charges the fee",
+          failHint: "KSh 1,200 costs a KSh 23 fee; KSh 80 is free, so it records no `FEE` transaction.",
+        },
+        {
+          expr: "(lambda n: (n.register('A', '01').deposit(100), n.register('B', '02'), _raises(lambda: n.send('01', '02', 200), InsufficientFunds), n.find('01').balance, n.find('02').transactions)[2:])(Network()) == (True, 100, [])",
+          label: "A send that can't be afforded changes nothing",
+          failHint: "Check `amount + fee` against the sender's balance before appending to either wallet.",
+        },
+      ],
+      hints: [
+        "In `send`, start with `sender = self.find(from_phone)` and `receiver = self.find(to_phone)`, so unknown numbers fail before anything else.",
+        "Work out `fee = send_fee(amount)`, run every check, and only then append the transactions.",
+      ],
+      why:
+        "The network doesn't do arithmetic on balances at all: it only records transactions on the right wallets, and each wallet's property does the maths. That's composition: the network has wallets, and lets each one look after its own history.",
+      solution: W_TYPES + W_FEES + W_WALLET + W_NETWORK + `
+
+net = Network()`,
+    },
+    {
+      id: "statement",
+      kind: "code",
+      title: "The mini-statement",
+      brief:
+        "Write `mini_statement(wallet, n=5)` returning a wallet's last `n` transactions as lines of text, oldest first. Each line is a sign (`+` for deposits and receipts, `-` for everything else), the amount with commas, a space and the kind's value; sends add ` to <phone>` and receipts add ` from <phone>`. For example: `-1,200 send to 0733111222`.",
+      starterCode: W_TYPES + W_FEES + W_WALLET + W_NETWORK + `
+
+def mini_statement(wallet, n=5):
+    return []
+
+
+net = Network()
+amina = net.register("Amina", "0712345678")
+juma = net.register("Juma", "0733111222")
+amina.deposit(5000)
+net.send("0712345678", "0733111222", 1200)
+net.send("0712345678", "0733111222", 80)
+
+for line in mini_statement(amina):
+    print(line)
+`,
+      checks: [
+        { expr: "mini_statement(amina) == ['+5,000 deposit', '-1,200 send to 0733111222', '-23 fee', '-80 send to 0733111222']", label: "Amina's statement", failHint: "Loop over `wallet.transactions[-n:]` and build `f\"{sign}{t.amount:,} {t.kind.value}\"`." },
+        { expr: "mini_statement(juma) == ['+1,200 receive from 0712345678', '+80 receive from 0712345678']", label: "Juma's statement shows where money came from", failHint: "For `RECEIVE`, add `f\" from {t.other}\"`." },
+        { expr: "mini_statement(amina, 2) == ['-23 fee', '-80 send to 0733111222']", label: "`n` limits it to the last few", failHint: "`wallet.transactions[-n:]` is the last `n`, oldest first." },
+      ],
+      hints: [
+        "`sign = \"+\" if t.kind in (TxType.DEPOSIT, TxType.RECEIVE) else \"-\"`.",
+        "`:,` in an f-string adds the thousands commas.",
+      ],
+      why:
+        "Because transactions are stored rather than just a running total, the statement can be rebuilt at any time, for any window, exactly as it happened. Slicing with `[-n:]` and an f-string did the rest.",
+      solution: W_TYPES + W_FEES + W_WALLET + W_NETWORK + `
+
+def mini_statement(wallet, n=5):
+    lines = []
+    for t in wallet.transactions[-n:]:
+        sign = "+" if t.kind in (TxType.DEPOSIT, TxType.RECEIVE) else "-"
+        text = f"{sign}{t.amount:,} {t.kind.value}"
+        if t.kind is TxType.SEND:
+            text += f" to {t.other}"
+        elif t.kind is TxType.RECEIVE:
+            text += f" from {t.other}"
+        lines.append(text)
+    return lines
+
+
+net = Network()
+amina = net.register("Amina", "0712345678")
+juma = net.register("Juma", "0733111222")
+amina.deposit(5000)
+net.send("0712345678", "0733111222", 1200)
+net.send("0712345678", "0733111222", 80)
+
+for line in mini_statement(amina):
+    print(line)`,
+    },
+    {
+      id: "agent-day",
+      kind: "code",
+      challenge: true,
+      title: "A day at the agent",
+      brief:
+        "Run the agent's `requests` through `network`. Each is text: `register <owner> <phone>`, `deposit <phone> <amount>`, `withdraw <phone> <amount>` or `send <from> <to> <amount>`. Use `match` on the words. When a request raises a `WalletError` of any kind, add the request to `failed` and count its error type's name in `reasons`. Then set `balances` (owner to balance) and `fees`, the total of every `FEE` transaction in the network.",
+      starterCode: W_TYPES + W_FEES + W_WALLET + W_NETWORK + W_REQUESTS + `
+# process each request here
+
+
+balances = {}
+fees = 0
+print(balances, fees)
+print(failed)
+print(reasons)
+`,
+      checks: [
+        { expr: "balances == {'Amina': 3697, 'Juma': 751}", label: "Amina ends with 3,697 and Juma with 751", failHint: "Convert each amount with `int()`, and call the right method for each kind of request." },
+        {
+          expr: "failed == ['send 0733111222 0799000111 100', 'withdraw 0733111222 2000', 'register Juma 0733111222', 'deposit 0733111222 -50']",
+          label: "Four requests failed",
+          failHint: "Wrap the whole `match` in `try:`, with `except WalletError as e:`.",
+        },
+        { expr: "reasons == {'WalletError': 3, 'InsufficientFunds': 1}", label: "Three general wallet errors and one insufficient funds", failHint: "`reasons[type(e).__name__] += 1`: catching `WalletError` also catches `InsufficientFunds`." },
+        { expr: "fees == 52", label: "KSh 52 in fees", failHint: "Add up `t.amount` for every transaction whose kind `is TxType.FEE`, across every wallet." },
+        {
+          expr: "(lambda ns: ns['balances'] == {'A': 300} and ns['failed'] == ['withdraw 01 500'])(_with(requests=['register A 01', 'deposit 01 300', 'withdraw 01 500']))",
+          label: "Works on another day's requests",
+          failHint: "Work everything out from `requests`.",
+        },
+      ],
+      hints: [
+        "`case [\"send\", from_phone, to_phone, amount]: network.send(from_phone, to_phone, int(amount))`, and similar cases for the others.",
+        "`balances = {w.owner: w.balance for w in network.wallets.values()}`.",
+      ],
+      why:
+        "Ten requests, four failures, and not a shilling out of place: KSh 5,000 went in, KSh 500 was withdrawn and KSh 52 went on fees, and the two balances hold exactly the KSh 4,448 that's left. Each layer did one job. The types made records safe, the wallet kept its history consistent, the network checked before moving anything, and one `except WalletError` handled every failure, while still telling them apart.",
+      solution: W_TYPES + W_FEES + W_WALLET + W_NETWORK + W_REQUESTS + `
+for line in requests:
+    try:
+        match line.split():
+            case ["register", owner, phone]:
+                network.register(owner, phone)
+            case ["deposit", phone, amount]:
+                network.find(phone).deposit(int(amount))
+            case ["withdraw", phone, amount]:
+                network.find(phone).withdraw(int(amount))
+            case ["send", from_phone, to_phone, amount]:
+                network.send(from_phone, to_phone, int(amount))
+    except WalletError as e:
+        failed.append(line)
+        reasons[type(e).__name__] += 1
+
+balances = {w.owner: w.balance for w in network.wallets.values()}
+fees = sum(t.amount for w in network.wallets.values() for t in w.transactions if t.kind is TxType.FEE)
+print(balances, fees)
+print(failed)
+print(reasons)`,
+    },
+    {
+      id: "design-review",
+      kind: "explain",
+      title: "Design review",
+      prompt:
+        "Explain the design of your wallet system to another developer: what each class is responsible for, why the balance is a property worked out from transactions, how the errors are organised, and one thing you'd add or improve next.",
+      ideas: [
+        { label: "Each class has one job", patterns: ["wallet", "network", "transaction", "responsib", "job", "holds?"], nudge: "What does each class look after?" },
+        { label: "Balance is computed from history, so it can't disagree", patterns: ["property", "computed", "calculated", "history", "transactions", "consistent", "disagree", "drift"], nudge: "Why isn't the balance stored as a number?" },
+        { label: "An error hierarchy: WalletError and InsufficientFunds", patterns: ["walleterror", "insufficientfunds", "hierarch", "subclass", "kind of", "catch"], nudge: "How do the custom errors relate to each other?" },
+        { label: "Check before changing; frozen records", patterns: ["before", "nothing changes", "frozen", "can'?t be (changed|edited)", "atomic", "check"], nudge: "How does the design stop a failed request from leaving a mess?" },
+        { label: "A next improvement", patterns: ["next", "improve", "add", "would", "could", "test", "save", "file", "json", "pin", "limit", "date", "time"], nudge: "What would you build next?" },
+      ],
+      modelAnswer:
+        "`Transaction` is a frozen dataclass, so a record can never be edited, and `TxType` is an enum of the five kinds of movement. A `Wallet` owns its list of transactions, and its balance is a property calculated from them, so the balance and the statement can never disagree. The `Network` holds wallets by phone number and records transfers on both sides, but it checks everything first, so a failed request changes nothing. Errors form a hierarchy: `InsufficientFunds` is a kind of `WalletError`, so one `except WalletError` handles every failure while `type(e)` still tells them apart. Next I'd add dates to transactions, a daily sending limit, saving the network to a JSON file, and automated tests.",
+    },
+  ],
+};

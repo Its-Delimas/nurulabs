@@ -6,7 +6,7 @@ import { pyReferences, pyTuples, pyFormatting } from "./python-sequences";
 import { pySets, pyComprehensions, pyCollectionsModule, pyMatch } from "./python-collections-more";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
-import { pyProjectChama, pyProjectMarket } from "./python-project";
+import { pyProjectChama, pyProjectMarket, pyProjectWallet } from "./python-project";
 import { pyArguments, pyScope, pyFunctional, pyRecursion, pyDecorators } from "./python-functions-more";
 import { pyGenerators, pyItertools } from "./python-iteration";
 import { pyPaths, pyContext } from "./python-files-more";
@@ -79,6 +79,7 @@ export const pythonLabs: Lab[] = [
   pyInheritance,
   pySpecialMethods,
   pyDataclasses,
+  pyProjectWallet,
   pyDebugging,
   pyProjectMarket,
 ];

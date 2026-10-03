@@ -96,10 +96,7 @@ export const tracks: Track[] = [
         slug: "py-oop",
         title: "Object-oriented programming",
         summary: "Classes and objects, inheritance, special methods, properties and dataclasses.",
-        labs: ["py-classes", "py-inheritance", "py-special-methods", "py-dataclasses"],
-        planned: [
-          { title: "Project: Mobile-Money Wallet", summary: "Model accounts and transactions as objects, with custom errors and tests." },
-        ],
+        labs: ["py-classes", "py-inheritance", "py-special-methods", "py-dataclasses", "py-project-wallet"],
         milestone: {
           title: "Objects of your own",
           description: "You can design classes that work like Python's own types, the way libraries such as scikit-learn are built.",

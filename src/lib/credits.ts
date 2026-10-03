@@ -32,7 +32,7 @@ export const photoCredits: PhotoCredit[] = [
   { file: "health-workers.webp", shows: "Two health workers in scrubs on a busy street", usedOn: "Data Science · Clinic Records Clean-up", photographer: "Emmanuel M", unsplashId: "1mf4pz2uIVc" },
   { file: "community-meeting.webp", shows: "Women gathered at a community meeting", usedOn: "Data Science · County Services Survey Report; Python Essentials · Chama Contributions Ledger", photographer: "Annie Spratt", unsplashId: "Sn04BHfa2AY" },
   { file: "pupils-classroom.webp", shows: "Pupils reading in a classroom", usedOn: "Data Science · Did the Programme Work?", photographer: "Emmanuel Ikwuegbu", unsplashId: "VC6MGt9ZoBA" },
-  { file: "reading-phone.webp", shows: "A man reading his phone", usedOn: "Data Science · The Savings Reminder Trial", photographer: "Divaris Shirichena", unsplashId: "P4yr0fvEfsc" },
+  { file: "reading-phone.webp", shows: "A man reading his phone", usedOn: "Data Science · The Savings Reminder Trial; Python Essentials · Mobile-Money Wallet", photographer: "Divaris Shirichena", unsplashId: "P4yr0fvEfsc" },
   { file: "lagos-aerial.webp", shows: "Lagos from above", usedOn: "Data Science · Open-Data Investigation", photographer: "Tunde Buremo", place: "Lagos, Nigeria", unsplashId: "n8DxalbQBic" },
 
   { file: "track-data-engineering.webp", shows: "Fibre-optic cables in a server rack", usedOn: "Data Engineering track", photographer: "Kirill Sh", unsplashId: "eVWWr6nmDf8" },
@@ -40,7 +40,7 @@ export const photoCredits: PhotoCredit[] = [
   { file: "shop-counter.webp", shows: "A shopkeeper at her counter", usedOn: "Data Engineering · Mobile-Money Ledger Analytics", photographer: "Ali Mkumbwa", unsplashId: "EOkN2pRjFsg" },
   { file: "maize-harvest.webp", shows: "A pile of harvested maize", usedOn: "Data Engineering · A Crop Prices Pipeline", photographer: "Jayson Roy", unsplashId: "R_QCTWEVctU" },
   { file: "mother-child.webp", shows: "A mother smiling at her child", usedOn: "Data Engineering · Trustworthy Immunisation Data", photographer: "Moses Sichach", unsplashId: "AdWkBmVCB9Q" },
-  { file: "mobile-money-kiosk.webp", shows: "A shopkeeper with a phone at her kiosk", usedOn: "Data Engineering · A Mobile-Money Analytics Pipeline", photographer: "Ali Mkumbwa", unsplashId: "5dFuO02OHh0" },
+  { file: "mobile-money-kiosk.webp", shows: "A shopkeeper with a phone at her kiosk", usedOn: "Data Engineering · A Mobile-Money Analytics Pipeline; Python Essentials · Mobile-Money Wallet", photographer: "Ali Mkumbwa", unsplashId: "5dFuO02OHh0" },
 
   { file: "track-ai.webp", shows: "A developer working across a laptop and a monitor", usedOn: "AI & Machine Learning track", photographer: "Olumuyiwa Sobowale", unsplashId: "kQIdjLbCghA" },
   { file: "storm-savanna.webp", shows: "Storm clouds over grassland", usedOn: "AI & ML · Rainfall & Crop Yield", photographer: "Polina Koroleva", place: "Maasai Mara, Kenya", unsplashId: "g-Jcvkxx0NE" },
