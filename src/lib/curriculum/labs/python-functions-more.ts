@@ -1629,6 +1629,7 @@ print(fib(25), "in", calls, "calls")
         "Create `cache = {}` inside `memoize`, before defining the wrapper, so the wrapper's closure keeps it.",
         "`def wrapper(*args):` then `if args not in cache: cache[args] = func(*args)` and `return cache[args]`.",
       ],
+      errorHints: [{ pattern: "'NoneType' object is not callable", hint: "`memoize` must `return wrapper`, otherwise the decorated `fib` becomes `None`." }],
       why:
         "Without the cache, `fib(25)` takes 242,785 calls; with it, 26. The dictionary lives in the closure, private to each decorated function, and the arguments tuple works as a key because tuples can't change. That's also why a cache can't be keyed on a list: lists can change, so they can't be dictionary keys.",
       solution: `import functools

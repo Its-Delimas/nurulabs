@@ -11,7 +11,7 @@ import { pyArguments, pyScope, pyFunctional, pyRecursion, pyDecorators } from ".
 import { pyGenerators, pyItertools } from "./python-iteration";
 import { pyPaths, pyContext } from "./python-files-more";
 import { pyImports, pyDatetime, pyRegex } from "./python-stdlib";
-import { pyInheritance, pySpecialMethods } from "./python-oop";
+import { pyInheritance, pySpecialMethods, pyDataclasses } from "./python-oop";
 import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
@@ -78,6 +78,7 @@ export const pythonLabs: Lab[] = [
   pyClasses,
   pyInheritance,
   pySpecialMethods,
+  pyDataclasses,
   pyDebugging,
   pyProjectMarket,
 ];
