@@ -246,9 +246,22 @@ def _nl_make_with(source):
     return _with
 
 
+def _nl_raises(fn, error=BaseException):
+    """For checks: True if calling fn() raises `error` (or a subclass of it),
+    e.g. _raises(lambda: withdraw(100, 500), InsufficientFunds)."""
+    try:
+        fn()
+    except error:
+        return True
+    except BaseException:
+        return False
+    return False
+
+
 def _nl_check(exprs, ns):
     ns["_with"] = _nl_make_with(ns.get("_source", ""))
     ns["_with_inputs"] = _nl_make_with_inputs(ns.get("_source", ""))
+    ns["_raises"] = _nl_raises
     results = []
     for expr in exprs:
         try:

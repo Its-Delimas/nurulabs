@@ -20,7 +20,6 @@ const PythonPlayground = dynamic<PythonPlaygroundProps>(() => import("../playgro
 const DecisionThreshold = dynamic<WidgetProps>(() => import("../widgets/DecisionThreshold"), { loading, ssr: false });
 const CsvRows = dynamic<WidgetProps>(() => import("../widgets/CsvRows"), { loading, ssr: false });
 const LineFit = dynamic<WidgetProps>(() => import("../widgets/LineFit"), { loading, ssr: false });
-const TryExcept = dynamic<WidgetProps>(() => import("../widgets/TryExcept"), { loading, ssr: false });
 const JsonExplorer = dynamic<WidgetProps>(() => import("../widgets/JsonExplorer"), { loading, ssr: false });
 const ArrayOps = dynamic<WidgetProps>(() => import("../widgets/ArrayOps"), { loading, ssr: false });
 const DataFrameOps = dynamic<WidgetProps>(() => import("../widgets/DataFrameOps"), { loading, ssr: false });
@@ -105,7 +104,6 @@ const widgets: Record<Exclude<WidgetId, "visualiser" | "playground">, React.Comp
   "decision-threshold": DecisionThreshold,
   "csv-rows": CsvRows,
   "line-fit": LineFit,
-  "try-except": TryExcept,
   "json-explorer": JsonExplorer,
   "array-ops": ArrayOps,
   "dataframe-ops": DataFrameOps,

@@ -321,15 +321,16 @@ export const pyErrors: Lab = {
   runExamples: true,
   number: "10",
   title: "Errors & Exceptions",
-  subject: "try / except",
+  subject: "try, except, else, finally, raise",
   summary:
-    "Real data will break your code. Learn to catch errors without crashing, skip bad values safely, and raise your own errors when something is wrong.",
-  minutes: 30,
+    "Real data will break your code. Catch errors without crashing, handle different errors differently, clean up with `finally`, raise clear errors of your own, and define new kinds of error for your own programs.",
+  minutes: 40,
   kind: "lab",
   skills: [
-    "Catch specific errors with try / except",
+    "Catch specific errors with try / except, and several kinds at once",
+    "Use else and finally to separate success and clean-up",
+    "Raise your own errors, and define custom exception types",
     "Keep a pipeline running when some values are bad",
-    "Raise your own errors to reject invalid data",
   ],
   steps: [
     {
@@ -337,9 +338,9 @@ export const pyErrors: Lab = {
       kind: "concept",
       title: "Errors are messages, not failures",
       body: [
-        "When Python hits something it can't do — `float(\"abc\")`, a missing key, dividing by zero — it **raises an exception**. If nothing catches it, the program stops and prints a traceback.",
-        "You've been reading these since lab 1. Now you'll learn to **handle** them: tell Python what to do instead of stopping.",
-        "`try:` runs code that might fail; `except ValueError:` runs only if that specific error happens. Everything after carries on normally.",
+        "When Python hits something it can't do, such as `float(\"abc\")`, a missing key or dividing by zero, it **raises an exception**. If nothing catches it, the program stops and prints a traceback.",
+        "You've been reading tracebacks since the first lab. Now you'll **handle** them: tell Python what to do instead of stopping.",
+        "`try:` runs code that might fail, and `except ValueError:` runs only if that specific error happens. Everything after the `try` statement carries on normally.",
       ],
       code: `raw = "12.5mm"
 
@@ -353,14 +354,27 @@ print("rain =", rain)`,
       keyIdea: "`try` the risky line, `except` the specific error you expect, and decide what should happen instead.",
     },
     {
-      id: "safety-net",
+      id: "watch-exception",
       kind: "experiment",
-      title: "Run messy values through float()",
+      title: "Watch an exception jump",
       prompt:
-        "Step through a column of raw values. First run it **without** a safety net and see where it stops. Then switch to **with try / except** and run it again.",
-      widget: "try-except",
+        "Step through and watch what happens on the reading `\"n/a\"`: which lines are skipped when `float()` fails? Then **Edit code**, delete the `try:`, `except` and the two lines under `except`, fix the indentation, and run it again. Where does it stop now?",
+      widget: "visualiser",
+      visualise: {
+        code: `readings = ["12.5", "n/a", "8"]
+total = 0
+for r in readings:
+    try:
+        value = float(r)
+        print("read", value)
+    except ValueError:
+        print("skipped", repr(r))
+        continue
+    total += value
+print("total", total)`,
+      },
       observe:
-        "Without handling, one bad value (`\"abc\"`) stops everything — even the good values after it never get processed. With `try/except`, bad values are skipped and reported, and the total still comes out. Real datasets always have a few bad rows; your code has to survive them.",
+        "When `float(\"n/a\")` raised, Python abandoned the rest of the `try` block, so `print(\"read\", ...)` never ran, and jumped straight to the matching `except`. The loop then carried on with `\"8\"`. Without the safety net, the same bad value stops everything: the good reading after it is never processed, and no total is printed.",
     },
     {
       id: "predict-flow",
@@ -381,10 +395,10 @@ print("done")`,
     {
       id: "raise",
       kind: "concept",
-      title: "Catch the specific error — and raise your own",
+      title: "Catch the specific error, and raise your own",
       body: [
-        "Always catch a **specific** error type (`ValueError`, `KeyError`…). A bare `except:` catches everything — including your own bugs — and hides them.",
-        "You can also **raise** errors yourself. If a function receives impossible data — negative rainfall, a price of zero — raising an error with a clear message is far better than silently returning a wrong answer.",
+        "Always catch a **specific** error type, like `ValueError` or `KeyError`. A bare `except:` catches everything, including your own bugs and even the stop button, and hides them.",
+        "You can also **raise** errors yourself. If a function receives impossible data, like negative rainfall or a price of zero, raising an error with a clear message is far better than quietly returning a wrong answer. `except ValueError as e:` gives you the error itself, so you can show its message.",
       ],
       code: `def check_age(age):
     if age < 0:
@@ -402,64 +416,36 @@ except ValueError as e:
       kind: "code",
       title: "Write safe_float()",
       brief:
-        "Write `safe_float(text)`: return the text as a float if it converts, or `None` if it doesn't. It's tested on several inputs.",
+        "Write `safe_float(text)`: return the text as a float if it converts, or `None` if it doesn't. Then use it to build `valid`, the good readings from `readings`, and count the bad ones in `skipped`.",
       starterCode: `def safe_float(text):
     pass
 
 
-print(safe_float("3.5"), safe_float("abc"), safe_float(""))
-`,
-      checks: [
-        { expr: "safe_float('3.5') == 3.5 and safe_float('42') == 42.0", label: "Valid numbers convert", failHint: "Inside `try:`, `return float(text)`." },
-        { expr: "safe_float('abc') is None and safe_float('') is None", label: "Invalid text returns `None`", failHint: "In `except ValueError:`, `return None`." },
-      ],
-      hints: ["The whole function is four lines: `try:`, `return float(text)`, `except ValueError:`, `return None`."],
-      why:
-        "One small, well-tested helper turns \"crash on bad data\" into \"skip bad data\". Data pipelines are built from exactly these kinds of functions.",
-      solution: `def safe_float(text):
-    try:
-        return float(text)
-    except ValueError:
-        return None
-
-
-print(safe_float("3.5"), safe_float("abc"), safe_float(""))`,
-    },
-    {
-      id: "clean-readings",
-      kind: "code",
-      title: "Clean a sensor feed",
-      brief:
-        "A weather station logs rainfall as text, and some readings are junk. Use your `safe_float` to build `valid` (the good readings as floats) and count the bad ones in `skipped`.",
-      starterCode: `def safe_float(text):
-    try:
-        return float(text)
-    except ValueError:
-        return None
-
 readings = ["12.5", "n/a", "8", "", "31.0", "-", "4.25"]
-
 valid = []
 skipped = 0
-# your loop here
 
 print(valid, skipped)
 `,
       checks: [
-        { expr: "valid == [12.5, 8.0, 31.0, 4.25]", label: "`valid` holds the four good readings", failHint: "Call `safe_float(r)` on each reading and only append it when the result is not `None`." },
-        { expr: "skipped == 3", label: "`skipped` counts the 3 bad ones", failHint: "Add 1 to `skipped` whenever `safe_float` returns `None`." },
+        { expr: "safe_float('3.5') == 3.5 and safe_float('42') == 42.0", label: "Valid numbers convert", failHint: "Inside `try:`, `return float(text)`." },
+        { expr: "safe_float('abc') is None and safe_float('') is None", label: "Invalid text returns `None`", failHint: "In `except ValueError:`, `return None`." },
+        { expr: "valid == [12.5, 8.0, 31.0, 4.25] and skipped == 3", label: "Four good readings kept, three skipped", failHint: "For each reading, `value = safe_float(r)`; if it's `None` add 1 to `skipped`, otherwise append it." },
       ],
-      hints: ["`value = safe_float(r)`, then `if value is None:` … `else:` …"],
+      hints: [
+        "The function is four lines: `try:`, `return float(text)`, `except ValueError:`, `return None`.",
+        "Compare with `is None`, not with `== 0`: a reading of 0.0 is valid.",
+      ],
       why:
-        "The pipeline kept every usable reading and told you exactly how much was lost. Always count what you skip — if half your data is being dropped, that's a problem worth knowing about.",
+        "One small, well-tested helper turns \"crash on bad data\" into \"skip bad data\", and the count tells you how much was lost. Always count what you skip: if half your data is being dropped, that's worth knowing.",
       solution: `def safe_float(text):
     try:
         return float(text)
     except ValueError:
         return None
 
-readings = ["12.5", "n/a", "8", "", "31.0", "-", "4.25"]
 
+readings = ["12.5", "n/a", "8", "", "31.0", "-", "4.25"]
 valid = []
 skipped = 0
 for r in readings:
@@ -472,12 +458,88 @@ for r in readings:
 print(valid, skipped)`,
     },
     {
+      id: "else-finally",
+      kind: "concept",
+      title: "Several excepts, else and finally",
+      body: [
+        "A `try` can have several `except` clauses, one per kind of error, and Python runs the first that matches. To handle a few kinds the same way, list them: `except (ValueError, TypeError):`.",
+        "Errors form a family tree. `ZeroDivisionError` is a kind of `ArithmeticError`, and `KeyError` and `IndexError` are both kinds of `LookupError`; nearly everything is a kind of `Exception`. An `except` catches its type **and all its children**, so put specific clauses before general ones.",
+        "`else:` runs only if the `try` raised nothing: the place for the code that should happen on success. `finally:` runs **no matter what**, error or not, even after a `return`: the place for clean-up like closing a file or a connection.",
+      ],
+      code: `def average_price(total, count):
+    try:
+        result = float(total) / int(count)
+    except ValueError as e:
+        print("Not a number:", e)
+    except ZeroDivisionError:
+        print("No items sold")
+    else:
+        print("Average:", round(result, 2))     # only when nothing failed
+    finally:
+        print("-- checked", total, count)       # always
+
+average_price("1500", "4")
+average_price("abc", "4")
+average_price("1500", "0")`,
+      keyIdea: "One `except` per kind of error, specific before general. `else` runs on success; `finally` always runs.",
+    },
+    {
+      id: "predict-finally",
+      kind: "predict",
+      title: "Return, then finally",
+      prompt: "The `try` block returns. Does `finally` still run?",
+      code: `def risky():
+    try:
+        return "from try"
+    finally:
+        print("cleanup")
+
+print(risky())`,
+      options: ["cleanup\nfrom try", "from try\ncleanup", "from try", "cleanup"],
+      answer: 0,
+      explanation:
+        "`finally` runs on the way out of the `try`, even when it's leaving through a `return`. So `cleanup` prints first, inside the function, and only then does `print(risky())` print the value that was returned. That guarantee is exactly why clean-up code belongs in `finally`.",
+    },
+    {
+      id: "custom",
+      kind: "concept",
+      title: "Your own kinds of error",
+      body: [
+        "For problems specific to your program, define your own exception type with one line: `class InsufficientFunds(Exception):` plus a docstring. (`class` makes a new type; the classes module explains it fully. For exceptions, this line is all you need.) Callers can then catch exactly your error, and its name explains the problem.",
+        "When you catch one error and raise another, write `raise NewError(...) from e`. The new error keeps the original as its **cause**, so the traceback shows both: what went wrong at the low level, and what it meant for your program.",
+      ],
+      code: `class InsufficientFunds(Exception):
+    """Raised when a wallet doesn't have enough money."""
+
+def withdraw(balance, amount):
+    if amount > balance:
+        raise InsufficientFunds(f"need KSh {amount:,}, have KSh {balance:,}")
+    return balance - amount
+
+try:
+    withdraw(500, 2000)
+except InsufficientFunds as e:
+    print("Declined:", e)
+
+def parse_amount(text):
+    try:
+        return int(text)
+    except ValueError as e:
+        raise ValueError(f"bad amount in statement: {text!r}") from e
+
+try:
+    parse_amount("12a")
+except ValueError as e:
+    print(e)
+    print("caused by:", repr(e.__cause__))`,
+      keyIdea: "`class MyError(Exception):` defines a new kind of error. `raise ... from e` keeps the original error as the cause.",
+    },
+    {
       id: "validate",
       kind: "code",
-      challenge: true,
       title: "Reject impossible rainfall",
       brief:
-        "Write `check_rainfall(mm)` that **raises a `ValueError`** if `mm` is below 0 or above 1000 (impossible for one day), and otherwise returns `mm`. A small `raises()` test helper is provided — read it, it uses what you just learned.",
+        "Write `check_rainfall(mm)` that **raises a `ValueError`** if `mm` is below 0 or above 1000 (impossible for one day), and otherwise returns `mm`. A small `raises()` test helper is provided; read it, it uses what you've just learned.",
       starterCode: `def raises(fn, value):
     """True if fn(value) raises a ValueError."""
     try:
@@ -495,12 +557,12 @@ print(check_rainfall(25), raises(check_rainfall, -5), raises(check_rainfall, 150
 `,
       checks: [
         { expr: "check_rainfall(25) == 25 and check_rainfall(0) == 0", label: "Normal values are returned", failHint: "If the value is fine, `return mm`." },
-        { expr: "raises(check_rainfall, -5)", label: "Negative rainfall raises `ValueError`", failHint: "`if mm < 0 or mm > 1000: raise ValueError(...)`" },
-        { expr: "raises(check_rainfall, 1500) and not raises(check_rainfall, 1000)", label: "Over 1000 mm raises; exactly 1000 is allowed", failHint: "Check the boundary: 1000 itself should be allowed, anything above rejected." },
+        { expr: "_raises(lambda: check_rainfall(-5), ValueError)", label: "Negative rainfall raises `ValueError`", failHint: "`if mm < 0 or mm > 1000: raise ValueError(...)`" },
+        { expr: "_raises(lambda: check_rainfall(1500), ValueError) and not _raises(lambda: check_rainfall(1000))", label: "Over 1000 mm raises; exactly 1000 is allowed", failHint: "Check the boundary: 1000 itself should be allowed, anything above rejected." },
       ],
       hints: ["`raise ValueError(f\"impossible rainfall: {mm}\")` stops the function with an error."],
       why:
-        "Validating inputs at the edge of your code means bad data fails loudly and early, with a clear message — instead of quietly poisoning a model's training data.",
+        "Validating inputs at the edge of your code means bad data fails loudly and early, with a clear message, instead of quietly poisoning every result that depends on it.",
       solution: `def raises(fn, value):
     """True if fn(value) raises a ValueError."""
     try:
@@ -519,18 +581,78 @@ def check_rainfall(mm):
 print(check_rainfall(25), raises(check_rainfall, -5), raises(check_rainfall, 1500))`,
     },
     {
+      id: "wallet",
+      kind: "code",
+      challenge: true,
+      title: "Process the withdrawals",
+      brief:
+        "Define `InsufficientFunds` as a new kind of `Exception`. Write `withdraw(balance, amount)`: raise `ValueError` if `amount` is 0 or less, raise `InsufficientFunds` if it's more than `balance`, otherwise return the new balance. Then process `requests` (some are text, so convert each with `int()`), keeping a running `balance` and adding `\"<request>: insufficient funds\"` or `\"<request>: invalid\"` to `declined` for each one that fails.",
+      starterCode: `requests = [500, "300", 2000, -50, 700, "abc"]
+balance = 1500
+declined = []
+
+
+print(balance, declined)
+`,
+      checks: [
+        { expr: "issubclass(InsufficientFunds, Exception)", label: "`InsufficientFunds` is a kind of `Exception`", failHint: "`class InsufficientFunds(Exception):` with a docstring or `pass` inside." },
+        {
+          expr: "withdraw(1000, 300) == 700 and _raises(lambda: withdraw(100, 0), ValueError) and _raises(lambda: withdraw(100, 500), InsufficientFunds) and not _raises(lambda: withdraw(100, 100))",
+          label: "`withdraw` returns the new balance or raises the right error",
+          failHint: "Check `amount <= 0` first (`ValueError`), then `amount > balance` (`InsufficientFunds`).",
+        },
+        { expr: "balance == 0", label: "The balance ends at 0", failHint: "Only successful withdrawals change `balance`: `balance = withdraw(balance, int(r))` inside the `try`." },
+        {
+          expr: "declined == ['2000: insufficient funds', '-50: invalid', 'abc: invalid']",
+          label: "Three requests are declined, with the right reason",
+          failHint: "One `except InsufficientFunds:` and one `except ValueError:`. `int(\"abc\")` raises `ValueError` too.",
+        },
+      ],
+      hints: [
+        "Loop over `requests` with `try: balance = withdraw(balance, int(r))`, then two `except` clauses.",
+        "`f\"{r}: invalid\"` turns the original request into text, whatever type it was.",
+      ],
+      why:
+        "Two kinds of failure, two different messages, and one loop that never crashes. Because `InsufficientFunds` is your own type, nobody can mistake it for a typo in an amount: callers can catch it precisely and tell the customer exactly what happened.",
+      solution: `class InsufficientFunds(Exception):
+    """Raised when a withdrawal is more than the balance."""
+
+
+def withdraw(balance, amount):
+    if amount <= 0:
+        raise ValueError(f"invalid amount: {amount}")
+    if amount > balance:
+        raise InsufficientFunds(f"need {amount}, have {balance}")
+    return balance - amount
+
+
+requests = [500, "300", 2000, -50, 700, "abc"]
+balance = 1500
+declined = []
+for r in requests:
+    try:
+        balance = withdraw(balance, int(r))
+    except InsufficientFunds:
+        declined.append(f"{r}: insufficient funds")
+    except ValueError:
+        declined.append(f"{r}: invalid")
+
+print(balance, declined)`,
+    },
+    {
       id: "explain-errors",
       kind: "explain",
       title: "Handling errors well",
       prompt:
-        "Explain how `try` / `except` works, and why catching a *specific* error is better than catching everything.",
+        "Explain how `try` / `except` works, what `else` and `finally` add, and why catching a *specific* error is better than catching everything.",
       ideas: [
-        { label: "try runs risky code; except runs if it fails", patterns: ["try.*(run|attempt|risky)", "except.*(fail|error|happens|runs)", "if.*(fail|error).*except"], nudge: "What happens when code inside `try` raises an error?" },
+        { label: "try runs risky code; except runs if it fails", patterns: ["try.*(run|attempt|risky)", "except.*(fail|error|happens|runs|catch)", "if.*(fail|error).*except", "jumps?"], nudge: "What happens when code inside `try` raises an error?" },
+        { label: "else on success, finally always", patterns: ["else", "finally", "clean.?up", "always"], nudge: "What are `else` and `finally` for?" },
         { label: "The program keeps running instead of crashing", patterns: ["crash", "keep.*(going|running)", "continue", "doesn.?t stop", "carry on"], nudge: "What's the difference for the rest of the program?" },
         { label: "Catching everything can hide real bugs", patterns: ["hide", "bug", "specific", "everything", "bare", "mask", "unexpected"], nudge: "What might a bare `except:` accidentally swallow?" },
       ],
       modelAnswer:
-        "Code inside `try` runs normally; if it raises an error, Python jumps to the matching `except` block instead of crashing, and the program keeps going. Catch a specific error like `ValueError` so you only handle the problem you expect — a bare `except` would also hide real bugs you need to see.",
+        "Code inside `try` runs normally; if it raises an error, Python skips the rest of the block and jumps to the first matching `except`, and then the program keeps going instead of crashing. `else` runs only when nothing failed, and `finally` always runs, which makes it the place for clean-up. Catch specific errors like `ValueError` so you only handle the problems you expect; a bare `except` would also hide real bugs you need to see.",
     },
   ],
 };

@@ -49,7 +49,6 @@ export type WidgetId =
   | "decision-threshold"
   | "csv-rows"
   | "line-fit"
-  | "try-except"
   | "json-explorer"
   | "array-ops"
   | "dataframe-ops"
@@ -193,6 +192,7 @@ export interface CodeCheck {
    * returns the resulting namespace — for testing logic on other inputs.
    * `_with_inputs("a", "b")` re-runs it answering input() with those values;
    * the namespace it returns has the printed output in `_stdout`.
+   * `_raises(lambda: f(x), SomeError)` is True if the call raises that error.
    * `_charts` lists each matplotlib chart (one entry per axes): title,
    * xlabel, ylabel, counts of lines, bars, scatter points and text labels,
    * bar_heights / bar_widths, bar_colors (distinct bar colours), xlim, ylim.
