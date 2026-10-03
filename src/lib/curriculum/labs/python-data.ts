@@ -7,13 +7,14 @@ export const pyFunctions: Lab = {
   title: "Functions: Reusable Recipes",
   subject: "def & return",
   summary:
-    "Package logic into named, reusable functions — and discover that a trained model is really just a function: inputs in, prediction out.",
-  minutes: 30,
+    "Package logic into named, reusable functions: parameters in, a return value out. Return early, return several values at once, document what a function does, and discover that a trained model is really just a function.",
+  minutes: 35,
   kind: "lab",
   skills: [
     "Write functions with parameters and return values",
     "Know the difference between print and return",
-    "Write a prediction function and an error metric",
+    "Return early, and return several values as a tuple",
+    "Document a function with a docstring",
   ],
   steps: [
     {
@@ -21,8 +22,8 @@ export const pyFunctions: Lab = {
       kind: "concept",
       title: "Name a piece of logic, use it anywhere",
       body: [
-        "You've been **calling** functions since lab 1: `print()`, `len()`, `max()`. Now you'll write your own with `def`.",
-        "A function takes inputs (**parameters**), does some work, and **returns** a result with `return`. Once defined, you can call it as many times as you like, with different inputs.",
+        "You've been **calling** functions since the first lab: `print()`, `len()`, `max()`. Now you'll write your own with `def`.",
+        "A function takes inputs (**parameters**), does some work, and **returns** a result with `return`. Once it's defined, you can call it as many times as you like, with different inputs.",
       ],
       code: `def to_usd(ksh, rate):
     usd = ksh / rate
@@ -31,7 +32,7 @@ export const pyFunctions: Lab = {
 price = to_usd(5000, 129)
 print(price)            # 38.76
 print(to_usd(129, 129)) # 1.0`,
-      keyIdea: "`def` defines the recipe. Calling it — `to_usd(5000, 129)` — runs the recipe and gives back whatever it `return`s.",
+      keyIdea: "`def` defines the recipe. Calling it, as in `to_usd(5000, 129)`, runs the recipe and gives back whatever it `return`s.",
     },
     {
       id: "machine",
@@ -50,7 +51,7 @@ fee_usd = to_usd(250, 129)
 print(price_usd, fee_usd)`,
       },
       observe:
-        "Every call gets its own frame: `ksh`, `rate` and `usd` exist only inside it, and vanish when the function returns. Only the **return value** comes back out, into `price_usd` and then `fee_usd`. The same recipe works for any inputs. Hold on to this picture: when you train a model, what you get at the end is **a function**, `predict(rainfall)` → yield. Training just decides the numbers inside it.",
+        "Every call gets its own frame: `ksh`, `rate` and `usd` exist only inside it, and vanish when the function returns. Only the **return value** comes back out, into `price_usd` and then `fee_usd`. The same recipe works for any inputs.",
     },
     {
       id: "predict-return",
@@ -65,16 +66,16 @@ print(result)`,
       options: ["10\nNone", "10\n10", "10", "None"],
       answer: 0,
       explanation:
-        "`double` **prints** 10, but it never **returns** anything — and a function without `return` gives back `None`. So `result` is `None`. `print` shows a value to a human; `return` hands it back to your code.",
+        "`double` **prints** 10, but it never **returns** anything, and a function without `return` gives back `None`. So `result` is `None`. `print` shows a value to a person; `return` hands it back to your code.",
     },
     {
       id: "scope",
       kind: "concept",
       title: "Parameters, arguments, and what stays inside",
       body: [
-        "In `def to_usd(ksh, rate):`, `ksh` and `rate` are **parameters** — placeholders. When you call `to_usd(5000, 129)`, the values 5000 and 129 are the **arguments** that fill them.",
-        "Variables created inside a function are **local**: they exist only while it runs. That's a feature — functions can't accidentally overwrite your other variables, and the only thing that comes out is what you `return`.",
-        "A good function does **one** job and has a name that says what it returns: `mean`, `to_usd`, `predict_yield`.",
+        "In `def to_usd(ksh, rate):`, `ksh` and `rate` are **parameters**: placeholders. When you call `to_usd(5000, 129)`, the values 5000 and 129 are the **arguments** that fill them.",
+        "Variables created inside a function are **local**: they exist only while it runs. That's a feature. A function can't accidentally overwrite your other variables, and the only thing that comes out is what you `return`. (The Scope & Closures lab looks at this in depth.)",
+        "A good function does **one** job and has a name that says what it gives back: `mean`, `to_usd`, `predict_yield`.",
       ],
       code: `def mean(values):
     total = sum(values)      # local to mean()
@@ -87,13 +88,52 @@ print(total)    # NameError: total only existed inside mean()`,
       keyIdea: "Arguments go in through parameters; only the `return` value comes out. Everything else stays inside the function.",
     },
     {
+      id: "return-more",
+      kind: "concept",
+      title: "Return early, return several, say what it does",
+      body: [
+        "`return` ends the function **immediately**, even in the middle of a loop. That makes it easy to deal with special cases first: `if not prices: return None` and the rest of the function never has to worry about an empty list.",
+        "A function can hand back several values at once by returning a tuple, `return lowest, highest`, which the caller unpacks: `low, high = price_range(prices)`.",
+        "A **docstring** is a string written straight under the `def` line. It says what the function does and returns, and `help()` shows it to anyone using your function, including you in six months.",
+      ],
+      code: `def price_range(prices):
+    """Return the lowest and highest price, or None if there are none."""
+    if not prices:
+        return None
+    return min(prices), max(prices)
+
+low, high = price_range([62, 71, 55, 48])
+print(low, high)            # 48 71
+print(price_range([]))      # None
+help(price_range)`,
+      keyIdea: "`return` leaves at once, so handle special cases first. `return a, b` returns a tuple to unpack, and a docstring documents the function.",
+    },
+    {
+      id: "predict-early",
+      kind: "predict",
+      title: "Leaving the loop early",
+      prompt: "A `return` inside a loop. What's printed?",
+      code: `def first_over(prices, limit):
+    for p in prices:
+        if p > limit:
+            return p
+    return None
+
+print(first_over([40, 65, 80], 60), first_over([40, 50], 60))`,
+      options: ["65 None", "80 None", "65 80 None", "None None"],
+      answer: 0,
+      explanation:
+        "In the first call, 65 is the first price over 60, so `return 65` ends the function there; 80 is never even looked at. In the second call nothing is over 60, so the loop finishes and the last line returns `None`.",
+    },
+    {
       id: "mean",
       kind: "code",
       title: "Write mean()",
       brief:
-        "Python has no built-in `mean`. Write one: `mean(values)` should **return** the average of a list. Then use it on the market prices.",
+        "Python has no built-in `mean`. Write one: `mean(values)` should **return** the average of a list, or `None` if the list is empty (instead of crashing). Then use it on the market prices.",
       instructions: [
-        "Inside `mean`, return `sum(values) / len(values)`.",
+        "First, return `None` if `values` is empty.",
+        "Otherwise return `sum(values) / len(values)`.",
         "Set `average_price = mean(prices)`.",
       ],
       starterCode: `def mean(values):
@@ -105,19 +145,23 @@ average_price = None
 print("Average price:", average_price)
 `,
       checks: [
-        { expr: "mean([2, 4, 6]) == 4 and mean([10]) == 10", label: "`mean()` returns the correct average", failHint: "`mean` must **return** the result — `return sum(values) / len(values)`. Printing isn't enough." },
+        { expr: "mean([2, 4, 6]) == 4 and mean([10]) == 10", label: "`mean()` returns the correct average", failHint: "`mean` must **return** the result: `return sum(values) / len(values)`. Printing isn't enough." },
+        { expr: "mean([]) is None", label: "`mean([])` returns `None` instead of crashing", failHint: "Start with `if not values: return None`; an empty list is falsy." },
         { expr: "average_price == 59", label: "`average_price` is 59", failHint: "Call your function: `average_price = mean(prices)`." },
       ],
       hints: [
-        "Replace `pass` with a `return` line.",
+        "Replace `pass` with an `if not values:` check and a `return` line.",
         "`sum(values)` adds them up and `len(values)` counts them.",
       ],
       errorHints: [
-        { pattern: "unsupported operand.*NoneType|NoneType", hint: "Something is `None` — most likely your function doesn't `return` a value yet." },
+        { pattern: "ZeroDivisionError", hint: "An empty list has length 0. Return `None` before you divide." },
+        { pattern: "unsupported operand.*NoneType|NoneType", hint: "Something is `None`: most likely your function doesn't `return` a value yet." },
       ],
       why:
-        "Now `mean` works on *any* list, anywhere in your program. That's the point of functions: write the logic once, test it once, reuse it everywhere.",
+        "Now `mean` works on *any* list, anywhere in your program, and the empty case is handled once, at the top. That's the point of functions: write the logic once, test it once, reuse it everywhere.",
       solution: `def mean(values):
+    if not values:
+        return None
     return sum(values) / len(values)
 
 
@@ -126,9 +170,56 @@ average_price = mean(prices)
 print("Average price:", average_price)`,
     },
     {
+      id: "summarise",
+      kind: "code",
+      title: "Three answers from one call",
+      brief:
+        "Write `summarise(prices)`, with a docstring, that returns a tuple of **the lowest price, the highest price and the average**, using your `mean`. Then unpack one call into `low`, `high` and `avg`.",
+      starterCode: `def mean(values):
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def summarise(prices):
+    pass
+
+
+prices = [62, 71, 55, 48]
+low, high, avg = None, None, None   # unpack one call to summarise here
+print(low, high, avg)
+`,
+      checks: [
+        { expr: "summarise([62, 71, 55, 48]) == (48, 71, 59.0)", label: "`summarise` returns (lowest, highest, average)", failHint: "`return min(prices), max(prices), mean(prices)`." },
+        { expr: "summarise([5, 1]) == (1, 5, 3.0)", label: "Works on other prices", failHint: "Work everything out from `prices`, the parameter." },
+        { expr: "isinstance(summarise.__doc__, str) and len(summarise.__doc__.strip()) > 5", label: "`summarise` has a docstring", failHint: "Put a string in triple quotes on the line straight after `def summarise(prices):`." },
+        { expr: "(low, high, avg) == (48, 71, 59.0)", label: "`low`, `high` and `avg` come from one call", failHint: "Unpack the tuple: `low, high, avg = summarise(prices)`." },
+      ],
+      hints: [
+        "The docstring goes first inside the function: `\"\"\"Return the lowest, highest and average price.\"\"\"`.",
+        "Functions can call other functions: `mean(prices)` works inside `summarise`.",
+      ],
+      why:
+        "One call, three answers, unpacked into three well-named variables. `summarise` reuses `mean` instead of repeating its logic, and its docstring tells the next person exactly what comes back and in what order.",
+      solution: `def mean(values):
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def summarise(prices):
+    """Return the lowest price, the highest price and the average."""
+    return min(prices), max(prices), mean(prices)
+
+
+prices = [62, 71, 55, 48]
+low, high, avg = summarise(prices)
+print(low, high, avg)`,
+    },
+    {
       id: "predict-fn",
       kind: "code",
-      title: "Your first model, as a function",
+      title: "A model is a function",
       brief:
         "An agronomist gives you a rule fitted to past harvests: **yield = 0.075 × rainfall − 0.76** (bags per acre). Wrap it in a function `predict_yield(rainfall_mm)` that returns the prediction.",
       instructions: [
@@ -147,23 +238,21 @@ print(predictions)
 `,
       checks: [
         { expr: "abs(predict_yield(200) - 14.24) < 0.001", label: "`predict_yield(200)` returns 14.24", failHint: "Check the formula: `return 0.075 * rainfall_mm - 0.76`." },
-        { expr: "len(predictions) == 3 and abs(predictions[1] - 17.24) < 0.001", label: "`predictions` has one prediction per farm", failHint: "Loop over `new_farms` and append `predict_yield(r)` for each." },
+        { expr: "len(predictions) == 3 and abs(predictions[1] - 17.24) < 0.001", label: "`predictions` has one prediction per farm", failHint: "Loop over `new_farms` and append `predict_yield(r)` for each, or use a comprehension." },
       ],
       hints: [
         "`def predict_yield(rainfall_mm):` then an indented `return ...`.",
-        "Combine this with the loop pattern from lab 4: `for r in new_farms: predictions.append(predict_yield(r))`.",
+        "`predictions = [predict_yield(r) for r in new_farms]`.",
       ],
       why:
-        "That's genuinely what a trained linear model is: a function with two learned numbers inside (0.075 and −0.76). In the AI track you'll write the code that *finds* those numbers from data.",
+        "That's genuinely what a trained linear model is: a function with two learned numbers inside (0.075 and −0.76). If you go on to the AI track, you'll write the code that *finds* those numbers from data.",
       tryNext: "What does your model predict for 0 mm of rain? Does a negative harvest make sense? Every model has limits.",
       solution: `def predict_yield(rainfall_mm):
     return 0.075 * rainfall_mm - 0.76
 
 
 new_farms = [150, 240, 310]
-predictions = []
-for r in new_farms:
-    predictions.append(predict_yield(r))
+predictions = [predict_yield(r) for r in new_farms]
 
 print(predictions)`,
     },
@@ -186,15 +275,15 @@ print(mae([10, 20, 30], [12, 18, 30]))   # should be about 1.33
         { expr: "mae([5], [5]) == 0", label: "A perfect prediction gives 0", failHint: "If every prediction matches, the error should be 0." },
       ],
       hints: [
-        "Loop over positions with `for i in range(len(actual)):` so you can pair `predictions[i]` with `actual[i]`.",
-        "Add up `abs(predictions[i] - actual[i])`, then divide by how many there are.",
+        "`zip(predictions, actual)` pairs each prediction with its real value.",
+        "Add up `abs(p - a)` for each pair, then divide by how many there are.",
       ],
       why:
-        "MAE is a real metric used on real models — you'll call this exact idea to judge your first ML model. You now have both halves of machine learning in function form: a model that predicts, and a metric that grades it.",
+        "MAE is a real metric used on real models. You now have both halves of machine learning in function form: a model that predicts, and a metric that grades it.",
       solution: `def mae(predictions, actual):
     total = 0
-    for i in range(len(actual)):
-        total = total + abs(predictions[i] - actual[i])
+    for p, a in zip(predictions, actual):
+        total += abs(p - a)
     return total / len(actual)
 
 
@@ -205,7 +294,7 @@ print(mae([10, 20, 30], [12, 18, 30]))`,
       kind: "explain",
       title: "Why is a model like a function?",
       prompt:
-        "Explain what a function is — parameters, return value — and why people say a trained machine learning model is \"just a function\".",
+        "Explain what a function is (parameters, return value) and why people say a trained machine learning model is \"just a function\".",
       ideas: [
         { label: "Takes inputs through parameters", patterns: ["input", "parameter", "argument", "take", "give it", "pass"], nudge: "How does data get into a function?" },
         { label: "Returns an output", patterns: ["return", "output", "give.*back", "result", "answer"], nudge: "How does a function hand back its result?" },
@@ -213,7 +302,7 @@ print(mae([10, 20, 30], [12, 18, 30]))`,
         { label: "Reusable for any new input", patterns: ["reus", "any", "again", "new", "many times", "different"], nudge: "Why is it useful that the same function works on inputs it hasn't seen?" },
       ],
       modelAnswer:
-        "A function takes inputs through its parameters, does some work, and returns an output — and you can reuse it on any new input. A trained model is the same shape: it takes inputs like rainfall and returns a prediction like yield. Training just decides the numbers inside the function.",
+        "A function takes inputs through its parameters, does some work, and returns an output, and you can reuse it on any new input. A trained model has the same shape: it takes inputs like rainfall and returns a prediction like yield. Training just decides the numbers inside the function.",
     },
   ],
 };
