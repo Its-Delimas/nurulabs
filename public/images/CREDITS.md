@@ -38,7 +38,6 @@ Photos from Unsplash, used under the [Unsplash License](https://unsplash.com/lic
 | entebbe-market.webp | Wietse Jongsma — Entebbe, Uganda | https://unsplash.com/photos/-OAYEZu641U |
 | city-dusk.webp | Malik Buraimoh | https://unsplash.com/photos/hF5bIFQ62Hw |
 | graduation-nairobi.webp | Oscar Omondi — Nairobi, Kenya | https://unsplash.com/photos/BZbPR9JbalA |
-| learner-library.webp | Makmot Robin | https://unsplash.com/photos/APU7etSy58k |
 | signin-learner.webp | Kagou Dicko — Abuja, Nigeria | https://unsplash.com/photos/uABuB3onLW0 |
 | lost-page.webp | Oluwatobi Fasipe | https://unsplash.com/photos/e8etaVo85AY |
 

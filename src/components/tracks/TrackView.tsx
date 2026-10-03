@@ -24,6 +24,7 @@ import EnrollAction from "./EnrollAction";
 import TrackSyllabus from "./TrackSyllabus";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { plural } from "./format";
+import { button } from "@/components/ui/button";
 import { isModuleLocked } from "./moduleLock";
 
 
@@ -46,7 +47,7 @@ export default function TrackView({ track }: { track: Track }) {
   return (
     <div>
       {/* Hero: the track's photo with its name, then what it takes and how to start */}
-      <section className="overflow-hidden rounded-[28px] bg-paper text-ink ring-1 ring-ink/10">
+      <section className="overflow-hidden rounded-2xl bg-paper text-ink ring-1 ring-ink/10">
         <div className="relative isolate flex min-h-[18rem] items-end md:min-h-[24rem]">
           {track.cover && (
             <Image src={track.cover.src} alt={track.cover.alt} fill priority sizes="100vw" className="-z-20 object-cover object-[center_35%]" />
@@ -76,12 +77,11 @@ export default function TrackView({ track }: { track: Track }) {
             )}
             <div className="mt-7">
               {next ? (
-                <Link
-                  href={`/labs/${next.slug}`}
-                  className="inline-flex items-center gap-2 rounded-md bg-lime px-6 py-3 text-sm font-semibold text-onlime"
-                >
-                  {nextStarted ? "Continue" : stats.done === 0 ? "Start" : "Next"}: {next.title}
-                  <ArrowRight size={16} />
+                <Link href={`/labs/${next.slug}`} className={button({ size: "lg", className: "max-w-full" })}>
+                  <span className="truncate">
+                    {nextStarted ? "Continue" : stats.done === 0 ? "Start" : "Next"}: {next.title}
+                  </span>
+                  <ArrowRight size={17} />
                 </Link>
               ) : (
                 <EnrollAction track={track} progress={progress} />
@@ -104,13 +104,13 @@ export default function TrackView({ track }: { track: Track }) {
                   ]
               ).map(([label, value]) => (
                 <div key={label} className="bg-cream px-5 py-4">
-                  <dt className="text-xs font-medium text-ink/50">{label}</dt>
+                  <dt className="text-xs font-medium text-ink/60">{label}</dt>
                   <dd className="mt-1 font-display text-2xl font-semibold">{value}</dd>
                 </div>
               ))}
             </dl>
             {!soon && bonusModules.length > 0 && (
-              <p className="mt-3 text-xs text-ink/50">
+              <p className="mt-3 text-xs text-ink/60">
                 Plus an optional bonus module, {bonusModules.map((m) => m.title).join(", ")}, {stats.complete ? "open to you now" : "that opens when you finish"}.
               </p>
             )}
@@ -120,10 +120,10 @@ export default function TrackView({ track }: { track: Track }) {
                   <span className="font-semibold">
                     {stats.done} of {stats.total} labs done
                   </span>
-                  <span className="text-ink/50">{stats.percent}%</span>
+                  <span className="text-ink/60">{stats.percent}%</span>
                 </div>
                 <div className="mt-2">
-                  <ProgressBar value={stats.percent} />
+                  <ProgressBar value={stats.percent} label={`${track.name}: ${stats.percent}% complete`} />
                 </div>
               </div>
             )}
@@ -166,19 +166,19 @@ export default function TrackView({ track }: { track: Track }) {
                     {current && <span className="text-xs font-semibold text-lime-deep">You&apos;re here</span>}
                     {done && <span className="text-xs font-semibold text-onlime/70">Completed</span>}
                     {locked && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-ink/40">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-ink/55">
                         <Lock size={13} /> Locked
                       </span>
                     )}
                     {mod.optional && !locked && !done && !current && (
-                      <span className="rounded-full bg-sun/15 px-2 py-0.5 text-xs font-semibold text-sun">Bonus</span>
+                      <span className="rounded-md bg-sun/20 px-2 py-0.5 text-xs font-semibold text-ink/75">Bonus</span>
                     )}
                   </div>
                   {mod.optional && (locked || current || done) && (
-                    <p className={`mt-3 text-[11px] font-semibold uppercase tracking-wide ${done ? "text-onlime/60" : "text-sun"}`}>Optional bonus</p>
+                    <p className={`mt-3 text-[11px] font-semibold uppercase tracking-wide ${done ? "text-onlime/70" : "text-ink/60"}`}>Optional bonus</p>
                   )}
                   <p className={`${mod.optional && (locked || current || done) ? "mt-1" : "mt-4"} font-display text-base font-semibold leading-snug ${done ? "" : locked ? "text-ink/45" : "text-ink"}`}>{mod.title}</p>
-                  <p className={`mt-1 text-xs ${done ? "text-onlime/65" : "text-ink/50"}`}>
+                  <p className={`mt-1 text-xs ${done ? "text-onlime/70" : "text-ink/60"}`}>
                     {modLabs.length
                       ? `${plural(modLabs.length, "lab")}${workable ? ` · ${doneCount}/${modLabs.length} done` : ""}`
                       : `${mod.planned?.length ?? 0} lessons planned`}
@@ -228,7 +228,7 @@ export default function TrackView({ track }: { track: Track }) {
                       <p className="mt-1 font-display text-xl font-semibold leading-snug">{p.title}</p>
                     </div>
                     {done && (
-                      <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">
+                      <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-md bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">
                         <Check size={12} strokeWidth={3} /> Built
                       </span>
                     )}

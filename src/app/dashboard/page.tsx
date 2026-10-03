@@ -11,6 +11,7 @@ import TrackCatalog from "@/components/tracks/TrackCatalog";
 import { stepMeta } from "@/components/lab/StepRail";
 import RichText from "@/components/lab/RichText";
 import ProgressBar from "@/components/ui/ProgressBar";
+import PageHeader from "@/components/ui/PageHeader";
 import { button } from "@/components/ui/button";
 import {
   bonusLabs,
@@ -61,10 +62,7 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <header>
-        <p className="eyebrow text-lime-deep">{track.name}</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-ink">{greeting}</h1>
-      </header>
+      <PageHeader eyebrow={track.name} title={greeting} />
 
       {/* One column on small screens, in the order a learner needs it; two on wide screens. */}
       <div

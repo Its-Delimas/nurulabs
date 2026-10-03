@@ -19,7 +19,6 @@ export const photoCredits: PhotoCredit[] = [
   { file: "entebbe-market.webp", shows: "An open-air produce market", usedOn: "Home page, local projects", photographer: "Wietse Jongsma", place: "Entebbe, Uganda", unsplashId: "-OAYEZu641U" },
   { file: "city-dusk.webp", shows: "An African city from above at dusk", usedOn: "Home page, local projects", photographer: "Malik Buraimoh", unsplashId: "hF5bIFQ62Hw" },
   { file: "graduation-nairobi.webp", shows: "Graduates celebrating together", usedOn: "Home page, closing section", photographer: "Oscar Omondi", place: "Nairobi, Kenya", unsplashId: "BZbPR9JbalA" },
-  { file: "learner-library.webp", shows: "A student working on a laptop", usedOn: "Choose a track", photographer: "Makmot Robin", unsplashId: "APU7etSy58k" },
   { file: "signin-learner.webp", shows: "A young man working on a laptop at a desk", usedOn: "Sign in", photographer: "Kagou Dicko", place: "Abuja, Nigeria", unsplashId: "uABuB3onLW0" },
   { file: "lost-page.webp", shows: "A young man working on a laptop in a bright office", usedOn: "Page not found", photographer: "Oluwatobi Fasipe", unsplashId: "e8etaVo85AY" },
 

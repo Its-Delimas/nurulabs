@@ -12,6 +12,7 @@ import RichText from "@/components/lab/RichText";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { plural } from "./format";
 import { isModuleLocked } from "./moduleLock";
+import { button } from "@/components/ui/button";
 
 
 export default function TrackSyllabus({
@@ -60,11 +61,11 @@ export default function TrackSyllabus({
                       here
                         ? "border-lime-deep font-semibold text-ink"
                         : locked
-                          ? "border-transparent text-ink/35 hover:text-ink/60"
+                          ? "border-transparent text-ink/50 hover:text-ink/70"
                           : "border-transparent text-ink/55 hover:text-ink"
                     }`}
                   >
-                    <span className="w-5 shrink-0 font-mono text-xs leading-5 text-ink/35">
+                    <span className="w-5 shrink-0 font-mono text-xs leading-5 text-ink/50">
                       {done ? <Check size={13} className="mt-1 text-lime-deep" /> : locked ? <Lock size={12} className="mt-1" /> : i + 1}
                     </span>
                     <span className="leading-snug">
@@ -124,7 +125,7 @@ function ModuleSection({
                 </span>
               )}
               {locked && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-2.5 py-1 text-xs font-semibold text-ink/50">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-ink/5 px-2.5 py-1 text-xs font-semibold text-ink/60">
                   <Lock size={12} /> {mod.optional ? "Opens when you finish the track" : `Unlocks when you finish module ${index}`}
                 </span>
               )}
@@ -134,7 +135,7 @@ function ModuleSection({
           <p className="mt-1 max-w-2xl text-ink/60">
             <RichText text={mod.summary} />
           </p>
-          <p className="mt-2 text-xs font-medium text-ink/45">
+          <p className="mt-2 text-xs font-medium text-ink/60">
             {labs.length
               ? `${plural(labs.length, "lab")} · ${activities} activities`
               : `${mod.planned?.length ?? 0} lessons planned`}
@@ -153,11 +154,11 @@ function ModuleSection({
         ))}
         {mod.planned?.map((p) => (
           <li key={p.title} className="flex flex-col rounded-2xl border border-dashed border-ink/20 p-5">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink/40">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink/55">
               <Hammer size={12} /> Being built
             </span>
             <p className="mt-3 font-display text-base font-semibold text-ink/55">{p.title}</p>
-            <p className="mt-1 text-sm text-ink/45">
+            <p className="mt-1 text-sm text-ink/60">
               <RichText text={p.summary} />
             </p>
           </li>
@@ -178,7 +179,7 @@ function ModuleSection({
             <Flag size={17} />
           </span>
           <div>
-            <p className={`text-xs font-semibold uppercase tracking-wide ${reached ? "text-onlime/60" : "text-ink/45"}`}>
+            <p className={`text-xs font-semibold uppercase tracking-wide ${reached ? "text-onlime/70" : "text-ink/60"}`}>
               Milestone {index + 1}
               {reached ? " · reached" : ""}
             </p>
@@ -217,7 +218,7 @@ function LabCard({
       <Check size={12} strokeWidth={3} /> Done
     </span>
   ) : isNext ? (
-    <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">Up next</span>
+    <span className="rounded-md bg-lime px-2.5 py-1 text-xs font-semibold text-onlime">Up next</span>
   ) : locked ? (
     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink/5 text-ink/40" title="Locked" aria-label="Locked">
       <Lock size={13} />
@@ -235,7 +236,7 @@ function LabCard({
       }`}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold text-ink/45">
+        <p className="text-xs font-semibold text-ink/60">
           {isProject && <Flag size={12} className="mr-1 inline -translate-y-px text-lime-deep" />}
           {labLabel(lab, track)} · <span className="font-medium">{lab.subject}</span>
           {lab.format === "thinking" && <span className="ml-1.5 rounded-full bg-violet/15 px-2 py-0.5 text-[11px] font-semibold text-violet">Thinking lab</span>}
@@ -260,7 +261,7 @@ function LabCard({
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3 pt-1">
-        <span className="inline-flex items-center gap-3 text-xs text-ink/50">
+        <span className="inline-flex items-center gap-3 text-xs text-ink/60">
           <span className="inline-flex items-center gap-1">
             <Clock size={12} /> {lab.minutes} min
           </span>
@@ -277,12 +278,7 @@ function LabCard({
             <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
           {canOpen && (
-            <Link
-              href={`/labs/${lab.slug}`}
-              className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold ${
-                isNext ? "bg-lime text-onlime" : "bg-ink text-paper"
-              }`}
-            >
+            <Link href={`/labs/${lab.slug}`} className={button({ variant: isNext ? "primary" : "secondary", size: "sm" })}>
               {done ? "Review" : doneSteps.size ? "Continue" : "Open"}
               <ArrowRight size={13} />
             </Link>
@@ -306,7 +302,7 @@ function LabCard({
                 return (
                   <li key={s.id} className="flex items-center gap-2.5 text-sm">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${tone(s)}`} />
-                    <span className="w-20 shrink-0 text-xs font-semibold text-ink/45">{meta.label}</span>
+                    <span className="w-20 shrink-0 text-xs font-semibold text-ink/60">{meta.label}</span>
                     <span className={`min-w-0 truncate ${sDone ? "text-ink/45 line-through decoration-ink/20" : "text-ink/80"}`}>{s.title}</span>
                   </li>
                 );
@@ -344,7 +340,7 @@ function Ring({ done, total }: { done: number; total: number }) {
         <span className="font-display text-lg font-semibold text-ink">
           {done}/{total}
         </span>
-        <span className="block text-xs text-ink/45">labs done</span>
+        <span className="block text-xs text-ink/60">labs done</span>
       </span>
     </div>
   );

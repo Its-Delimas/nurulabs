@@ -7,6 +7,7 @@ import { ArrowRight, Check, Hammer, Lock } from "lucide-react";
 import type { Track } from "@/lib/curriculum/types";
 import { enrollment, trackStats } from "@/lib/curriculum";
 import { enroll, type Progress } from "@/lib/progress";
+import { button } from "@/components/ui/button";
 
 /**
  * The single place that decides what a learner can do with a track:
@@ -22,26 +23,26 @@ export default function EnrollAction({
 }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
-  if (!progress) return <div className="h-12" />;
+  if (!progress) return <div className="h-10" />;
 
   const state = enrollment(track, progress);
-  const primary = `inline-flex items-center gap-2 rounded-md px-6 py-3 text-sm font-semibold bg-ink text-paper`;
-  const muted = `text-sm text-ink/55`;
+  const primary = button();
+  const muted = "text-sm text-ink/65";
 
   if (state.can) {
     if (!confirming) {
       return (
         <button type="button" onClick={() => setConfirming(true)} className={primary}>
           Enroll in {track.name}
-          <ArrowRight size={16} />
+          <ArrowRight size={15} />
         </button>
       );
     }
     return (
-      <div className={`max-w-md rounded-2xl p-4 bg-cream`}>
-        <p className={`text-sm leading-relaxed text-ink/75`}>
-          You&apos;ll focus on <span className="font-semibold">{track.name}</span> until you finish it —
-          one track at a time, so every lab builds on the last.
+      <div role="group" aria-label={`Enroll in ${track.name}`} className="max-w-md rounded-xl bg-cream p-4">
+        <p className="text-sm leading-relaxed text-ink/75">
+          You&apos;ll focus on <span className="font-semibold">{track.name}</span> until you finish it: one track at a time, so
+          every lab builds on the last.
         </p>
         <div className="mt-3 flex gap-2">
           <button
@@ -54,11 +55,7 @@ export default function EnrollAction({
           >
             Confirm and start
           </button>
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            className={`rounded-md px-4 py-3 text-sm font-semibold text-ink/60`}
-          >
+          <button type="button" onClick={() => setConfirming(false)} className={button({ variant: "ghost" })}>
             Not yet
           </button>
         </div>
@@ -70,20 +67,20 @@ export default function EnrollAction({
     case "enrolled": {
       const stats = trackStats(track, progress);
       return stats.complete ? (
-        <p className={`inline-flex items-center gap-2 font-semibold text-lime-deep`}>
+        <p className="inline-flex items-center gap-2 font-semibold text-lime-deep">
           <Check size={16} /> Completed
         </p>
       ) : (
         <Link href="/dashboard" className={primary}>
           Continue learning
-          <ArrowRight size={16} />
+          <ArrowRight size={15} />
         </Link>
       );
     }
     case "coming-soon":
       return (
         <p className={`inline-flex items-center gap-2 ${muted}`}>
-          <Hammer size={15} /> Being built — not open for enrollment yet
+          <Hammer size={15} /> Being built, not open for enrollment yet
         </p>
       );
     case "busy":
@@ -103,7 +100,7 @@ export default function EnrollAction({
             <p>
               <Link
                 href={`/placement/${req.slug}`}
-                className={`inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-4 hover:underline text-ink`}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4"
               >
                 Already know {req.shortName}? Take the placement check
                 <ArrowRight size={14} />
