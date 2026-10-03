@@ -354,3 +354,299 @@ print([r["amount"] for r in big_in], total_in)`,
     },
   ],
 };
+
+export const pyItertools: Lab = {
+  slug: "py-itertools",
+  runExamples: true,
+  number: "26",
+  title: "itertools",
+  subject: "The iteration toolkit",
+  summary:
+    "The standard library's toolkit for iterators: endless counters, joining and slicing streams, running totals, grouping, and every pairing or combination of a set of items. Questions about balances, fixtures and sales by market take a line or two.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Join, slice and total streams with chain, islice and accumulate",
+    "Compare neighbours with pairwise",
+    "Group sorted data with groupby",
+    "Generate products, combinations and permutations",
+  ],
+  steps: [
+    {
+      id: "endless",
+      kind: "concept",
+      title: "Endless and joined streams",
+      body: [
+        "`itertools` is a standard-library module of fast building blocks that work on any iterable and return lazy iterators.",
+        "`count(start)` counts up forever and `cycle(items)` repeats a sequence forever. Endless iterators are safe as long as you only take what you need, and `islice(it, n)` takes the first `n` items of any iterator, as a slice would for a list.",
+        "`chain(a, b, ...)` joins several iterables into one stream, without building a combined list.",
+      ],
+      code: `from itertools import count, cycle, islice, chain
+
+ids = (f"MBR{n:03}" for n in count(1))    # an endless supply of member IDs
+print(list(islice(ids, 3)))               # take just three
+
+shifts = cycle(["morning", "evening", "night"])
+print([next(shifts) for _ in range(5)])   # wraps round
+
+nairobi = ["Amina", "Juma"]
+kisumu = ["Achieng"]
+print(list(chain(nairobi, kisumu)))       # one stream from two lists`,
+      keyIdea: "`count` and `cycle` never end, so take what you need with `islice`. `chain` joins iterables into one stream.",
+    },
+    {
+      id: "running",
+      kind: "concept",
+      title: "Running totals and neighbours",
+      body: [
+        "`accumulate(values)` gives a **running total**: each item is the sum so far, like a balance after each transaction. Pass another function, such as `max`, and it gives the best so far instead.",
+        "`pairwise(values)` gives each item with the one after it, `(a, b)`, which is exactly what you need to measure change from one day to the next.",
+        "`zip_longest` is `zip` that doesn't stop at the shortest input; missing values are filled with `fillvalue`.",
+      ],
+      code: `from itertools import accumulate, pairwise, zip_longest
+
+deposits = [500, 1200, -300, 800]
+print(list(accumulate(deposits)))               # balance after each one
+print(list(accumulate([3, 7, 5, 9, 2], max)))   # best so far
+
+prices = [58, 61, 59, 66]
+print([b - a for a, b in pairwise(prices)])     # day-to-day change
+
+print(list(zip_longest(["Mon", "Tue", "Wed"], [120, 80], fillvalue=0)))`,
+      keyIdea: "`accumulate` gives running totals (or running max); `pairwise` gives neighbours; `zip_longest` pairs up uneven lists.",
+    },
+    {
+      id: "toolkit-playground",
+      kind: "experiment",
+      title: "Try the toolkit",
+      prompt:
+        "A week of sales is loaded as `sales`, with the start of next week in `week2`, and the tools are imported. Reach each goal with one expression. Wrap results in `list(...)` to see them.",
+      widget: "playground",
+      playground: {
+        setup: `from itertools import accumulate, pairwise, islice, chain, count
+sales = [300, 450, 200, 600, 350]
+week2 = [500, 150]`,
+        goals: [
+          { text: "The running total of `sales`, as a list.", answer: "list(accumulate(sales))", hint: "`list(accumulate(sales))`." },
+          { text: "The change from each day to the next.", answer: "[b - a for a, b in pairwise(sales)]", hint: "`[b - a for a, b in pairwise(sales)]`." },
+          { text: "All the sales from both weeks as one list, using `chain`.", answer: "list(chain(sales, week2))", uses: "chain", hint: "`list(chain(sales, week2))`." },
+          { text: "The first three days' sales, using `islice`.", answer: "list(islice(sales, 3))", uses: "islice", hint: "`list(islice(sales, 3))`." },
+          { text: "The best day so far, at each day.", answer: "list(accumulate(sales, max))", uses: "max", hint: "Give `accumulate` a function: `list(accumulate(sales, max))`." },
+        ],
+        suggestions: ["list(islice(count(100, 10), 5))", "sum(sales)", "accumulate(sales)", "list(pairwise(sales))"],
+      },
+      observe:
+        "Each tool returned a lazy iterator, which is why `list(...)` was needed to see the values. A running total, day-to-day changes and a running best are all questions about **sequences**, and each took one line with no loop variables to manage.",
+    },
+    {
+      id: "groupby",
+      kind: "concept",
+      title: "groupby: runs of the same key",
+      body: [
+        "`groupby(items, key=...)` walks through items and groups **consecutive** items that have the same key, giving you `(key, group)` pairs. Each group is itself an iterator over those items.",
+        "The word that matters is *consecutive*. `groupby` doesn't look ahead, so a key that appears in two separate places makes two groups. To group everything with the same key, **sort by that key first**.",
+      ],
+      code: `from itertools import groupby
+
+sales = [("Gikomba", 300), ("Gikomba", 450), ("Kongowea", 200),
+         ("Gikomba", 120), ("Kongowea", 600)]
+
+sales.sort(key=lambda s: s[0])     # same keys next to each other
+for market, rows in groupby(sales, key=lambda s: s[0]):
+    print(market, sum(amount for _, amount in rows))`,
+      keyIdea: "`groupby` groups **neighbouring** items with the same key, so sort by that key first.",
+    },
+    {
+      id: "predict-groupby",
+      kind: "predict",
+      title: "Groups without sorting",
+      prompt: "`groupby` on a list that isn't sorted. What's printed?",
+      code: `from itertools import groupby
+
+crops = ["maize", "maize", "beans", "maize"]
+print([(k, len(list(g))) for k, g in groupby(crops)])`,
+      options: ["[('maize', 2), ('beans', 1), ('maize', 1)]", "[('maize', 3), ('beans', 1)]", "[('beans', 1), ('maize', 3)]", "[('maize', 2), ('beans', 1)]"],
+      answer: 0,
+      explanation:
+        "`groupby` only groups **runs** of the same value. The first two `maize` form a run, `beans` breaks it, and the last `maize` starts a new group. That's why you sort first; or, to simply count, use `Counter`.",
+    },
+    {
+      id: "combinatorics",
+      kind: "concept",
+      title: "Products, combinations and permutations",
+      body: [
+        "`product(a, b)` pairs every item of `a` with every item of `b`: nested loops in one call.",
+        "`combinations(items, 2)` gives every **unordered** pair, each once: match pairings, handshakes, which two products to bundle. `permutations(items, 2)` gives every **ordered** pair, so `(A, B)` and `(B, A)` both appear: home and away fixtures.",
+        "These grow fast. 20 teams make 190 pairings and 380 home-and-away fixtures, so count before you print.",
+      ],
+      code: `from itertools import product, combinations, permutations
+
+sizes = ["S", "M", "L"]
+colours = ["red", "green"]
+print(list(product(sizes, colours)))          # every size in every colour
+
+teams = ["Gor Mahia", "AFC Leopards", "Tusker"]
+print(list(combinations(teams, 2)))           # each pair once
+print(len(list(permutations(teams, 2))))      # home and away: 6`,
+      keyIdea: "`product` = every pairing across lists; `combinations` = unordered selections; `permutations` = ordered ones.",
+    },
+    {
+      id: "predict-pairs",
+      kind: "predict",
+      title: "Coffee for six",
+      prompt: "In a chama of six, every two members meet once for coffee. How many meetings?",
+      code: `from itertools import combinations
+
+members = ["A", "B", "C", "D", "E", "F"]
+print(len(list(combinations(members, 2))))`,
+      options: ["15", "30", "36", "12"],
+      answer: 0,
+      explanation:
+        "Each of the 6 members can pair with 5 others, which is 30, but that counts every meeting twice (A with B, and B with A). `combinations` gives each unordered pair once: 6 × 5 ÷ 2 = 15. `permutations` would give the 30.",
+    },
+    {
+      id: "league",
+      kind: "code",
+      title: "Plan the league",
+      brief:
+        "Four clubs play in a league. Set `fixtures` to a list of every home-and-away match as `(home, away)` tuples, and `pairings` to a list of every pair of clubs, each pair once. It's tested with other leagues too.",
+      starterCode: `from itertools import combinations, permutations
+
+teams = ["Gor Mahia", "AFC Leopards", "Tusker", "Bandari"]
+
+fixtures = []
+pairings = []
+
+print(len(fixtures), "fixtures")
+print(len(pairings), "pairings")
+`,
+      checks: [
+        { expr: "len(fixtures) == 12 and ('Tusker', 'Bandari') in fixtures and ('Bandari', 'Tusker') in fixtures", label: "12 fixtures, each pair home and away", failHint: "Order matters for home and away: `list(permutations(teams, 2))`." },
+        { expr: "len(pairings) == 6 and len(set(frozenset(p) for p in pairings)) == 6", label: "6 pairings, each pair once", failHint: "Order doesn't matter for a pairing: `list(combinations(teams, 2))`." },
+        {
+          expr: "(lambda ns: len(ns['fixtures']) == 6 and len(ns['pairings']) == 3)(_with(teams=['A', 'B', 'C']))",
+          label: "Works for a league of three",
+          failHint: "Work both out from `teams`.",
+        },
+      ],
+      hints: ["`permutations` for ordered pairs, `combinations` for unordered ones, each with `2` as the size."],
+      why:
+        "A full season's fixture list, generated rather than typed, and guaranteed to have every match exactly once. With 18 clubs, as in a typical national league, it's 306 fixtures, and the code doesn't change.",
+      solution: `from itertools import combinations, permutations
+
+teams = ["Gor Mahia", "AFC Leopards", "Tusker", "Bandari"]
+
+fixtures = list(permutations(teams, 2))
+pairings = list(combinations(teams, 2))
+
+print(len(fixtures), "fixtures")
+print(len(pairings), "pairings")`,
+    },
+    {
+      id: "group-markets",
+      kind: "code",
+      title: "Sales by market",
+      brief:
+        "`market_sales` holds `(market, amount)` tuples in the order they were recorded. Use `groupby` to build `totals`, a dictionary from each market to its total sales.",
+      starterCode: `from itertools import groupby
+
+market_sales = [("Kongowea", 200), ("Gikomba", 300), ("Kibuye", 150), ("Gikomba", 450),
+                ("Kongowea", 600), ("Gikomba", 120), ("Kibuye", 90)]
+
+totals = {}
+
+print(totals)
+`,
+      checks: [
+        { expr: "totals == {'Gikomba': 870, 'Kibuye': 240, 'Kongowea': 800}", label: "Each market's total is right", failHint: "Sort first: `groupby(sorted(market_sales), key=lambda s: s[0])`, then sum each group's amounts." },
+        {
+          expr: "_with(market_sales=[('B', 1), ('A', 2), ('B', 3)])['totals'] == {'A': 2, 'B': 4}",
+          label: "Works when a market appears in separate places",
+          failHint: "Without sorting, a market that comes back later starts a new group and overwrites its first total.",
+        },
+        { expr: "'groupby' in _source", label: "Uses `groupby`", failHint: "Group the sorted sales with `groupby`." },
+      ],
+      hints: [
+        "`for market, rows in groupby(sorted(market_sales), key=lambda s: s[0]):`",
+        "Each `rows` is an iterator of tuples: `sum(amount for _, amount in rows)`.",
+      ],
+      why:
+        "Sorted first, every market's sales sat together, so each one became exactly one group. Forgetting to sort is the classic `groupby` bug: there's no error, just quietly wrong totals. (`defaultdict(int)` does this job without sorting; `groupby` shines when data arrives already in order, such as a log sorted by date.)",
+      solution: `from itertools import groupby
+
+market_sales = [("Kongowea", 200), ("Gikomba", 300), ("Kibuye", 150), ("Gikomba", 450),
+                ("Kongowea", 600), ("Gikomba", 120), ("Kibuye", 90)]
+
+totals = {}
+for market, rows in groupby(sorted(market_sales), key=lambda s: s[0]):
+    totals[market] = sum(amount for _, amount in rows)
+
+print(totals)`,
+    },
+    {
+      id: "overdraft",
+      kind: "code",
+      challenge: true,
+      title: "When did the wallet go negative?",
+      brief:
+        "A wallet starts with `opening` and then has `transactions`. Set `balances` to the balance after each transaction (not including the opening balance), `lowest` to the lowest balance, `first_overdraft` to the **number** of the first transaction that left the balance below zero (counting from 1), or `None` if it never did, and `times_overdrawn` to how many balances were negative.",
+      starterCode: `from itertools import accumulate
+
+opening = 1000
+transactions = [-200, -500, 300, -900, 400, -150]
+
+balances = []
+lowest = 0
+first_overdraft = None
+times_overdrawn = 0
+
+print(balances)
+print(lowest, first_overdraft, times_overdrawn)
+`,
+      checks: [
+        { expr: "balances == [800, 300, 600, -300, 100, -50]", label: "`balances` is the running balance", failHint: "`[opening + b for b in accumulate(transactions)]`, or `accumulate(..., initial=opening)` without its first value." },
+        { expr: "lowest == -300", label: "`lowest` is −300", failHint: "`min(balances)`." },
+        { expr: "first_overdraft == 4", label: "The 4th transaction caused the first overdraft", failHint: "`next((i for i, b in enumerate(balances, start=1) if b < 0), None)`." },
+        { expr: "times_overdrawn == 2", label: "Overdrawn twice", failHint: "Count the negative balances: `sum(1 for b in balances if b < 0)`." },
+        {
+          expr: "(lambda ns: ns['first_overdraft'] is None and ns['times_overdrawn'] == 0 and ns['lowest'] == 50)(_with(opening=100, transactions=[-50, 20]))",
+          label: "A wallet that never goes negative gives `None`",
+          failHint: "`next(..., None)` returns `None` when no balance is negative.",
+        },
+      ],
+      hints: [
+        "`next(generator, default)` returns the first item a generator produces, or the default if it produces none.",
+        "`enumerate(balances, start=1)` numbers the balances from 1, matching the transaction numbers.",
+      ],
+      why:
+        "`accumulate` turned a list of changes into a list of states, and `next()` on a generator expression found the **first** match and stopped looking. That pairing, \"the first item that passes a test, or a default\", is one of the most useful idioms in Python.",
+      solution: `from itertools import accumulate
+
+opening = 1000
+transactions = [-200, -500, 300, -900, 400, -150]
+
+balances = [opening + b for b in accumulate(transactions)]
+lowest = min(balances)
+first_overdraft = next((i for i, b in enumerate(balances, start=1) if b < 0), None)
+times_overdrawn = sum(1 for b in balances if b < 0)
+
+print(balances)
+print(lowest, first_overdraft, times_overdrawn)`,
+    },
+    {
+      id: "explain-itertools",
+      kind: "explain",
+      title: "Choosing the right tool",
+      prompt:
+        "Pick three tools from `itertools` and explain what each one does, with a real situation where you'd use it. What do all of them have in common?",
+      ideas: [
+        { label: "Running totals or neighbours", patterns: ["accumulate", "running", "pairwise", "balance"], nudge: "Which tool gives a running total?" },
+        { label: "Grouping, and sorting first", patterns: ["groupby", "group", "sort"], nudge: "How do you total things by category?" },
+        { label: "Pairings and selections", patterns: ["combination", "permutation", "product", "pair", "fixture"], nudge: "Which tools list every pairing?" },
+        { label: "They're lazy iterators", patterns: ["lazy", "iterator", "list\\(", "memory", "one at a time", "stream"], nudge: "What do they return, and why does `list()` keep appearing?" },
+      ],
+      modelAnswer:
+        "`accumulate` gives a running total, like a wallet balance after each transaction. `groupby` groups neighbouring items with the same key, so after sorting sales by market I can total each market. `combinations` gives every unordered pair, like the pairings in a league, while `permutations` gives home-and-away fixtures. They all return lazy iterators that produce values one at a time, which is why I wrap them in `list()` to see them, and why they work on huge or endless streams like `count()`.",
+    },
+  ],
+};
