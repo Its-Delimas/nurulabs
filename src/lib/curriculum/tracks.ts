@@ -96,9 +96,8 @@ export const tracks: Track[] = [
         slug: "py-oop",
         title: "Object-oriented programming",
         summary: "Classes and objects, inheritance, special methods, properties and dataclasses.",
-        labs: ["py-classes", "py-inheritance"],
+        labs: ["py-classes", "py-inheritance", "py-special-methods"],
         planned: [
-          { title: "Special Methods", summary: "__str__, __repr__, __eq__, __len__ and friends: objects that behave like built-ins." },
           { title: "Properties, Class Methods & Dataclasses", summary: "@property, @classmethod, @dataclass and Enum." },
           { title: "Project: Mobile-Money Wallet", summary: "Model accounts and transactions as objects, with custom errors and tests." },
         ],
