@@ -60,10 +60,10 @@ export default function StreakCalendar({
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-display text-base font-semibold text-ink">
+          <h2 className="font-display text-base font-semibold text-ink">
             Your streak
-          </p>
-          <p className="mt-0.5 text-xs text-ink/50">
+          </h2>
+          <p className="mt-0.5 text-sm text-ink/65">
             {streak === 0
               ? "Run some code today to start one."
               : `${streak} day${streak === 1 ? "" : "s"} in a row`}
@@ -74,7 +74,7 @@ export default function StreakCalendar({
             type="button"
             onClick={() => shift(-1)}
             aria-label="Previous month"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-ink/10 text-ink/50 transition-colors hover:border-ink/30 hover:text-ink"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-ink/15 text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
           >
             <ChevronLeft size={14} />
           </button>
@@ -83,7 +83,7 @@ export default function StreakCalendar({
             onClick={() => shift(1)}
             disabled={isCurrentMonth}
             aria-label="Next month"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-ink/10 text-ink/50 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-ink/15 text-ink/60 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
           >
             <ChevronRight size={14} />
           </button>
@@ -91,10 +91,13 @@ export default function StreakCalendar({
       </div>
 
       <p className="eyebrow mt-5 text-ink/60">{monthLabel}</p>
+      <p className="sr-only">
+        You ran code on {cells.filter((d) => d && activeDates.has(dateKey(d))).length} days in {monthLabel}.
+      </p>
 
-      <div className="mt-3 grid grid-cols-7 gap-y-1.5 text-center">
+      <div className="mt-3 grid grid-cols-7 gap-y-1.5 text-center" aria-hidden="true">
         {WEEKDAYS.map((d) => (
-          <span key={d} className="pb-1 text-[10px] font-semibold uppercase text-ink/35">
+          <span key={d} className="pb-1 text-[10px] font-semibold uppercase text-ink/55">
             {d}
           </span>
         ))}

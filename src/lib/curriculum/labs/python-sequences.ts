@@ -607,7 +607,7 @@ print(f"{'Total':<12}{'':>5}{total:>10,.2f}")`,
     {
       id: "repr",
       kind: "concept",
-      title: "repr, str and the debugging =",
+      title: "repr, str and f\"{x=}\" for debugging",
       body: [
         "Every value has two text forms. `str(x)` is for people, and it's what `print` shows. `repr(x)` is for programmers: it shows quotes around strings and makes invisible things visible, like a trailing space or a `\\n`. Containers like lists always show the repr of their items, which is why you see quotes inside a printed list.",
         "`f\"{x!r}\"` uses the repr in an f-string, and `f\"{x=}\"` prints the expression **and** its value, `kg=2.5`, which is the fastest way to debug.",

@@ -146,7 +146,7 @@ print("Average price:", average_price)
 `,
       checks: [
         { expr: "mean([2, 4, 6]) == 4 and mean([10]) == 10", label: "`mean()` returns the correct average", failHint: "`mean` must **return** the result: `return sum(values) / len(values)`. Printing isn't enough." },
-        { expr: "mean([]) is None", label: "`mean([])` returns `None` instead of crashing", failHint: "Start with `if not values: return None`; an empty list is falsy." },
+        { expr: "mean([]) is None and mean([4]) == 4", label: "`mean([])` returns `None` instead of crashing", failHint: "Start with `if not values: return None`; an empty list is falsy." },
         { expr: "average_price == 59", label: "`average_price` is 59", failHint: "Call your function: `average_price = mean(prices)`." },
       ],
       hints: [
