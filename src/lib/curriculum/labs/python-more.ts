@@ -1,4 +1,5 @@
 import type { Lab } from "../types";
+import { dataFile } from "../data/paths";
 
 export const pyStrings: Lab = {
   slug: "py-strings",
@@ -1324,20 +1325,39 @@ print(model.predict(3))`,
   ],
 };
 
+const GRADE = `import pytest
+import testkit
+
+
+def grade(bags):
+    """Grade a harvest: "high" for 20 bags or more, "medium" for 10 to 19,
+    "low" below that. A negative number of bags is an error."""
+    if bags < 0:
+        raise ValueError("bags can't be negative")
+    if bags >= 20:
+        return "high"
+    if bags >= 10:
+        return "medium"
+    return "low"
+`;
+
 export const pyDebugging: Lab = {
   slug: "py-debugging",
   runExamples: true,
   number: "13",
   title: "Debugging & Testing",
-  subject: "assert & debugging",
+  subject: "tracebacks, assert, pytest, logging",
   summary:
-    "The most useful programming skill nobody teaches: finding bugs systematically, and writing small tests that prove your code works — before your data depends on it.",
-  minutes: 35,
+    "The most useful programming skill nobody teaches: finding bugs systematically. Read tracebacks, step through code, write tests that prove your code works, run them with pytest, and replace stray prints with proper logging.",
+  minutes: 45,
   kind: "lab",
+  packages: ["pytest"],
+  files: { "testkit.py": dataFile("testkit.py") },
   skills: [
-    "Tell syntax, runtime and logic errors apart",
+    "Tell syntax, runtime and logic errors apart, and read a traceback",
     "Find bugs by stepping through code and inspecting values",
-    "Write tests with assert, including edge cases",
+    "Write tests with assert and pytest, including edge cases and expected errors",
+    "Use logging levels instead of print statements",
   ],
   steps: [
     {
@@ -1345,12 +1365,39 @@ export const pyDebugging: Lab = {
       kind: "concept",
       title: "Three kinds of bugs",
       body: [
-        "**Syntax errors**: Python can't even read the code — a missing colon or bracket. Nothing runs. Easy to spot.",
-        "**Runtime errors**: the code starts, then hits an exception — `KeyError`, `ZeroDivisionError`. The traceback tells you where.",
-        "**Logic errors**: the code runs fine and gives a **wrong answer**. No error message at all. These are the dangerous ones — in ML, a logic bug can make a model look accurate when it isn't.",
+        "**Syntax errors**: Python can't even read the code, because of a missing colon or bracket. Nothing runs. Easy to spot.",
+        "**Runtime errors**: the code starts, then hits an exception such as `KeyError` or `ZeroDivisionError`. The traceback tells you where.",
+        "**Logic errors**: the code runs fine and gives a **wrong answer**, with no error message at all. These are the dangerous ones: a logic bug can make a report, or a model, look right when it isn't.",
         "The method is always the same: reproduce the problem, look at the actual values, narrow down where it goes wrong, fix it, then test it.",
       ],
       keyIdea: "The worst bugs don't crash. The only defence against logic errors is checking results against answers you already know.",
+    },
+    {
+      id: "traceback",
+      kind: "concept",
+      title: "Reading a traceback",
+      body: [
+        "A traceback reads from the **bottom up**. The last line is the error's type and message. The lines above it are the chain of calls that led there, most recent last: here, the main program called `report`, which called `average`, where the division failed.",
+        "The line that crashed isn't always the line that's wrong. `average` is fine; the real problem is that an empty list reached it. Follow the chain upwards until you find where the bad value came from.",
+        "The `traceback` module can format the same report inside your program, which is what this example does so you can read it in the output.",
+      ],
+      code: `import traceback
+
+
+def average(values):
+    return sum(values) / len(values)
+
+
+def report(market, prices):
+    return f"{market}: KSh {average(prices):.1f}"
+
+
+print(report("Gikomba", [64, 71]))
+try:
+    print(report("Kibuye", []))       # an empty list sneaks in
+except ZeroDivisionError:
+    print(traceback.format_exc())     # the traceback Python would show`,
+      keyIdea: "Read a traceback bottom-up: the error, then the chain of calls. The crash site isn't always the cause.",
     },
     {
       id: "hunt",
@@ -1381,7 +1428,7 @@ print(average([10, 20, 30]))`,
       id: "predict-assert",
       kind: "predict",
       title: "What does a failing test look like?",
-      prompt: "`assert` checks that something is True — and stops the program if it isn't. What's the output?",
+      prompt: "`assert` checks that something is True, and stops the program if it isn't. What's the output?",
       code: `def double(x):
     return x * 2
 
@@ -1391,7 +1438,7 @@ print("all good")`,
       options: ["AssertionError: zero case", "all good", "8", "Nothing is printed"],
       answer: 0,
       explanation:
-        "The first assert passes silently. The second is False (`double(0)` is 0, not 1), so Python raises `AssertionError` with the message you gave — and `\"all good\"` never prints. Here the *test* was wrong, which also happens: a failing test means \"look closer\", not always \"the code is broken\".",
+        "The first assert passes silently. The second is False (`double(0)` is 0, not 1), so Python raises `AssertionError` with the message you gave, and `\"all good\"` never prints. Here the *test* was wrong, which also happens: a failing test means \"look closer\", not always \"the code is broken\".",
     },
     {
       id: "testing",
@@ -1399,7 +1446,7 @@ print("all good")`,
       title: "Tests are answers you already know",
       body: [
         "A test runs your function on inputs where you **know** the right answer, and checks it: `assert percent_change(50, 75) == 50`.",
-        "Good tests include **edge cases** — the inputs most likely to break things: empty lists, zero, negative numbers, exact boundaries like 25 mm when the rule is `>= 25`.",
+        "Good tests include **edge cases**, the inputs most likely to break things: empty lists, zero, negative numbers, and exact boundaries like 20 bags when the rule is `>= 20`.",
         "Write the tests next to the code and run them every time you change it. That's how you know a fix didn't break something else.",
       ],
       code: `def grade(bags):
@@ -1421,7 +1468,7 @@ print("all tests pass")`,
       kind: "code",
       title: "Make the failing tests pass",
       brief:
-        "`percent_change(old, new)` should give the percentage change from `old` to `new` — e.g. a price going from 50 to 75 is +50%. It has a logic bug, and the tests at the bottom catch it. Fix the function (not the tests) until the program prints `tests pass`.",
+        "`percent_change(old, new)` should give the percentage change from `old` to `new`: a price going from 50 to 75 is +50%. It has a logic bug, and the tests at the bottom catch it. Fix the function (not the tests) until the program prints `tests pass`.",
       starterCode: `def percent_change(old, new):
     return (new - old) / new * 100
 
@@ -1434,17 +1481,17 @@ print("tests pass")
       checks: [
         { expr: "percent_change(50, 75) == 50 and percent_change(100, 80) == -20", label: "Percent change is calculated correctly", failHint: "Percentage change is measured relative to where you *started*. Which number should you divide by?" },
         { expr: "'tests pass' in _stdout", label: "All the tests pass", failHint: "Fix the function until every `assert` passes and `tests pass` is printed." },
-        { expr: "_source.count('assert') >= 3", label: "The tests are still there", failHint: "Don't delete the tests — fix the function so they pass." },
+        { expr: "_source.count('assert') >= 3", label: "The tests are still there", failHint: "Don't delete the tests: fix the function so they pass." },
       ],
       hints: [
         "Read the AssertionError message: it tells you which case failed and what was expected.",
-        "Try it by hand: from 50 to 75 is a change of 25. 25 is 50% of which number — 50 or 75?",
+        "Try it by hand: from 50 to 75 is a change of 25. 25 is 50% of which number, 50 or 75?",
       ],
       errorHints: [
-        { pattern: "AssertionError", hint: "A test failed — that's the bug being caught, not a new problem. The message says which case. Work that case out by hand, then compare with what the function does." },
+        { pattern: "AssertionError", hint: "A test failed: that's the bug being caught, not a new problem. The message says which case. Work that case out by hand, then compare with what the function does." },
       ],
       why:
-        "The tests turned a silent logic error into a loud, specific failure — and told you when it was fixed. Dividing by the wrong number is a classic bug in real reports; tests catch it before anyone makes decisions from it.",
+        "The tests turned a silent logic error into a loud, specific failure, and told you when it was fixed. Dividing by the wrong number is a classic bug in real reports; tests catch it before anyone makes decisions from it.",
       solution: `def percent_change(old, new):
     return (new - old) / old * 100
 
@@ -1455,47 +1502,121 @@ assert percent_change(40, 40) == 0, "no change should be 0%"
 print("tests pass")`,
     },
     {
-      id: "write-tests",
+      id: "pytest",
+      kind: "concept",
+      title: "Test functions and pytest",
+      body: [
+        "Bare `assert` lines stop at the first failure. Real projects put each check in its own **test function**, named `test_...`, and let a **test runner** find and run them all. **pytest** is Python's standard runner: it reports every test that fails, showing both sides of the comparison.",
+        "To test that something **raises** an error, use `with pytest.raises(ValueError):` around the call; the test fails if the error doesn't happen.",
+        "On your own computer you'd save tests in files named `test_*.py` and type `pytest` in a terminal. Here, `testkit.run()` runs the same pytest on the code in the editor. One test below is wrong on purpose, so you can see what a failure looks like.",
+      ],
+      code: `import pytest
+import testkit
+
+
+def percent_change(old, new):
+    return (new - old) / old * 100
+
+
+def test_rise():
+    assert percent_change(50, 75) == 50
+
+
+def test_fall():
+    assert percent_change(100, 80) == -20
+
+
+def test_zero_start_is_an_error():
+    with pytest.raises(ZeroDivisionError):
+        percent_change(0, 10)
+
+
+def test_double():
+    assert percent_change(10, 20) == 50     # wrong on purpose: doubling is +100%
+
+
+result = testkit.run()       # like typing  pytest -q  in a terminal`,
+      keyIdea: "Tests are functions named `test_...` that assert. pytest runs them all and shows exactly what failed; `pytest.raises` tests for errors.",
+    },
+    {
+      id: "pytest-tests",
       kind: "code",
-      title: "Write your own tests",
+      title: "Test the grading function",
       brief:
-        "`planting_advice(rain_mm)` is already written. Add **at least four** `assert` tests underneath it — include both boundaries (exactly 25 and exactly 80) and at least one edge case. Then print `tests pass`.",
-      starterCode: `def planting_advice(rain_mm):
-    if rain_mm > 80:
-        return "too wet"
-    if rain_mm >= 25:
-        return "plant"
-    return "wait"
+        "`grade(bags)` is written and correct. Write **at least four** pytest test functions for it: test both boundaries (exactly 20 and exactly 10), at least one other value, and use `pytest.raises` to check that a negative number of bags raises `ValueError`. Then run them with `result = testkit.run()`. Your tests are also run against three buggy versions of `grade`, and must catch every one.",
+      starterCode: GRADE + `
+
+# your test functions here
 
 
-# your tests here
-
+result = testkit.run()
 `,
       checks: [
-        { expr: "_source.count('assert planting_advice(') >= 4", label: "At least four tests", failHint: "Write four or more lines like `assert planting_advice(40) == \"plant\"`." },
-        { expr: "'planting_advice(25)' in _source and 'planting_advice(80)' in _source", label: "Both boundaries (25 and 80) are tested", failHint: "Test exactly 25 and exactly 80 — boundaries are where bugs hide." },
-        { expr: "'tests pass' in _stdout", label: "All your tests pass", failHint: "If a test fails, check what the function really returns for that value — your expectation might be the thing that's wrong." },
+        { expr: "result is not None and result.ok and len(result.passed) >= 4", label: "At least four tests, all passing", failHint: "Write functions named `test_...` with `assert grade(...) == ...` inside, at least four of them." },
+        { expr: "'pytest.raises' in _source and testkit.catches('grade_allows_negative')", label: "A test checks that negative bags raise `ValueError`", failHint: "`def test_negative():` with `with pytest.raises(ValueError): grade(-1)` inside." },
+        { expr: "testkit.catches('grade_high_boundary')", label: "Your tests catch a bug at the 20-bag boundary", failHint: "A version that uses `> 20` instead of `>= 20` slipped through. Test exactly `grade(20)`." },
+        { expr: "testkit.catches('grade_medium_boundary')", label: "Your tests catch a bug at the 10-bag boundary", failHint: "A version that uses `> 10` instead of `>= 10` slipped through. Test exactly `grade(10)`." },
       ],
       hints: [
-        "At exactly 80, is it `\"too wet\"`? Read the condition: `rain_mm > 80`.",
-        "Edge cases to consider: 0 mm, and a very large number like 500.",
+        "One behaviour per test: `def test_twenty_is_high(): assert grade(20) == \"high\"`.",
+        "Boundary bugs only show up **at** the boundary: `grade(25)` is high either way, but `grade(20)` isn't.",
       ],
       why:
-        "Writing tests forces you to decide exactly what the right behaviour is at the edges — and often reveals that the spec itself was ambiguous. That's valuable before any data goes through the function.",
-      solution: `def planting_advice(rain_mm):
-    if rain_mm > 80:
-        return "too wet"
-    if rain_mm >= 25:
-        return "plant"
-    return "wait"
+        "Your tests didn't just pass; they **caught** bugs, which is the real measure of a test suite. A test of `grade(25)` passes on the off-by-one version too; only `grade(20)` exposes it. Testing your tests by breaking the code on purpose is called mutation testing, and tools like `mutmut` automate it.",
+      solution: GRADE + `
+
+def test_twenty_is_high():
+    assert grade(20) == "high"
 
 
-assert planting_advice(25) == "plant"
-assert planting_advice(24) == "wait"
-assert planting_advice(80) == "plant"
-assert planting_advice(81) == "too wet"
-assert planting_advice(0) == "wait"
-print("tests pass")`,
+def test_ten_is_medium():
+    assert grade(10) == "medium"
+
+
+def test_nine_is_low():
+    assert grade(9) == "low"
+
+
+def test_negative_is_an_error():
+    with pytest.raises(ValueError):
+        grade(-1)
+
+
+result = testkit.run()`,
+    },
+    {
+      id: "logging",
+      kind: "concept",
+      title: "Logging instead of print",
+      body: [
+        "`print` is fine for a quick look, but debugging prints get left behind, can't be switched off, and say nothing about how serious they are. The `logging` module fixes all three.",
+        "Each message has a **level**: `debug` for detail, `info` for normal progress, `warning` for something odd, `error` when something failed. `basicConfig(level=...)` decides which levels are shown, so you can turn the detail on while debugging and off in production, without touching the messages.",
+        "Logs normally go to the terminal's error stream, or to a file. Here we send them to the output panel with `stream=sys.stdout`; `force=True` replaces any earlier set-up, which helps when you run the code again.",
+      ],
+      code: `import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s %(name)s: %(message)s",
+    stream=sys.stdout,      # show logs in the output panel
+    force=True,             # replace any earlier set-up
+)
+log = logging.getLogger("prices")
+
+
+def clean(raw):
+    log.debug("cleaning %r", raw)                 # hidden: below INFO
+    try:
+        return float(raw.replace(",", ""))
+    except ValueError:
+        log.warning("skipping bad price %r", raw)
+        return None
+
+
+values = [clean(p) for p in ["1,200", "95", "n/a"]]
+log.info("cleaned %d prices, %d usable", len(values), sum(v is not None for v in values))`,
+      keyIdea: "Use `logging` with levels (`debug`, `info`, `warning`, `error`) instead of stray prints; the level setting decides what's shown.",
     },
     {
       id: "multi-bug",
@@ -1525,7 +1646,7 @@ print("tests pass")
         { expr: "'tests pass' in _stdout", label: "All the tests pass", failHint: "Keep fixing until every test passes." },
       ],
       hints: [
-        "Bug 1: `p.strip` without brackets doesn't call the method — it refers to it.",
+        "Bug 1: `p.strip` without brackets doesn't call the method; it refers to it.",
         "Bug 2: `float(\"1,200\")` fails. Remove the comma first.",
         "Bug 3: look at how far `return cleaned` is indented. When does it run?",
       ],
@@ -1534,7 +1655,7 @@ print("tests pass")
         { pattern: "could not convert string to float: '1,200'", hint: "`float()` doesn't understand thousands separators. Remove the comma first with `.replace(\",\", \"\")`." },
       ],
       why:
-        "Three bugs, three different kinds: a method never called, a format the converter can't handle, and a `return` that ended the loop after one item. The tests caught all of them — and will catch them again if they ever come back.",
+        "Three bugs, three different kinds: a method never called, a format the converter can't handle, and a `return` that ended the loop after one item. The tests caught all of them, and will catch them again if they ever come back.",
       solution: `def clean_prices(raw):
     cleaned = []
     for p in raw:
@@ -1558,12 +1679,12 @@ print("tests pass")`,
         "Your program runs without errors but prints the wrong answer. Describe, step by step, how you'd track down the problem and make sure it stays fixed.",
       ideas: [
         { label: "Reproduce it with an input where you know the right answer", patterns: ["reproduce", "know.*answer", "expected", "small example", "by hand", "input"], nudge: "What input would let you tell right from wrong?" },
-        { label: "Inspect the actual values (print or step through)", patterns: ["print", "step", "inspect", "check.*value", "variable", "debugger", "trace"], nudge: "How do you see what the code is really doing?" },
-        { label: "Narrow down where it goes wrong", patterns: ["narrow", "isolate", "which line", "where", "find.*line", "part"], nudge: "How do you find the exact line?" },
-        { label: "Add tests so it can't come back", patterns: ["test", "assert", "edge case", "again", "regress"], nudge: "How do you make sure the bug stays fixed?" },
+        { label: "Inspect the actual values (print, logging or stepping through)", patterns: ["print", "step", "inspect", "check.*value", "variable", "debugger", "trace", "log"], nudge: "How do you see what the code is really doing?" },
+        { label: "Narrow down where it goes wrong", patterns: ["narrow", "isolate", "which line", "where", "find.*line", "part", "traceback"], nudge: "How do you find the exact line?" },
+        { label: "Add tests so it can't come back", patterns: ["test", "assert", "pytest", "edge case", "again", "regress"], nudge: "How do you make sure the bug stays fixed?" },
       ],
       modelAnswer:
-        "First I reproduce it with a small input where I know the right answer. Then I inspect the actual values — with print statements or by stepping through — to narrow down the exact line where the result goes wrong. After fixing it, I add assert tests for that case and the edge cases around it, so the bug can't come back unnoticed.",
+        "First I reproduce it with a small input where I know the right answer. Then I inspect the actual values, with print or logging, or by stepping through, to narrow down the exact line where the result goes wrong. After fixing it, I add tests for that case and the edge cases around it, as pytest test functions, so the bug can't come back unnoticed.",
     },
   ],
 };

@@ -61,6 +61,35 @@ def transform(records):
     df = df.sort_values("updated_at").drop_duplicates(["market", "crop", "date"], keep="last")
     return df[OUT].sort_values(["date", "market", "crop"]).reset_index(drop=True)
 ''',
+    # Python Essentials: Debugging & Testing
+    "grade_high_boundary": '''
+def grade(bags):
+    if bags < 0:
+        raise ValueError("bags can't be negative")
+    if bags > 20:
+        return "high"
+    if bags >= 10:
+        return "medium"
+    return "low"
+''',
+    "grade_medium_boundary": '''
+def grade(bags):
+    if bags < 0:
+        raise ValueError("bags can't be negative")
+    if bags >= 20:
+        return "high"
+    if bags > 10:
+        return "medium"
+    return "low"
+''',
+    "grade_allows_negative": '''
+def grade(bags):
+    if bags >= 20:
+        return "high"
+    if bags >= 10:
+        return "medium"
+    return "low"
+''',
     # Project: immunisation reports
     "latest_keeps_first": '''
 def latest_submissions(df):
