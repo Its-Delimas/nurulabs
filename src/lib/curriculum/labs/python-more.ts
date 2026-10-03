@@ -4,15 +4,17 @@ export const pyStrings: Lab = {
   slug: "py-strings",
   runExamples: true,
   number: "05",
-  title: "Text & Strings",
-  subject: "String methods",
+  title: "Strings in Depth",
+  subject: "Cleaning, searching, testing and joining text",
   summary:
-    "Most real data arrives as messy text — names with stray spaces, amounts buried in SMS messages. Learn to clean, slice and pull numbers out of text.",
-  minutes: 30,
+    "Most real data arrives as messy text: names with stray spaces, phone numbers in five formats, amounts buried in SMS messages. Learn to clean, search, test, slice, split and join text, and pull numbers out of it.",
+  minutes: 40,
   kind: "lab",
   skills: [
     "Clean messy text with strip, lower, title and replace",
-    "Split text into parts and slice out what you need",
+    "Search text with in, find, count, startswith and endswith",
+    "Test what text contains with isdigit, isalpha and friends",
+    "Split text into parts, join parts into text, and slice out what you need",
     "Extract numbers hidden inside text",
   ],
   steps: [
@@ -147,6 +149,114 @@ for name in names:
     cleaned.append(name.strip().title())
 
 print(cleaned)`,
+    },
+    {
+      id: "search-test-join",
+      kind: "concept",
+      title: "Searching, testing and joining",
+      body: [
+        "**Searching**: `\"sent\" in sms` says whether it's there; `sms.find(\"sent\")` says where (or `-1` if it isn't); `sms.count(\"O\")` says how often. `startswith` and `endswith` check the ends, and accept a tuple of options: `number.startswith((\"07\", \"01\"))`. All of these are case-sensitive, so lower the text first when case doesn't matter.",
+        "**Testing**: `isdigit()` is True if every character is a digit, `isalpha()` for letters, `isalnum()` for either, `isupper()` and `islower()` for case. Use them to check input before converting it.",
+        "**Joining** is the opposite of splitting: `\", \".join(words)` glues a list of strings together with `\", \"` between them. Slices take a step, like lists: `text[::-1]` reverses a string. Strings compare alphabetically, character by character, and capital letters sort before small ones.",
+      ],
+      code: `phone = "0712 345 678"
+digits = phone.replace(" ", "")
+print(digits.isdigit(), len(digits))     # True 10
+print(digits.startswith(("07", "01")))   # True: a Kenyan mobile number
+print("+254" + digits[1:])               # +254712345678
+
+sms = "Ksh1,250.00 sent to JOHN OTIENO"
+print(sms.find("sent"), sms.find("paid"))   # 12 -1
+print(sms.count("O"))                        # 3
+
+words = ["maize", "beans", "rice"]
+print(", ".join(words))                      # maize, beans, rice
+print("Kisumu"[::-1])                        # umusiK
+print("apple" < "banana", "Zebra" < "apple") # True True`,
+      keyIdea: "`in`, `find` and `count` search; `startswith`/`endswith` check the ends; `is...()` methods test; `join` glues a list back into one string.",
+    },
+    {
+      id: "predict-find",
+      kind: "predict",
+      title: "Where is it?",
+      prompt: "Searching a town name. What's printed?",
+      code: `print("Nairobi".find("rob"), "Nairobi".find("Rob"))`,
+      options: ["3 -1", "3 3", "4 -1", "-1 3"],
+      answer: 0,
+      explanation:
+        "Positions start at 0: N-a-i-r, so `\"rob\"` starts at position 3. `find` is case-sensitive, and there's no capital-R `\"Rob\"`, so it returns `-1`: \"not found\". (`index()` does the same job but raises a `ValueError` instead of returning -1.)",
+    },
+    {
+      id: "phones",
+      kind: "code",
+      title: "Tidy the phone numbers",
+      brief:
+        "A cooperative's members typed their numbers every which way. Build `clean_phones`: every number in the international form `+2547XXXXXXXX` (or `+2541...`), with no spaces or dashes. It's tested on other numbers too.",
+      instructions: [
+        "Remove spaces and dashes with `replace`.",
+        "Numbers starting `+254` are already right; `254...` just needs a `+`; `07...` or `01...` lose the 0 and gain `+254`.",
+      ],
+      starterCode: `phones = ["0712 345 678", "+254 722 000 111", "0733-444-555", "254711222333"]
+
+clean_phones = []
+# your loop here
+
+print(clean_phones)
+`,
+      checks: [
+        {
+          expr: "clean_phones == ['+254712345678', '+254722000111', '+254733444555', '+254711222333']",
+          label: "Every number is in +254 form",
+          failHint: "Clean first (`replace(\" \", \"\").replace(\"-\", \"\")`), then use `startswith` to decide what to add.",
+        },
+        {
+          expr: "_with(phones=['0101 222 333', '+254700111222'])['clean_phones'] == ['+254101222333', '+254700111222']",
+          label: "Works on other numbers",
+          failHint: "A number starting with 0 drops the 0 and gains `+254`: `\"+254\" + number[1:]`.",
+        },
+      ],
+      hints: [
+        "Inside the loop: `n = p.replace(\" \", \"\").replace(\"-\", \"\")`.",
+        "Then `if n.startswith(\"+254\"): ...  elif n.startswith(\"254\"): n = \"+\" + n  elif n.startswith(\"0\"): n = \"+254\" + n[1:]`.",
+      ],
+      why:
+        "Clean, then decide: removing the noise first meant each `startswith` check only had to handle one shape. Without this step, the same member would appear four ways in an SMS list, and messages would fail to send.",
+      solution: `phones = ["0712 345 678", "+254 722 000 111", "0733-444-555", "254711222333"]
+
+clean_phones = []
+for p in phones:
+    n = p.replace(" ", "").replace("-", "")
+    if n.startswith("+254"):
+        pass
+    elif n.startswith("254"):
+        n = "+" + n
+    elif n.startswith("0"):
+        n = "+254" + n[1:]
+    clean_phones.append(n)
+
+print(clean_phones)`,
+    },
+    {
+      id: "bug-case",
+      kind: "bug",
+      title: "The missing Gikomba entry",
+      prompt: "A clerk counts entries for Gikomba market. There are clearly two, but the program says one. Find the bug.",
+      code: `markets = ["GIKOMBA Market", "Kongowea", "gikomba stage"]
+count = 0
+for m in markets:
+    if "gikomba" in m:
+        count += 1
+print("Gikomba entries:", count)`,
+      line: 4,
+      fix: "    if \"gikomba\" in m.lower():",
+      explanation:
+        "`in` is case-sensitive, so `\"gikomba\"` isn't found inside `\"GIKOMBA Market\"`. Lowering the text before searching, `m.lower()`, makes the check ignore case and finds both entries.",
+      wrong: {
+        1: "The data is messy, but that's normal. The program should cope with it.",
+        2: "Starting the count at 0 is right.",
+        5: "Adding 1 for each match is right. The question is why only one entry matched.",
+        6: "The print is fine. The count it shows is what's wrong.",
+      },
     },
     {
       id: "sms-amounts",
