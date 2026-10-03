@@ -66,9 +66,8 @@ export const tracks: Track[] = [
         slug: "py-iteration",
         title: "Iterators & generators",
         summary: "What really happens in a for loop, and data that's produced only when it's needed.",
-        labs: [],
+        labs: ["py-generators"],
         planned: [
-          { title: "Iterators & Generators", summary: "iter and next, yield, generator expressions, and processing data lazily." },
           { title: "itertools", summary: "chain, islice, groupby, accumulate, product and combinations." },
         ],
         milestone: {
