@@ -86,9 +86,8 @@ export const tracks: Track[] = [
         slug: "py-stdlib",
         title: "The standard library",
         summary: "Organising code into modules, and the batteries Python ships with.",
-        labs: [],
+        labs: ["py-imports"],
         planned: [
-          { title: "Modules & Packages", summary: "Writing your own modules, packages, and the `if __name__ == \"__main__\"` pattern." },
           { title: "Dates & Times", summary: "datetime, durations, parsing and formatting dates, and time zones." },
           { title: "Regular Expressions", summary: "Finding and extracting patterns: phone numbers, M-Pesa codes and amounts." },
         ],
