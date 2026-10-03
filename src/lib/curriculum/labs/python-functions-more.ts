@@ -639,3 +639,333 @@ print("Left:", remaining())`,
     },
   ],
 };
+
+export const pyFunctional: Lab = {
+  slug: "py-functional",
+  runExamples: true,
+  number: "22",
+  title: "Functions as Values",
+  subject: "lambda, key=, map, filter, functools",
+  summary:
+    "In Python a function is a value like any other: store it in a variable or a dictionary, pass it to another function, return it. Sort and rank with `key=`, write quick `lambda`s, and meet `map`, `filter`, `functools.partial` and `reduce`.",
+  minutes: 40,
+  kind: "lab",
+  skills: [
+    "Pass functions as arguments and store them in dictionaries",
+    "Sort, rank and pick with key= and lambda",
+    "Use map and filter, and know when a comprehension is clearer",
+    "Pre-fill arguments with functools.partial",
+  ],
+  steps: [
+    {
+      id: "values",
+      kind: "concept",
+      title: "A function is a value",
+      body: [
+        "Without brackets, a function's name is the function **itself**, a value you can store in another variable, put in a list or dictionary, pass to another function or return from one. With brackets, you **call** it.",
+        "A dictionary of functions makes a neat menu: look up the function for a choice, then call it. That's often tidier than a long if/elif chain.",
+      ],
+      code: `def shout(text):
+    return text.upper() + "!"
+
+say = shout                     # no brackets: the function itself
+print(say("karibu"))            # KARIBU!
+
+def apply_twice(func, value):   # a function that takes a function
+    return func(func(value))
+
+def add_vat(price):
+    return round(price * 1.16, 2)
+
+print(apply_twice(add_vat, 100))   # 134.56
+
+def balance(account):
+    return f"Balance: KSh {account['balance']:,}"
+
+def mini_statement(account):
+    return f"Last transactions: {account['history']}"
+
+menu = {"1": balance, "2": mini_statement}    # functions in a dictionary
+account = {"balance": 12500, "history": [500, -200, 1200]}
+print(menu["1"](account))       # look up the function, then call it`,
+      keyIdea: "`name` is the function; `name()` calls it. Functions can be stored, passed and returned like any other value.",
+    },
+    {
+      id: "key-lambda",
+      kind: "concept",
+      title: "Sorting with key= and lambda",
+      body: [
+        "`sorted`, `min` and `max` take a `key=` argument: a **function** applied to each item to decide the order. `key=len` sorts by length, and `key=str.lower` sorts while ignoring capitals.",
+        "When the function is small and only needed once, write it inline with `lambda`. `lambda f: f[1]` is a function that takes `f` and returns `f[1]`. A lambda holds a single expression: no `return`, no statements.",
+        "`reverse=True` flips the order. And when two items have the same key, `sorted` keeps them in their original order: it's **stable**.",
+      ],
+      code: `farmers = [("Wanjiru", 42), ("Otieno", 57), ("Amina", 38)]
+
+print(sorted(farmers, key=lambda f: f[1]))      # by bags, fewest first
+print(max(farmers, key=lambda f: f[1]))         # ('Otieno', 57)
+print(sorted(["banana", "Fig", "apple"], key=str.lower))
+print(sorted(["sukuma", "kale", "maize"], key=len))`,
+      keyIdea: "`key=` takes a function that turns each item into the thing to compare. `lambda x: expression` writes that function inline.",
+    },
+    {
+      id: "rank-playground",
+      kind: "experiment",
+      title: "Rank the farms",
+      prompt:
+        "Four farms are loaded as dictionaries in `farms`. Answer each goal with `sorted`, `min` or `max` and a `key=` lambda. Try `farms[0]` first to see what each record holds.",
+      widget: "playground",
+      playground: {
+        setup: `farms = [
+    {"name": "Wanjiru", "county": "Nyeri", "acres": 3, "bags": 42},
+    {"name": "Otieno", "county": "Siaya", "acres": 5, "bags": 57},
+    {"name": "Amina", "county": "Kilifi", "acres": 2, "bags": 38},
+    {"name": "Kiprop", "county": "Uasin Gishu", "acres": 8, "bags": 96},
+]`,
+        goals: [
+          { text: "The **name** of the farm with the most bags.", answer: "max(farms, key=lambda f: f['bags'])['name']", uses: "key\\s*=", hint: "`max(farms, key=lambda f: f[\"bags\"])[\"name\"]`." },
+          {
+            text: "The farms' names in order of size, smallest farm first.",
+            answer: "[f['name'] for f in sorted(farms, key=lambda f: f['acres'])]",
+            uses: "key\\s*=",
+            hint: "Sort by acres, then take the names: `[f[\"name\"] for f in sorted(farms, key=lambda f: f[\"acres\"])]`.",
+          },
+          {
+            text: "The name of the farm with the best **yield per acre** (bags ÷ acres).",
+            answer: "max(farms, key=lambda f: f['bags'] / f['acres'])['name']",
+            uses: "key\\s*=",
+            hint: "The key can be any expression: `key=lambda f: f[\"bags\"] / f[\"acres\"]`.",
+          },
+          {
+            text: "The names, most bags first.",
+            answer: "[f['name'] for f in sorted(farms, key=lambda f: f['bags'], reverse=True)]",
+            uses: "key\\s*=",
+            hint: "Add `reverse=True` to the `sorted` call.",
+          },
+        ],
+        suggestions: ["farms[0]", "min(farms, key=lambda f: f['acres'])", "sorted(farms, key=lambda f: f['county'])", "sorted(f['name'] for f in farms)"],
+      },
+      observe:
+        "The same three functions answered four different questions; only the `key` changed. Kiprop has the most bags, but Amina's small farm gets the most from each acre, 19 bags. Which farm is \"best\" depends on the key you choose, and that choice is yours to justify.",
+    },
+    {
+      id: "predict-stable",
+      kind: "predict",
+      title: "Sorting by length",
+      prompt: "Some of these words have the same length. What's printed?",
+      code: `words = ["kale", "maize", "tea", "beans", "rice"]
+print(sorted(words, key=len))`,
+      options: ["['tea', 'kale', 'rice', 'maize', 'beans']", "['tea', 'kale', 'rice', 'beans', 'maize']", "['beans', 'kale', 'maize', 'rice', 'tea']", "[3, 4, 4, 5, 5]"],
+      answer: 0,
+      explanation:
+        "The key only decides the order; the items themselves come back, not their lengths. `tea` (3) comes first, then the two 4-letter words, then the two 5-letter words. Ties keep their original order, because Python's sort is **stable**: `kale` was before `rice`, and `maize` before `beans`.",
+    },
+    {
+      id: "map-filter",
+      kind: "concept",
+      title: "map, filter and comprehensions",
+      body: [
+        "`map(func, items)` applies a function to every item, and `filter(func, items)` keeps the items for which the function returns something truthy. Both are **lazy**: they produce items only as you ask for them, so wrap them in `list()` to see the results.",
+        "In Python, a comprehension usually says the same thing more clearly: `[int(p) for p in prices]` rather than `list(map(int, prices))`. `map` is at its best when you already have a named function to apply.",
+      ],
+      code: `prices = ["120", "80", "45"]
+
+numbers = list(map(int, prices))                  # [120, 80, 45]
+cheap = list(filter(lambda p: p < 100, numbers))  # [80, 45]
+print(numbers, cheap)
+
+# The same with comprehensions, usually clearer in Python
+numbers = [int(p) for p in prices]
+cheap = [p for p in numbers if p < 100]
+print(numbers, cheap)`,
+      keyIdea: "`map` transforms every item and `filter` keeps some; both are lazy. A comprehension often reads better.",
+    },
+    {
+      id: "functools",
+      kind: "concept",
+      title: "partial and reduce",
+      body: [
+        "`functools.partial` makes a new function with some arguments already filled in: `partial(convert, rate=129)` is a dollar converter. It's a quick alternative to writing a closure.",
+        "`functools.reduce` folds a list into a single value by applying a two-argument function again and again, carrying the result along. Built-ins such as `sum`, `max` and `\" \".join` already cover the common cases, so you'll need `reduce` only now and then.",
+      ],
+      code: `from functools import partial, reduce
+
+def convert(ksh, rate):
+    return round(ksh / rate, 2)
+
+to_usd = partial(convert, rate=129)    # rate is filled in
+print(to_usd(5000))                    # 38.76
+
+balances = [1200, -300, 450, -150, 800]
+total = reduce(lambda acc, x: acc + x, balances, 0)
+print(total)                           # 2000, though sum(balances) is simpler`,
+      keyIdea: "`partial` pre-fills some of a function's arguments; `reduce` folds many values into one.",
+    },
+    {
+      id: "predict-late",
+      kind: "predict",
+      title: "Lambdas made in a loop",
+      prompt: "Three lambdas, made in a loop. What's printed?",
+      code: `multipliers = []
+for n in [1, 2, 3]:
+    multipliers.append(lambda x: x * n)
+
+print([m(10) for m in multipliers])`,
+      options: ["[30, 30, 30]", "[10, 20, 30]", "[10, 10, 10]", "NameError: name 'n' is not defined"],
+      answer: 0,
+      explanation:
+        "Each lambda looks `n` up when it's **called**, not when it's made, and by the time they're called the loop has finished with `n` set to 3. All three share the one variable `n`. To capture each value, give it a default, which is evaluated when the lambda is made: `lambda x, n=n: x * n`. Or build each one with `partial` or a factory function.",
+    },
+    {
+      id: "dispatch",
+      kind: "code",
+      title: "An agent's calculator",
+      brief:
+        "Build a calculator for a mobile-money agent. `operations` should map each command to a function of two numbers: `\"add\"`, `\"sub\"`, `\"fee\"` (a percentage of the first number: `a * b / 100`) and `\"split\"` (`a / b`, rounded to 2 decimal places). Then `run(command, a, b)` looks up the function and calls it, returning `None` for an unknown command.",
+      starterCode: `operations = {}
+
+
+def run(command, a, b):
+    pass
+
+
+print(run("fee", 5000, 1.5))
+print(run("split", 1000, 3))
+print(run("jump", 1, 2))
+`,
+      checks: [
+        { expr: "len(operations) == 4 and all(callable(f) for f in operations.values())", label: "`operations` holds four functions", failHint: "Each value should be a function, such as `lambda a, b: a + b`." },
+        { expr: "operations['add'](2, 3) == 5 and operations['sub'](10, 4) == 6", label: "`add` and `sub` work", failHint: "`\"add\": lambda a, b: a + b` and `\"sub\": lambda a, b: a - b`." },
+        { expr: "operations['fee'](5000, 1.5) == 75.0 and operations['split'](1000, 3) == 333.33", label: "`fee` and `split` work", failHint: "`fee` is `a * b / 100`; `split` is `round(a / b, 2)`." },
+        { expr: "run('add', 1, 2) == 3 and run('fee', 200, 10) == 20.0 and run('jump', 1, 2) is None", label: "`run` looks up and calls the right function", failHint: "`op = operations.get(command)`; if it's `None`, return `None`, otherwise return `op(a, b)`." },
+      ],
+      hints: [
+        "A dictionary of lambdas: `operations = {\"add\": lambda a, b: a + b, ...}`.",
+        "`operations.get(command)` gives the function, or `None` for an unknown command.",
+      ],
+      why:
+        "Adding a new command is now one line in the dictionary, with no new `elif`. Dispatch tables like this sit behind menus, command-line tools and web routers, which all map a name to the function that handles it.",
+      solution: `operations = {
+    "add": lambda a, b: a + b,
+    "sub": lambda a, b: a - b,
+    "fee": lambda a, b: a * b / 100,
+    "split": lambda a, b: round(a / b, 2),
+}
+
+
+def run(command, a, b):
+    op = operations.get(command)
+    if op is None:
+        return None
+    return op(a, b)
+
+
+print(run("fee", 5000, 1.5))
+print(run("split", 1000, 3))
+print(run("jump", 1, 2))`,
+    },
+    {
+      id: "rank-sellers",
+      kind: "code",
+      title: "Rank the sellers",
+      brief:
+        "`sales` holds `(name, county, amount)` records. Set `top3` to the **names** of the three biggest sellers, biggest first. Then set `by_county` to the records sorted by county, and within each county by amount, **largest first**.",
+      starterCode: `sales = [("Achieng", "Kisumu", 5200), ("Baraka", "Mombasa", 7400), ("Chebet", "Kericho", 3900),
+         ("Daudi", "Kisumu", 6100), ("Esther", "Mombasa", 2800), ("Faith", "Kericho", 8800)]
+
+top3 = []
+by_county = []
+
+print(top3)
+for record in by_county:
+    print(record)
+`,
+      checks: [
+        { expr: "top3 == ['Faith', 'Baraka', 'Daudi']", label: "`top3` is Faith, Baraka and Daudi", failHint: "Sort by amount with `reverse=True`, slice the first three, and keep just the names." },
+        {
+          expr: "by_county == [('Faith', 'Kericho', 8800), ('Chebet', 'Kericho', 3900), ('Daudi', 'Kisumu', 6100), ('Achieng', 'Kisumu', 5200), ('Baraka', 'Mombasa', 7400), ('Esther', 'Mombasa', 2800)]",
+          label: "`by_county` is by county, then largest amount first",
+          failHint: "A key can return a tuple: `key=lambda r: (r[1], -r[2])` sorts by county, then by amount from largest.",
+        },
+        {
+          expr: "(lambda ns: ns['top3'] == ['D', 'B', 'C'] and ns['by_county'] == [('D', 'W', 5), ('C', 'W', 2), ('B', 'X', 3), ('A', 'X', 1)])(_with(sales=[('A', 'X', 1), ('B', 'X', 3), ('C', 'W', 2), ('D', 'W', 5)]))",
+          label: "Works on other sales",
+          failHint: "Work everything out from `sales`.",
+        },
+      ],
+      hints: [
+        "`sorted(sales, key=lambda r: r[2], reverse=True)[:3]` gives the three biggest records.",
+        "For two levels of sorting, return a tuple from the key. Negating the amount, `-r[2]`, makes larger amounts come first.",
+      ],
+      why:
+        "A key that returns a tuple sorts by the first part, then breaks ties with the second, just like sorting names by surname and then first name. Negating a number is the standard trick for \"this part ascending, that part descending\".",
+      solution: `sales = [("Achieng", "Kisumu", 5200), ("Baraka", "Mombasa", 7400), ("Chebet", "Kericho", 3900),
+         ("Daudi", "Kisumu", 6100), ("Esther", "Mombasa", 2800), ("Faith", "Kericho", 8800)]
+
+biggest = sorted(sales, key=lambda r: r[2], reverse=True)
+top3 = [name for name, county, amount in biggest[:3]]
+by_county = sorted(sales, key=lambda r: (r[1], -r[2]))
+
+print(top3)
+for record in by_county:
+    print(record)`,
+    },
+    {
+      id: "pipeline",
+      kind: "code",
+      challenge: true,
+      title: "A cleaning pipeline",
+      brief:
+        "Write `pipeline(*steps)` that returns a **function**. Calling that function with a value passes it through each step in order and returns the result. Use it to build `clean` from `str.strip` and `str.title`, then set `clean_names` by applying `clean` to every name in `raw`.",
+      starterCode: `def pipeline(*steps):
+    pass
+
+
+raw = ["  AMINA wanjiru ", "otieno  ", " KIPROP"]
+clean = None
+clean_names = []
+
+print(clean_names)
+`,
+      checks: [
+        { expr: "pipeline(str.strip, str.title)('  nakuru town ') == 'Nakuru Town'", label: "Steps run in order", failHint: "Inside the returned function, loop over `steps` and replace the value with `step(value)` each time." },
+        { expr: "pipeline(lambda n: n + 1, lambda n: n * 2)(3) == 8", label: "Order matters: (3 + 1) × 2 = 8", failHint: "Apply the steps first to last." },
+        { expr: "pipeline()('same') == 'same'", label: "No steps returns the value unchanged", failHint: "With no steps, the loop doesn't run, so return the value as it is." },
+        { expr: "clean_names == ['Amina Wanjiru', 'Otieno', 'Kiprop']", label: "`clean_names` is cleaned", failHint: "`clean = pipeline(str.strip, str.title)`, then `[clean(n) for n in raw]` or `list(map(clean, raw))`." },
+      ],
+      hints: [
+        "`pipeline` defines an inner function `run(value)`, loops `for step in steps: value = step(value)`, and returns `run`.",
+        "`str.strip` and `str.title` are functions too: `str.title(\"amina\")` is `\"Amina\"`.",
+      ],
+      why:
+        "You combined almost everything from this module: `*steps` takes any number of functions, the inner function is a closure over them, and the result is a new function you can `map` over a list. Data-cleaning libraries and web frameworks are built from exactly this idea: small functions, chained.",
+      solution: `def pipeline(*steps):
+    def run(value):
+        for step in steps:
+            value = step(value)
+        return value
+    return run
+
+
+raw = ["  AMINA wanjiru ", "otieno  ", " KIPROP"]
+clean = pipeline(str.strip, str.title)
+clean_names = list(map(clean, raw))
+
+print(clean_names)`,
+    },
+    {
+      id: "explain-functional",
+      kind: "explain",
+      title: "Why pass a function?",
+      prompt:
+        "Explain what it means that functions are values in Python, and describe two situations where passing a function to another function is useful.",
+      ideas: [
+        { label: "Functions can be stored, passed and returned", patterns: ["value", "variable", "pass", "store", "dictionar", "return", "object"], nudge: "What can you do with a function besides call it?" },
+        { label: "key= decides how things are sorted or picked", patterns: ["key", "sort", "max", "min", "rank", "order"], nudge: "How do `sorted` and `max` use a function?" },
+        { label: "lambda writes a small function inline", patterns: ["lambda", "inline", "one.?off", "anonymous"], nudge: "How do you write a quick one-off function?" },
+        { label: "Mentions map, filter, dispatch tables or pipelines", patterns: ["map", "filter", "dispatch", "menu", "pipeline", "partial", "callback", "comprehension"], nudge: "Where else did you hand a function to other code?" },
+      ],
+      modelAnswer:
+        "In Python a function is a value: without brackets its name refers to the function itself, so you can store it in a variable or a dictionary, pass it to another function and return it. Passing a function lets other code decide when to call it. With `sorted`, `min` and `max`, a `key=` function (often a quick `lambda`) decides how items are compared, like ranking farms by yield per acre. A dictionary of functions makes a dispatch table for menus and commands, and `map`, `filter` and pipelines apply a function to every item.",
+    },
+  ],
+};
