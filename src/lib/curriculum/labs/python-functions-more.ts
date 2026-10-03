@@ -1284,3 +1284,393 @@ print(chain(org, "Nobody"))`,
     },
   ],
 };
+
+export const pyDecorators: Lab = {
+  slug: "py-decorators",
+  runExamples: true,
+  number: "24",
+  title: "Decorators",
+  subject: "Wrapping functions with @",
+  summary:
+    "A decorator wraps a function to add behaviour around it, such as logging, counting, checking or caching, without touching the function's own code. Build your own with closures, use the `@` syntax and `functools.wraps`, and speed up recursion with `functools.cache`.",
+  minutes: 40,
+  kind: "lab",
+  skills: [
+    "Explain what @decorator does to a function",
+    "Write decorators that work on any function, with *args, **kwargs and functools.wraps",
+    "Write a decorator that takes its own settings",
+    "Speed up repeated calls with a cache",
+  ],
+  steps: [
+    {
+      id: "wrapping",
+      kind: "concept",
+      title: "Wrapping a function",
+      body: [
+        "A **decorator** is a function that takes a function and returns a new one, usually a `wrapper` that does something extra and calls the original inside. It's built from things you already know: functions as values, and closures.",
+        "Writing `@loud` on the line above `def welcome` is exactly the same as writing `welcome = loud(welcome)` after it. The name `welcome` now refers to the wrapper, which remembers the original function.",
+      ],
+      code: `def loud(func):
+    def wrapper(name):
+        result = func(name)           # call the original
+        return result.upper() + "!"   # then add something
+    return wrapper
+
+def greet(name):
+    return f"Karibu, {name}"
+
+greet = loud(greet)          # wrap it by hand
+print(greet("Amina"))        # KARIBU, AMINA!
+
+@loud                        # the same thing, with @
+def welcome(name):
+    return f"Welcome back, {name}"
+
+print(welcome("Juma"))       # WELCOME BACK, JUMA!`,
+      keyIdea: "`@decorator` above a `def` means `name = decorator(name)`: the name now points at a wrapper around the original.",
+    },
+    {
+      id: "watch-wrapper",
+      kind: "experiment",
+      title: "Watch a call go through the wrapper",
+      prompt:
+        "Step through and watch the global `add_vat` in the **Frames** panel, and what it points at in **Objects**. When line 13 calls `add_vat(250)`, which function actually starts running?",
+      widget: "visualiser",
+      visualise: {
+        code: `def logged(func):
+    def wrapper(*args):
+        print("calling", func.__name__, args)
+        result = func(*args)
+        print("got", result)
+        return result
+    return wrapper
+
+@logged
+def add_vat(price):
+    return round(price * 1.16, 2)
+
+total = add_vat(250)`,
+      },
+      observe:
+        "After the `@logged` line, the name `add_vat` points at `wrapper`, which **remembers** the original `add_vat` as `func`. So the call runs `wrapper` first: it prints, calls the original through `func(*args)`, prints again and passes the result back. The original function never changed; it just got wrapped.",
+    },
+    {
+      id: "predict-when",
+      kind: "predict",
+      title: "When does a decorator run?",
+      prompt: "This decorator prints something. What's the output, in order?",
+      code: `def register(func):
+    print("registering", func.__name__)
+    return func
+
+@register
+def pay():
+    print("paying")
+
+print("ready")
+pay()`,
+      options: ["registering pay\nready\npaying", "ready\nregistering pay\npaying", "ready\npaying", "registering pay\npaying\nready"],
+      answer: 0,
+      explanation:
+        "A decorator runs **once, when the function is defined**, not each time it's called. So `registering pay` prints as soon as the `def` runs, before `ready`. Web frameworks use exactly this to register functions: `@app.route(\"/pay\")` records which function handles which web address when the file loads.",
+    },
+    {
+      id: "general",
+      kind: "concept",
+      title: "Decorators for any function",
+      body: [
+        "A useful decorator should work on **any** function, whatever its parameters. Give the wrapper `*args, **kwargs` and pass them straight through: `func(*args, **kwargs)`.",
+        "Wrapping has a side effect: the result is called `wrapper`, with no docstring. `@functools.wraps(func)` on the wrapper copies the original's name and docstring across, so `help()`, error messages and debugging still show the real function. Always use it.",
+        "A function is an object, so it can carry attributes too: `wrapper.calls = 0` gives every decorated function its own counter.",
+      ],
+      code: `import functools
+
+def count_calls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+    wrapper.calls = 0
+    return wrapper
+
+@count_calls
+def send_sms(phone, message, sender="NURU"):
+    """Send one SMS (pretend)."""
+    return f"{sender} to {phone}: {message}"
+
+send_sms("0712345678", "Hello")
+send_sms("0733111222", "Meeting at 2pm", sender="CHAMA")
+print(send_sms.calls)                       # 2
+print(send_sms.__name__, send_sms.__doc__)  # still send_sms, thanks to wraps`,
+      keyIdea: "Give the wrapper `*args, **kwargs` so it fits any function, and `@functools.wraps(func)` so it keeps the original's name and docstring.",
+    },
+    {
+      id: "log-calls",
+      kind: "code",
+      title: "Log every call",
+      brief:
+        "Write a decorator `log_calls` that runs the function, appends a tuple `(function name, result)` to the list `log`, and returns the result. It must work for any function's arguments, including keywords, and keep each function's name with `functools.wraps`.",
+      starterCode: `import functools
+
+log = []
+
+def log_calls(func):
+    pass
+
+
+@log_calls
+def add_vat(price):
+    return round(price * 1.16, 2)
+
+@log_calls
+def transfer_fee(amount, rate=0.01):
+    return round(amount * rate)
+
+add_vat(250)
+transfer_fee(5000)
+transfer_fee(5000, rate=0.02)
+print(log)
+`,
+      checks: [
+        { expr: "log[:3] == [('add_vat', 290.0), ('transfer_fee', 50), ('transfer_fee', 100)]", label: "Each call is logged with its name and result", failHint: "In the wrapper: `result = func(*args, **kwargs)`, then `log.append((func.__name__, result))`." },
+        { expr: "add_vat(100) == 116.0 and transfer_fee(1000, rate=0.05) == 50", label: "Decorated functions still return their results", failHint: "The wrapper must `return result`." },
+        { expr: "add_vat.__name__ == 'add_vat' and transfer_fee.__name__ == 'transfer_fee'", label: "`functools.wraps` keeps the names", failHint: "Put `@functools.wraps(func)` on the line above `def wrapper`." },
+      ],
+      hints: [
+        "Inside `log_calls`, define `def wrapper(*args, **kwargs):`, and at the end `return wrapper`.",
+        "`func.__name__` is the original function's name.",
+      ],
+      errorHints: [{ pattern: "'NoneType' object is not callable", hint: "`log_calls` must `return wrapper`, otherwise the decorated name becomes `None`." }],
+      why:
+        "Two different functions, with different parameters, got the same logging without a single change to their own code. That's the point of decorators: behaviour that cuts across many functions, such as logging, timing, permissions or retries, is written once and applied with one line.",
+      solution: `import functools
+
+log = []
+
+def log_calls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        log.append((func.__name__, result))
+        return result
+    return wrapper
+
+
+@log_calls
+def add_vat(price):
+    return round(price * 1.16, 2)
+
+@log_calls
+def transfer_fee(amount, rate=0.01):
+    return round(amount * rate)
+
+add_vat(250)
+transfer_fee(5000)
+transfer_fee(5000, rate=0.02)
+print(log)`,
+    },
+    {
+      id: "predict-stack",
+      kind: "predict",
+      title: "Two decorators",
+      prompt: "Two decorators stacked on one function. What's printed?",
+      code: `def brackets(func):
+    def wrapper():
+        return "[" + func() + "]"
+    return wrapper
+
+def stars(func):
+    def wrapper():
+        return "*" + func() + "*"
+    return wrapper
+
+@brackets
+@stars
+def label():
+    return "SALE"
+
+print(label())`,
+      options: ["[*SALE*]", "*[SALE]*", "[SALE]*", "SALE"],
+      answer: 0,
+      explanation:
+        "Stacked decorators apply from the **bottom up**: `@stars` wraps `label` first, then `@brackets` wraps that. It's `label = brackets(stars(label))`. So the outer wrapper adds the brackets around whatever the starred version returns.",
+    },
+    {
+      id: "with-arguments",
+      kind: "concept",
+      title: "Decorators with settings",
+      body: [
+        "Sometimes a decorator needs settings of its own, like `@max_amount(150000)`. That takes one more layer: `max_amount(150000)` is called first and **returns** the decorator, which then wraps the function as usual.",
+        "So there are three nested functions: the outer one takes the settings, the middle one takes the function, and the inner wrapper takes the call's arguments. Each layer is a closure over the one outside it.",
+      ],
+      code: `import functools
+
+def max_amount(limit):                     # takes the setting...
+    def decorator(func):                   # ...returns a decorator...
+        @functools.wraps(func)
+        def wrapper(amount, *args, **kwargs):   # ...which returns the wrapper
+            if amount > limit:
+                return f"Declined: KSh {amount:,} is over the KSh {limit:,} limit"
+            return func(amount, *args, **kwargs)
+        return wrapper
+    return decorator
+
+@max_amount(150000)
+def send_money(amount, phone):
+    return f"Sent KSh {amount:,} to {phone}"
+
+print(send_money(2500, "0712345678"))
+print(send_money(250000, "0712345678"))`,
+      keyIdea: "`@factory(settings)` calls the factory first; it returns the real decorator. Three layers: settings, function, call.",
+    },
+    {
+      id: "round-to",
+      kind: "code",
+      title: "A rounding decorator",
+      brief:
+        "Write `round_to(places)`, a decorator factory: a function decorated with `@round_to(2)` returns its result rounded to 2 decimal places. It should work on any function and keep the function's name. Then decorate `to_usd` with it.",
+      starterCode: `import functools
+
+def round_to(places):
+    pass
+
+
+def to_usd(ksh):
+    return ksh / 129
+
+print(to_usd(5000))
+`,
+      checks: [
+        { expr: "to_usd(5000) == 38.76", label: "`to_usd(5000)` is 38.76", failHint: "Decorate `to_usd` with `@round_to(2)`, and have the wrapper return `round(result, places)`." },
+        { expr: "round_to(0)(lambda x: x / 3)(10) == 3.0", label: "Works for other numbers of places", failHint: "Use the `places` passed to `round_to`." },
+        { expr: "round_to(1)(lambda a, b=1: a * b)(2.345, b=2) == 4.7", label: "Passes keyword arguments through", failHint: "The wrapper should take `*args, **kwargs` and pass them on." },
+        { expr: "to_usd.__name__ == 'to_usd'", label: "Keeps the function's name", failHint: "Use `@functools.wraps(func)` on the wrapper." },
+      ],
+      hints: [
+        "Three layers: `def round_to(places):` contains `def decorator(func):`, which contains `def wrapper(*args, **kwargs):`.",
+        "The wrapper returns `round(func(*args, **kwargs), places)`; `decorator` returns `wrapper`, and `round_to` returns `decorator`.",
+      ],
+      errorHints: [{ pattern: "'NoneType' object is not callable", hint: "Each layer must return the next one in: `round_to` returns `decorator`, and `decorator` returns `wrapper`." }],
+      why:
+        "The setting, `places`, is remembered by the closure, so `@round_to(2)` and `@round_to(0)` make two different decorators from one factory. Libraries use this pattern everywhere: `@app.route(\"/pay\")`, `@pytest.mark.parametrize(...)` and `@functools.lru_cache(maxsize=128)` are all decorator factories.",
+      solution: `import functools
+
+def round_to(places):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return round(func(*args, **kwargs), places)
+        return wrapper
+    return decorator
+
+
+@round_to(2)
+def to_usd(ksh):
+    return ksh / 129
+
+print(to_usd(5000))`,
+    },
+    {
+      id: "cache",
+      kind: "concept",
+      title: "functools.cache: remember the answers",
+      body: [
+        "The recursion lab showed that a naive `fib(20)` makes over 20,000 calls, working out the same small values again and again. A **cache** fixes that: remember the result for each argument, and when the same argument comes back, return the stored answer instead of recomputing it.",
+        "`@functools.cache` is a ready-made caching decorator. With it, each `fib(n)` is worked out once, so `fib(80)` takes 81 calls instead of more than any computer could finish. `@functools.lru_cache(maxsize=...)` does the same with a size limit. Only cache functions whose result depends on nothing but their arguments.",
+      ],
+      code: `import functools
+
+calls = 0
+
+@functools.cache
+def fib(n):
+    global calls
+    calls += 1
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(80))    # 23416728348467685
+print(calls)      # 81: each fib(n) worked out once`,
+      keyIdea: "`@functools.cache` stores each result by its arguments, so repeated calls are instant. Use it on functions whose result depends only on their arguments.",
+    },
+    {
+      id: "memoize",
+      kind: "code",
+      challenge: true,
+      title: "Build your own cache",
+      brief:
+        "Write `memoize`, your own version of `functools.cache`: the wrapper keeps a dictionary from argument tuples to results. If the arguments have been seen before, return the stored result; otherwise call the function, store the result and return it. With it, `fib(25)` should take just 26 calls.",
+      starterCode: `import functools
+
+def memoize(func):
+    pass
+
+
+calls = 0
+
+@memoize
+def fib(n):
+    global calls
+    calls += 1
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(25), "in", calls, "calls")
+`,
+      checks: [
+        { expr: "fib(25) == 75025", label: "`fib(25)` is 75025", failHint: "The wrapper must return the function's result, from the cache or freshly worked out." },
+        { expr: "calls == 26", label: "Only 26 calls: each `fib(n)` is worked out once", failHint: "Check the cache before calling: `if args not in cache: cache[args] = func(*args)`." },
+        { expr: "memoize(lambda a, b: a + b)(2, 3) == 5", label: "Works with several arguments", failHint: "Key the cache on the whole `args` tuple." },
+        { expr: "fib.__name__ == 'fib'", label: "Keeps the function's name", failHint: "Use `@functools.wraps(func)` on the wrapper." },
+      ],
+      hints: [
+        "Create `cache = {}` inside `memoize`, before defining the wrapper, so the wrapper's closure keeps it.",
+        "`def wrapper(*args):` then `if args not in cache: cache[args] = func(*args)` and `return cache[args]`.",
+      ],
+      why:
+        "Without the cache, `fib(25)` takes 242,785 calls; with it, 26. The dictionary lives in the closure, private to each decorated function, and the arguments tuple works as a key because tuples can't change. That's also why a cache can't be keyed on a list: lists can change, so they can't be dictionary keys.",
+      solution: `import functools
+
+def memoize(func):
+    cache = {}
+
+    @functools.wraps(func)
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+
+    return wrapper
+
+
+calls = 0
+
+@memoize
+def fib(n):
+    global calls
+    calls += 1
+    if n < 2:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+print(fib(25), "in", calls, "calls")`,
+    },
+    {
+      id: "explain-decorators",
+      kind: "explain",
+      title: "What a decorator does",
+      prompt:
+        "Explain what writing `@something` above a function does, how a decorator is built from what you already know, and give an example of when you'd use one.",
+      ideas: [
+        { label: "Takes a function and returns a new one", patterns: ["takes a function", "returns? (a )?(new )?function", "wrap", "= ?\\w+\\(\\w+\\)"], nudge: "What goes into a decorator, and what comes out?" },
+        { label: "Same as name = decorator(name)", patterns: ["same as", "= ?\\w+\\(", "replace", "rebind", "points? (at|to)"], nudge: "What does the `@` line do to the function's name?" },
+        { label: "Built from closures and functions as values", patterns: ["closure", "inner function", "remember", "functions? as values?", "nested"], nudge: "Which ideas from this module make it possible?" },
+        { label: "Adds behaviour like logging, caching or checks", patterns: ["log", "cach", "count", "check", "time", "valid", "permission", "retry"], nudge: "What kind of extra behaviour would you add with one?" },
+      ],
+      modelAnswer:
+        "A decorator is a function that takes a function and returns a new one, usually a wrapper that does something extra and calls the original inside. Writing `@something` above `def f` is the same as `f = something(f)`, so the name now points at the wrapper. It's built from functions as values and closures: the wrapper is an inner function that remembers the original. I'd use one to add the same behaviour to many functions without changing their code, like logging calls, checking a transaction limit, or caching results with `functools.cache`.",
+    },
+  ],
+};

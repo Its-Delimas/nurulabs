@@ -56,10 +56,7 @@ export const tracks: Track[] = [
         slug: "py-functions",
         title: "Functions",
         summary: "From your first def to arguments, scope, closures, recursion and decorators.",
-        labs: ["py-functions", "py-arguments", "py-scope", "py-functional", "py-recursion"],
-        planned: [
-          { title: "Decorators", summary: "Wrapping functions to add timing, caching and checks." },
-        ],
+        labs: ["py-functions", "py-arguments", "py-scope", "py-functional", "py-recursion", "py-decorators"],
         milestone: {
           title: "Functions, fully",
           description: "You can design functions with flexible arguments, reason about scope, and use closures, recursion and decorators.",
