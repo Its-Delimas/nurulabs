@@ -356,3 +356,311 @@ print(moved)`,
     },
   ],
 };
+
+const BANK = `from contextlib import contextmanager
+
+accounts = {"Amina": 5000, "Baraka": 1200, "Chebet": 300}
+`;
+
+const TRANSFER = `
+
+def transfer(accounts, sender, receiver, amount):
+    with transaction(accounts):
+        accounts[sender] -= amount
+        if accounts[sender] < 0:
+            raise ValueError(f"{sender} can't afford KSh {amount:,}")
+        accounts[receiver] += amount    # a KeyError if the receiver doesn't exist
+
+
+transfers = [("Amina", "Baraka", 2000), ("Chebet", "Amina", 1000), ("Baraka", "Dan", 500)]
+failed = []
+`;
+
+export const pyContext: Lab = {
+  slug: "py-context",
+  runExamples: true,
+  number: "28",
+  title: "Context Managers",
+  subject: "with, and writing your own",
+  summary:
+    "`with` guarantees clean-up: files closed, settings restored and half-finished changes undone, even when something goes wrong. See what `with` really does, use ready-made context managers, and write your own with `@contextmanager` and a generator.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Explain what with does on the way in and on the way out",
+    "Use ready-made context managers such as suppress and redirect_stdout",
+    "Write your own context managers with @contextmanager",
+    "Undo half-finished changes when an error happens",
+  ],
+  steps: [
+    {
+      id: "guarantee",
+      kind: "concept",
+      title: "What with guarantees",
+      body: [
+        "A **context manager** sets something up when a `with` block starts and tidies it up when the block ends, **however** it ends: normally, through `return` or `break`, or with an error.",
+        "`with open(...) as f:` is the one you know. It's a short, safe version of a `try` / `finally` that closes the file. Forgetting to close files leaks resources, and on some systems data you wrote isn't saved until the file is closed.",
+        "Other things need the same care: database connections, network sockets, locks, temporary settings. Python gives them all the same `with` syntax.",
+      ],
+      code: `# The long way: open, then close in finally so it happens no matter what
+f = open("notes.txt", "w", encoding="utf-8")
+try:
+    f.write("Market day: Tuesday\\n")
+finally:
+    f.close()
+
+# The same thing with a context manager
+with open("notes.txt", "w", encoding="utf-8") as f:
+    f.write("Market day: Tuesday\\n")
+
+print(f.closed)    # True: closed the moment the block ended`,
+      keyIdea: "`with` runs set-up on the way in and clean-up on the way out, whether the block finishes, returns or fails.",
+    },
+    {
+      id: "predict-closed",
+      kind: "predict",
+      title: "An error inside with",
+      prompt: "The block fails halfway. Is the file still closed?",
+      code: `try:
+    with open("data.txt", "w") as f:
+        f.write("start\\n")
+        1 / 0
+except ZeroDivisionError:
+    print("error caught")
+print(f.closed)`,
+      options: ["error caught\nTrue", "error caught\nFalse", "True", "ZeroDivisionError: division by zero"],
+      answer: 0,
+      explanation:
+        "The division fails inside the `with` block, so the error travels outwards. On its way out it passes through the context manager, which closes the file, and then the outer `except` catches it. That's the guarantee: clean-up happens even when the block fails.",
+    },
+    {
+      id: "ready-made",
+      kind: "concept",
+      title: "Ready-made context managers",
+      body: [
+        "The standard library has many. `contextlib.suppress(FileNotFoundError)` says \"it's fine if this particular error happens\". `contextlib.redirect_stdout(buffer)` captures everything printed inside the block, which is handy for testing what a function prints.",
+        "One `with` can manage several things at once, separated by commas: reading one file while writing another is a common pair. They're closed in reverse order.",
+      ],
+      code: `from contextlib import suppress, redirect_stdout
+from pathlib import Path
+import io
+
+with suppress(FileNotFoundError):          # fine if it isn't there
+    Path("old_report.txt").unlink()
+
+buffer = io.StringIO()
+with redirect_stdout(buffer):              # catch everything printed
+    print("Kisumu: 31 mm")
+    print("Nakuru: 12 mm")
+print("Captured:", buffer.getvalue().splitlines())
+
+Path("prices.txt").write_text("62\\n71\\n55\\n", encoding="utf-8")
+with open("prices.txt", encoding="utf-8") as src, open("doubled.txt", "w", encoding="utf-8") as dst:
+    for line in src:
+        dst.write(f"{int(line) * 2}\\n")
+print(Path("doubled.txt").read_text(encoding="utf-8").split())`,
+      keyIdea: "`suppress` ignores one kind of error, `redirect_stdout` captures prints, and one `with` can manage several things.",
+    },
+    {
+      id: "contextmanager",
+      kind: "concept",
+      title: "Write your own with @contextmanager",
+      body: [
+        "`contextlib.contextmanager` turns a **generator function** into a context manager. Everything before the `yield` runs on the way into the `with` block; the yielded value is what `as` receives; everything after the `yield` runs on the way out.",
+        "If the block raises an error, it's raised at the `yield`. So put the `yield` inside `try` / `finally`, and the clean-up runs whatever happens.",
+        "Behind the scenes, `with` calls two special methods, `__enter__` and `__exit__`. The classes module shows how to write those directly; `@contextmanager` is the quick way.",
+      ],
+      code: `from contextlib import contextmanager
+import time
+
+@contextmanager
+def timer(label):
+    start = time.perf_counter()        # on the way in
+    try:
+        yield                          # the with block runs here
+    finally:
+        elapsed = time.perf_counter() - start
+        print(f"{label}: done in {elapsed:.3f}s")   # on the way out
+
+with timer("Adding up"):
+    total = sum(range(1_000_000))
+print(total)`,
+      keyIdea: "With `@contextmanager`: set up, then `yield` inside `try`, then clean up in `finally`.",
+    },
+    {
+      id: "watch-with",
+      kind: "experiment",
+      title: "The way in and the way out",
+      prompt:
+        "Step through and watch the highlighted line jump between the `with` block and `opened_shop`. When does `close duka` print? Then **Edit code**: add `1 / 0` inside the `with` block and run it. Does `close duka` still print?",
+      widget: "visualiser",
+      visualise: {
+        code: `from contextlib import contextmanager
+
+@contextmanager
+def opened_shop(name):
+    print("open", name)
+    try:
+        yield name.upper()
+    finally:
+        print("close", name)
+
+with opened_shop("duka") as sign:
+    print("serving at", sign)
+print("after")`,
+      },
+      observe:
+        "Entering the `with` ran `opened_shop` up to its `yield` and paused it there; `sign` received the yielded `\"DUKA\"`. When the block finished, Python resumed the generator after the `yield`, so the `finally` printed `close duka` before `after`. With an error in the block, the `finally` still runs, then the error carries on outwards.",
+    },
+    {
+      id: "predict-nested",
+      kind: "predict",
+      title: "Nested tags",
+      prompt: "One context manager inside another. What's printed?",
+      code: `from contextlib import contextmanager
+
+@contextmanager
+def tag(name):
+    print(f"<{name}>")
+    try:
+        yield
+    finally:
+        print(f"</{name}>")
+
+with tag("b"):
+    with tag("i"):
+        print("Karibu")`,
+      options: ["<b>\n<i>\nKaribu\n</i>\n</b>", "<b>\n</b>\n<i>\n</i>\nKaribu", "<b>\n<i>\nKaribu\n</b>\n</i>", "Karibu"],
+      answer: 0,
+      explanation:
+        "Each `with` runs its set-up on the way in, `<b>` then `<i>`, and its clean-up on the way out, in **reverse** order: the inner block closes first. Like brackets, the last one opened is the first one closed.",
+    },
+    {
+      id: "temporary-setting",
+      kind: "code",
+      title: "A temporary setting",
+      brief:
+        "Write a context manager `currency(settings, code)` that sets `settings[\"currency\"]` to `code` for the length of a `with` block, then puts back whatever it was before, **even if the block raises an error**. The program records the value inside and after the block.",
+      starterCode: `from contextlib import contextmanager
+
+settings = {"currency": "KSh", "decimals": 0}
+
+
+def currency(settings, code):
+    pass
+
+
+with currency(settings, "USD"):
+    inside = settings["currency"]
+after = settings["currency"]
+
+print(inside, after)
+`,
+      checks: [
+        { expr: "inside == 'USD'", label: "Inside the block the currency is USD", failHint: "Before the `yield`, remember the old value and set `settings[\"currency\"] = code`." },
+        { expr: "after == 'KSh'", label: "Afterwards it's back to KSh", failHint: "After the `yield`, put the old value back." },
+        {
+          expr: "(lambda s: (lambda cm: (cm.__enter__(), cm.__exit__(ValueError, ValueError('x'), None), s['currency'])[2])(currency(s, 'USD')))({'currency': 'KSh'}) == 'KSh'",
+          label: "The old value comes back even after an error",
+          failHint: "Wrap the `yield` in `try:` and restore the value in `finally:`.",
+        },
+      ],
+      hints: [
+        "Decorate it with `@contextmanager` and make it a generator: `previous = settings[\"currency\"]`, set the new one, then `yield`.",
+        "`try: yield settings` and `finally: settings[\"currency\"] = previous`.",
+      ],
+      errorHints: [{ pattern: "'NoneType' object does not support the context manager protocol|does not support the context manager protocol", hint: "`currency` must be a context manager: put `@contextmanager` above it and `yield` inside it." }],
+      why:
+        "Without `finally`, an error in the block would leave the whole program quietly using dollars. Temporary changes that always undo themselves are one of the most common reasons to write a context manager: test settings, logging levels, number precision, the working folder.",
+      solution: `from contextlib import contextmanager
+
+settings = {"currency": "KSh", "decimals": 0}
+
+
+@contextmanager
+def currency(settings, code):
+    previous = settings["currency"]
+    settings["currency"] = code
+    try:
+        yield settings
+    finally:
+        settings["currency"] = previous
+
+
+with currency(settings, "USD"):
+    inside = settings["currency"]
+after = settings["currency"]
+
+print(inside, after)`,
+    },
+    {
+      id: "transaction",
+      kind: "code",
+      challenge: true,
+      title: "All or nothing",
+      brief:
+        "A transfer takes money out of one account and puts it into another. If anything fails halfway, the money mustn't vanish. Write a context manager `transaction(accounts)` that saves a copy of the accounts, runs the block, and if the block raises **any** `Exception`, restores the accounts from the copy and re-raises the error. Then run every transfer in `transfers`, adding `\"<sender> -> <receiver>: <ErrorType>\"` to `failed` for each one that raises.",
+      starterCode: BANK + `
+
+def transaction(accounts):
+    pass
+` + TRANSFER + `
+# run each transfer here
+
+
+print(accounts)
+print(failed)
+`,
+      checks: [
+        { expr: "accounts == {'Amina': 3000, 'Baraka': 3200, 'Chebet': 300}", label: "Only the first transfer went through", failHint: "When a transfer fails, the accounts must be put back exactly as they were before it started." },
+        { expr: "sum(accounts.values()) == 6500", label: "No money was created or lost", failHint: "Baraka was charged for the transfer to Dan before it failed. Restore from your copy when an error happens." },
+        { expr: "failed == ['Chebet -> Amina: ValueError', 'Baraka -> Dan: KeyError']", label: "The two failures are recorded", failHint: "`except (ValueError, KeyError) as e:` around each transfer, then `type(e).__name__`." },
+        {
+          expr: "(lambda acc: (_raises(lambda: transfer(acc, 'A', 'B', 5), KeyError), acc)[1])({'A': 10}) == {'A': 10}",
+          label: "The error is re-raised, and the accounts are restored",
+          failHint: "After restoring, `raise` with no arguments sends the same error on its way.",
+        },
+      ],
+      hints: [
+        "In `transaction`: `backup = dict(accounts)`, then `try: yield accounts` and `except Exception:` restore and `raise`.",
+        "Restore the **same** dictionary, because callers hold a reference to it: `accounts.clear()` then `accounts.update(backup)`. Writing `accounts = backup` would only rebind a local name.",
+      ],
+      why:
+        "That's how databases protect money: a transaction either completes entirely or not at all. Note the details that made it work. The copy was taken on the way in, the original dictionary was restored **in place** so every reference saw the fix, and the error was re-raised, so the caller still learned that the transfer failed.",
+      solution: BANK + `
+
+@contextmanager
+def transaction(accounts):
+    backup = dict(accounts)
+    try:
+        yield accounts
+    except Exception:
+        accounts.clear()
+        accounts.update(backup)
+        raise
+` + TRANSFER + `for sender, receiver, amount in transfers:
+    try:
+        transfer(accounts, sender, receiver, amount)
+    except (ValueError, KeyError) as e:
+        failed.append(f"{sender} -> {receiver}: {type(e).__name__}")
+
+print(accounts)
+print(failed)`,
+    },
+    {
+      id: "explain-context",
+      kind: "explain",
+      title: "Why with?",
+      prompt:
+        "Explain what a context manager does, why `with` is safer than calling clean-up code yourself, and how you'd write one with `@contextmanager`.",
+      ideas: [
+        { label: "Sets up on the way in, cleans up on the way out", patterns: ["set.?up", "clean.?up", "way (in|out)", "enter", "exit", "close", "restore"], nudge: "What happens at the start and the end of a `with` block?" },
+        { label: "Clean-up happens even after an error", patterns: ["error", "exception", "even if", "fails?", "no matter", "always", "guarantee"], nudge: "What if the block raises an error?" },
+        { label: "@contextmanager with a generator and yield", patterns: ["contextmanager", "yield", "generator"], nudge: "How do you write your own?" },
+        { label: "try / finally around the yield", patterns: ["finally", "try"], nudge: "How do you make sure the clean-up after `yield` always runs?" },
+      ],
+      modelAnswer:
+        "A context manager sets something up when a `with` block starts and cleans it up when the block ends, such as closing a file or restoring a setting. `with` is safer than calling the clean-up yourself because it runs even if the block raises an error or returns early, so nothing is left open or half-changed. To write one, decorate a generator function with `@contextmanager`: do the set-up, `yield` inside a `try`, and put the clean-up in `finally` so it always runs.",
+    },
+  ],
+};

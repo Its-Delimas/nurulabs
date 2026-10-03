@@ -76,8 +76,7 @@ export const tracks: Track[] = [
         slug: "py-errors-files",
         title: "Errors & files",
         summary: "Handling what goes wrong, cleaning up reliably, and reading and writing real data.",
-        labs: ["py-errors", "py-files", "py-paths", "py-modules"],
-        planned: [{ title: "Context Managers", summary: "with, cleanup that always happens, and writing your own context managers." }],
+        labs: ["py-errors", "py-files", "py-paths", "py-context", "py-modules"],
         milestone: {
           title: "Real data, from file to answer",
           description: "You can read and write CSV, JSON and text files, survive bad data, and raise clear errors of your own.",
