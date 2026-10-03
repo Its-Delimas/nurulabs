@@ -36,10 +36,9 @@ export const tracks: Track[] = [
         slug: "py-sequences-text",
         title: "Sequences & text",
         summary: "How Python stores values, tuples and unpacking, and text from messy input to polished output.",
-        labs: ["py-strings"],
+        labs: ["py-references", "py-strings"],
         planned: [
-          { title: "References & Copies", summary: "Names and objects, why changing one list can change another, and how to copy safely." },
-          { title: "Tuples & Unpacking", summary: "Fixed groups of values, unpacking, swapping, and returning several values at once." },
+          { title: "Tuples & Unpacking", summary: "Fixed groups of values, unpacking and swapping, star-unpacking, and namedtuple records." },
           { title: "Formatting Output", summary: "f-string formats for money, percentages and tables, and repr versus str." },
         ],
         milestone: {
