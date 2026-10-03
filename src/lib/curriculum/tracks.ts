@@ -56,9 +56,8 @@ export const tracks: Track[] = [
         slug: "py-functions",
         title: "Functions",
         summary: "From your first def to arguments, scope, closures, recursion and decorators.",
-        labs: ["py-functions"],
+        labs: ["py-functions", "py-arguments"],
         planned: [
-          { title: "Arguments in Depth", summary: "Defaults, keyword arguments, *args and **kwargs, and the mutable-default trap." },
           { title: "Scope & Closures", summary: "Where names live, global and nonlocal, and functions that remember." },
           { title: "Functions as Values", summary: "Passing functions around, lambda, map and filter, and sort keys." },
           { title: "Recursion", summary: "Functions that call themselves, base cases, and the call stack." },
