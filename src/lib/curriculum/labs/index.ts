@@ -6,7 +6,7 @@ import { pyReferences, pyTuples, pyFormatting } from "./python-sequences";
 import { pySets, pyComprehensions, pyCollectionsModule, pyMatch } from "./python-collections-more";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
-import { pyProjectMarket } from "./python-project";
+import { pyProjectChama, pyProjectMarket } from "./python-project";
 import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
@@ -54,6 +54,7 @@ export const pythonLabs: Lab[] = [
   pyComprehensions,
   pyCollectionsModule,
   pyMatch,
+  pyProjectChama,
   pyFiles,
   pyErrors,
   pyModules,

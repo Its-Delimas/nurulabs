@@ -46,10 +46,7 @@ export const tracks: Track[] = [
         slug: "py-collections",
         title: "Collections",
         summary: "Dictionaries, sets, comprehensions, the collections module and pattern matching.",
-        labs: ["py-dicts", "py-sets", "py-comprehensions", "py-collections-module", "py-match"],
-        planned: [
-          { title: "Project: Chama Contributions Ledger", summary: "Reconcile a savings group's contributions and loans with dictionaries, sets and counters." },
-        ],
+        labs: ["py-dicts", "py-sets", "py-comprehensions", "py-collections-module", "py-match", "py-project-chama"],
         milestone: {
           title: "The right container every time",
           description: "You can choose and use lists, tuples, dicts and sets, build them with comprehensions, and match on their shape.",
