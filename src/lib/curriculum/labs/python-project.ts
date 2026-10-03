@@ -54,40 +54,96 @@ const MARKET_CSV = `month,market,county,maize_ksh
 2025-12,Eldoret Main,Uasin Gishu,44
 `;
 
-const LOAD_CLEAN = `import csv
+// The capstone's finished parts. Each step's starter is the parts so far.
+const CAP_LOAD = `import csv
+import json
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import date, datetime
 
-clean_rows = []
-with open("market_prices.csv") as f:
-    for row in csv.DictReader(f):
-        if row["maize_ksh"] == "":
-            continue
-        row["maize_ksh"] = float(row["maize_ksh"])
-        clean_rows.append(row)
+
+@dataclass(frozen=True)
+class PriceRecord:
+    month: date
+    market: str
+    county: str
+    maize_ksh: float
+
+
+def load_prices(path: str) -> tuple[list[PriceRecord], int]:
+    """Read the CSV into PriceRecords, skipping rows with no price. Returns (records, skipped)."""
+    records = []
+    skipped = 0
+    with open(path, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row["maize_ksh"] == "":
+                skipped += 1
+                continue
+            month = datetime.strptime(row["month"], "%Y-%m").date()
+            records.append(PriceRecord(month, row["market"], row["county"], float(row["maize_ksh"])))
+    return records, skipped
+
+
+records, skipped = load_prices("market_prices.csv")
 `;
 
-const AVERAGE_FOR = `def average_for(market):
-    prices = []
-    for row in clean_rows:
-        if row["market"] == market:
-            prices.append(row["maize_ksh"])
-    return sum(prices) / len(prices)
+const CAP_AVERAGES = `
+
+def average_by_market(records: list[PriceRecord]) -> dict[str, float]:
+    """Each market's average price over the year, rounded to 2 decimal places."""
+    prices = defaultdict(list)
+    for r in records:
+        prices[r.market].append(r.maize_ksh)
+    return {market: round(sum(p) / len(p), 2) for market, p in prices.items()}
+
+
+averages = average_by_market(records)
+best_market = max(averages, key=averages.get)
+`;
+
+const CAP_KIBUYE = `
+
+kibuye = sorted((r for r in records if r.market == "Kibuye"), key=lambda r: r.month)
+peak = max(kibuye, key=lambda r: r.maize_ksh)
+low = min(kibuye, key=lambda r: r.maize_ksh)
+kibuye_peak = peak.month.strftime("%B %Y")
+kibuye_low = low.month.strftime("%B %Y")
+swing = peak.maize_ksh - low.maize_ksh
+`;
+
+const CAP_FORECAST = `
+
+def moving_average(values: list[float], window: int = 3) -> float:
+    """The average of the last \`window\` values: a baseline forecast."""
+    if window < 1 or len(values) < window:
+        raise ValueError(f"need at least {window} values, got {len(values)}")
+    return sum(values[-window:]) / window
+
+
+assert moving_average([1, 2, 3, 4]) == 3
+assert moving_average([10, 20], window=2) == 15
+assert moving_average([5, 7, 9], window=1) == 9
+
+kibuye_prices = [r.maize_ksh for r in kibuye]
+forecast = round(moving_average(kibuye_prices), 2)
 `;
 
 export const pyProjectMarket: Lab = {
   slug: "py-project-market",
   runExamples: true,
-  number: "P1",
+  number: "P3",
   title: "Maize Price Tracker",
   subject: "Capstone",
   summary:
-    "A farmers' cooperative in Kisumu asks: where and when should we sell our maize? Load a year of messy market data, clean it, analyse it, and forecast next month's price.",
-  minutes: 45,
+    "A farmers' cooperative in Kisumu asks: where and when should we sell our maize? Load a year of messy market data into typed records with real dates, analyse it with well-named, tested functions, forecast next month's price, and deliver a JSON report and a recommendation.",
+  minutes: 60,
   kind: "project",
   cover: { src: "/images/fruit-stand.webp", alt: "A trader standing at a fruit and vegetable stall" },
   skills: [
     "Take a raw CSV all the way to a recommendation",
-    "Clean messy data with missing values",
-    "Build and explain a baseline forecast",
+    "Model data with dataclasses and real dates",
+    "Write small, typed, tested functions for each question",
+    "Deliver results as a file other programs can use",
   ],
   files: { "market_prices.csv": MARKET_CSV },
   steps: [
@@ -96,9 +152,9 @@ export const pyProjectMarket: Lab = {
       kind: "concept",
       title: "Your client: a maize cooperative in Kisumu",
       body: [
-        "The Kibuye Farmers' Cooperative has 40 tonnes of maize in storage. Prices swing through the year, and every shilling per kilo is KSh 40,000 across their stock. They've asked you three questions: **Which market pays best? When is the best month to sell? What will next month's price be?**",
-        "`market_prices.csv` holds a year of monthly prices (KSh/kg) from four markets. The prices are illustrative, but the data is shaped like the real thing — **including missing values** a real analyst would have to deal with.",
-        "No new concepts in this project. Everything you need, you've already practised: files, dictionaries, loops, conditions and functions.",
+        "The Kibuye Farmers' Cooperative has 40 tonnes of maize in storage. Prices swing through the year, and every shilling per kilo is KSh 40,000 across their stock. They've asked three questions: **Which market pays best? When is the best month to sell? What will next month's price be?**",
+        "`market_prices.csv` holds a year of monthly prices (KSh/kg) from four markets. The prices are illustrative, but the data is shaped like the real thing, **including missing values** a real analyst would have to deal with.",
+        "This capstone uses the whole track. You'll load the file into dataclass records with real dates, answer each question with a small function that has type hints, test your forecast, and finish with a JSON report another program could read, plus a recommendation people can act on.",
       ],
       code: `month,market,county,maize_ksh
 2025-01,Gikomba,Nairobi,58
@@ -108,147 +164,194 @@ export const pyProjectMarket: Lab = {
 2025-04,Kongowea,Mombasa,        <- missing!`,
       run: false,
       image: { src: "/images/lamu-market.jpg", alt: "A busy covered produce market in Lamu, Kenya, stalls piled with bananas and vegetables" },
-      keyIdea: "A project is a real question, messy data, and your judgement. The code is how you get to an answer you can defend.",
+      keyIdea: "A project is a real question, messy data and your judgement. The code is how you reach an answer you can defend.",
     },
     {
-      id: "clean",
+      id: "load",
       kind: "code",
-      title: "Load and clean the data",
+      title: "Load the data into records",
       brief:
-        "Load every row, but **skip rows with a missing price**, and convert the prices you keep into numbers. The result should be a list called `clean_rows` where every `maize_ksh` is a `float`.",
-      instructions: [
-        "Loop over `csv.DictReader(f)`.",
-        "If `row[\"maize_ksh\"]` is an empty string `\"\"`, skip it with `continue`.",
-        "Otherwise convert it with `float()`, store it back in the row, and append the row.",
-      ],
+        "Finish `load_prices(path)`. Read the CSV with `csv.DictReader`. Skip rows whose price is empty, counting them in `skipped`. For every other row, turn the month (like `2025-01`) into a `date` with `datetime.strptime(..., \"%Y-%m\").date()`, the price into a float, and append a `PriceRecord`.",
       starterCode: `import csv
+import json
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import date, datetime
 
-clean_rows = []
-with open("market_prices.csv") as f:
-    for row in csv.DictReader(f):
-        clean_rows.append(row)
 
-print(f"Kept {len(clean_rows)} rows")
+@dataclass(frozen=True)
+class PriceRecord:
+    month: date
+    market: str
+    county: str
+    maize_ksh: float
+
+
+def load_prices(path: str) -> tuple[list[PriceRecord], int]:
+    """Read the CSV into PriceRecords, skipping rows with no price. Returns (records, skipped)."""
+    records = []
+    skipped = 0
+    # your code here
+    return records, skipped
+
+
+records, skipped = load_prices("market_prices.csv")
+print(f"Loaded {len(records)} records, skipped {skipped}")
 `,
       checks: [
-        { expr: "len(clean_rows) == 45", label: "The 3 rows with missing prices are dropped (45 kept)", failHint: "Some rows have `\"\"` as their price. Skip them: `if row[\"maize_ksh\"] == \"\": continue`." },
-        { expr: "all(isinstance(r['maize_ksh'], float) for r in clean_rows)", label: "Every kept price is a `float`", failHint: "Convert each price before appending: `row[\"maize_ksh\"] = float(row[\"maize_ksh\"])`." },
+        { expr: "len(records) == 45 and skipped == 3", label: "45 records loaded, 3 rows with missing prices skipped", failHint: "If `row[\"maize_ksh\"] == \"\"`, add 1 to `skipped` and `continue`." },
+        { expr: "records[0] == PriceRecord(date(2025, 1, 1), 'Gikomba', 'Nairobi', 58.0)", label: "Each row becomes a `PriceRecord`", failHint: "`PriceRecord(month, row[\"market\"], row[\"county\"], float(row[\"maize_ksh\"]))`." },
+        { expr: "all(isinstance(r.month, date) and isinstance(r.maize_ksh, float) for r in records)", label: "Months are dates and prices are floats", failHint: "`datetime.strptime(row[\"month\"], \"%Y-%m\").date()` gives the first day of that month." },
       ],
       hints: [
-        "`continue` jumps straight to the next item of the loop.",
-        "Converting an empty string crashes — `float(\"\")` is a ValueError — so check for `\"\"` before converting.",
+        "`with open(path, encoding=\"utf-8\") as f:` then `for row in csv.DictReader(f):`.",
+        "Check for the empty price before converting anything: `float(\"\")` raises a `ValueError`.",
       ],
-      errorHints: [
-        { pattern: "could not convert string to float: ''", hint: "You're converting an empty price. Check for `\"\"` and skip those rows *before* calling `float()`." },
-      ],
+      errorHints: [{ pattern: "could not convert string to float: ''", hint: "You're converting an empty price. Skip those rows before calling `float()`." }],
       why:
-        "Dropping incomplete rows is the simplest cleaning strategy — and a decision you should be able to justify. Here, 3 of 48 months are missing, so dropping them loses little. With more gaps you'd need something smarter.",
-      solution: LOAD_CLEAN + `
-print(f"Kept {len(clean_rows)} rows")`,
+        "From here on, nothing in the program handles raw text. Every record has a real date and a real number, the missing rows are counted rather than silently lost, and frozen records can't be changed by accident halfway through the analysis.",
+      solution: CAP_LOAD + `print(f"Loaded {len(records)} records, skipped {skipped}")`,
     },
     {
       id: "averages",
       kind: "code",
       title: "Which market pays best?",
       brief:
-        "Write `average_for(market)` that returns a market's average price over the year. Use it to build `averages`, a dictionary from each market name to its average, and set `best_market` to the market with the highest average.",
-      starterCode: LOAD_CLEAN + `
-markets = ["Gikomba", "Kongowea", "Kibuye", "Eldoret Main"]
+        "Write `average_by_market(records)`, returning a dictionary from each market to its average price, rounded to 2 decimal places. Then set `averages` from it, and `best_market` to the market with the highest average.",
+      starterCode: CAP_LOAD + `
 
-def average_for(market):
+def average_by_market(records: list[PriceRecord]) -> dict[str, float]:
+    """Each market's average price over the year, rounded to 2 decimal places."""
     pass
+
 
 averages = {}
 best_market = None
 
-for m in averages:
-    print(f"{m:14} KSh {averages[m]:.2f}")
+for market, avg in averages.items():
+    print(f"{market:14} KSh {avg:.2f}")
 print("Best market:", best_market)
 `,
       checks: [
-        { expr: "abs(average_for('Kibuye') - 55.909) < 0.01", label: "`average_for(\"Kibuye\")` is about 55.91", failHint: "Collect the prices of rows whose market matches, then return their average." },
-        { expr: "len(averages) == 4 and abs(averages['Eldoret Main'] - 46.917) < 0.01", label: "`averages` has all four markets", failHint: "Loop over `markets` and set `averages[m] = average_for(m)`." },
-        { expr: "best_market == 'Kongowea'", label: "`best_market` is the highest average", failHint: "Find the key in `averages` with the biggest value — track the best so far in a loop." },
+        { expr: "averages == {'Gikomba': 61.27, 'Kongowea': 69.09, 'Kibuye': 55.91, 'Eldoret Main': 46.92}", label: "Every market's average is right", failHint: "Group the prices by market (a `defaultdict(list)` works well), then average each list." },
+        { expr: "best_market == 'Kongowea'", label: "Kongowea pays best", failHint: "`max(averages, key=averages.get)`." },
+        {
+          expr: "average_by_market([PriceRecord(date(2025, 1, 1), 'A', 'X', 10.0), PriceRecord(date(2025, 2, 1), 'A', 'X', 20.0)]) == {'A': 15.0}",
+          label: "Works on other records",
+          failHint: "Work everything out from the `records` passed in.",
+        },
       ],
       hints: [
-        "Inside `average_for`, loop over `clean_rows` and keep only rows where `row[\"market\"] == market`.",
-        "For `best_market`, start with `best_market = markets[0]` and replace it whenever you find a higher average.",
+        "`prices = defaultdict(list)`, then `prices[r.market].append(r.maize_ksh)` for every record.",
+        "A dict comprehension does the averaging: `{market: round(sum(p) / len(p), 2) for market, p in prices.items()}`.",
       ],
       why:
-        "One function, reused four times, turned 45 rows into four numbers a cooperative can act on. Kongowea in Mombasa pays best on average — though transport from Kisumu costs money too. Real analysis always has context your code doesn't know.",
-      solution: LOAD_CLEAN + `
-markets = ["Gikomba", "Kongowea", "Kibuye", "Eldoret Main"]
-
-` + AVERAGE_FOR + `
-averages = {}
-for m in markets:
-    averages[m] = average_for(m)
-
-best_market = markets[0]
-for m in markets:
-    if averages[m] > averages[best_market]:
-        best_market = m
-
+        "Kongowea in Mombasa pays best on average, about KSh 69 a kilo against Kibuye's 56. But transport from Kisumu to Mombasa costs money too: real analysis always has context your code doesn't know about.",
+      solution: CAP_LOAD + CAP_AVERAGES + `
+for market, avg in averages.items():
+    print(f"{market:14} KSh {avg:.2f}")
 print("Best market:", best_market)`,
     },
     {
-      id: "best-month",
+      id: "kibuye-season",
       kind: "code",
       title: "When should they sell at home?",
       brief:
-        "Transport to Mombasa is expensive, so the cooperative may sell locally at **Kibuye**. Find `best_month` — the month with Kibuye's highest price — and `best_price`.",
-      starterCode: LOAD_CLEAN + `
-best_month = None
-best_price = 0
+        "Transport is expensive, so the cooperative may sell locally at **Kibuye**. Put Kibuye's records in month order in `kibuye`. Then set `kibuye_peak` and `kibuye_low` to the months of its highest and lowest prices, written like `June 2025`, and `swing` to the difference between those two prices.",
+      starterCode: CAP_LOAD + CAP_AVERAGES + `
+kibuye = []
+kibuye_peak = None
+kibuye_low = None
+swing = 0
 
-print("Sell at Kibuye in", best_month, "at KSh", best_price)
+print(f"Kibuye peaks in {kibuye_peak} and bottoms out in {kibuye_low}: a swing of KSh {swing}/kg")
 `,
       checks: [
-        { expr: "best_month == '2025-06' and best_price == 66", label: "Kibuye peaks in June 2025 at KSh 66", failHint: "Loop over the rows, keep only Kibuye, and track the highest price and its month." },
+        { expr: "len(kibuye) == 11 and kibuye == sorted(kibuye, key=lambda r: r.month) and all(r.market == 'Kibuye' for r in kibuye)", label: "`kibuye` holds Kibuye's 11 records, in month order", failHint: "`sorted((r for r in records if r.market == \"Kibuye\"), key=lambda r: r.month)`." },
+        { expr: "kibuye_peak == 'June 2025' and kibuye_low == 'September 2025'", label: "Kibuye peaks in June and bottoms out in September", failHint: "`max(kibuye, key=lambda r: r.maize_ksh)`, then format its month with `.strftime(\"%B %Y\")`." },
+        { expr: "swing == 18", label: "A swing of KSh 18 per kilo", failHint: "Subtract the lowest price from the highest." },
       ],
       hints: [
-        "Combine two conditions: the row is Kibuye **and** its price beats `best_price`.",
-        "`if row[\"market\"] == \"Kibuye\" and row[\"maize_ksh\"] > best_price:`",
+        "`max` and `min` take a `key`, just like `sorted`.",
+        "`%B` is the full month name and `%Y` the year.",
       ],
       why:
-        "Kibuye prices peak in June, just before the long-rains harvest floods the market — then fall hard by September. Holding stock until the pre-harvest peak is worth KSh 18/kg over the September low: over KSh 700,000 for 40 tonnes.",
-      solution: LOAD_CLEAN + `
-best_month = None
-best_price = 0
-for row in clean_rows:
-    if row["market"] == "Kibuye" and row["maize_ksh"] > best_price:
-        best_price = row["maize_ksh"]
-        best_month = row["month"]
-
-print("Sell at Kibuye in", best_month, "at KSh", best_price)`,
+        "Kibuye's price peaks in June, just before the long-rains harvest floods the market, and bottoms out in September. Holding stock until the pre-harvest peak is worth KSh 18 a kilo over selling in September: more than KSh 700,000 across 40 tonnes.",
+      solution: CAP_LOAD + CAP_AVERAGES + CAP_KIBUYE + `
+print(f"Kibuye peaks in {kibuye_peak} and bottoms out in {kibuye_low}: a swing of KSh {swing}/kg")`,
     },
     {
       id: "forecast",
       kind: "code",
       challenge: true,
-      title: "Forecast next month",
+      title: "A tested forecast",
       brief:
-        "Predict Kibuye's price for January 2026. Use a **moving average**: the average of Kibuye's **last 3 recorded prices**. Store it in `forecast`. This is a *baseline* — the simple model every smarter model has to beat.",
-      starterCode: LOAD_CLEAN + `
+        "Write `moving_average(values, window=3)`, with type hints: the average of the last `window` values, raising `ValueError` when there are fewer values than that. Add **at least two** `assert` tests of your own underneath it. Then forecast Kibuye's January 2026 price as the moving average of its prices in month order, rounded to 2 decimal places, in `forecast`.",
+      starterCode: CAP_LOAD + CAP_AVERAGES + CAP_KIBUYE + `
+
+def moving_average(values: list[float], window: int = 3) -> float:
+    """The average of the last \`window\` values: a baseline forecast."""
+    pass
+
+
+# your tests here
+
+
+forecast = None
+print(f"Forecast for Kibuye, January 2026: KSh {forecast}/kg")
 `,
       checks: [
-        { expr: "abs(forecast - 52.667) < 0.01", label: "`forecast` is the average of Kibuye's last 3 prices", failHint: "Collect Kibuye's prices in order into a list, then average the last three with a slice: `prices[-3:]`." },
+        { expr: "moving_average([1, 2, 3, 4]) == 3 and moving_average([10, 20], window=2) == 15", label: "`moving_average` averages the last `window` values", failHint: "`sum(values[-window:]) / window`." },
+        { expr: "_raises(lambda: moving_average([1, 2], window=3), ValueError) and _raises(lambda: moving_average([]), ValueError)", label: "Too few values raises `ValueError`", failHint: "`if len(values) < window: raise ValueError(...)` before averaging." },
+        { expr: "_source.count('assert moving_average(') >= 2", label: "You wrote at least two tests", failHint: "Add lines like `assert moving_average([1, 2, 3]) == 2` under the function." },
+        { expr: "forecast == 52.67", label: "The forecast is KSh 52.67", failHint: "Build Kibuye's prices in month order, `[r.maize_ksh for r in kibuye]`, then `round(moving_average(...), 2)`." },
       ],
       hints: [
-        "First build a list of Kibuye's prices, in file order.",
-        "`prices[-3:]` is the last three items of a list.",
+        "`values[-window:]` is the last `window` items of a list.",
+        "Test the normal case, a different window, and think about what should happen with too few values.",
       ],
       why:
-        "A moving average is a genuine forecasting model — simple, explainable, and surprisingly hard to beat. In the AI & ML track you'll build models that learn from more than the last three months, and you'll judge them by whether they beat this baseline.",
-      tryNext: "Try a 6-month average instead. Is the forecast higher or lower — and which would you trust?",
-      solution: LOAD_CLEAN + `
-kibuye = []
-for row in clean_rows:
-    if row["market"] == "Kibuye":
-        kibuye.append(row["maize_ksh"])
+        "A moving average is a genuine forecasting model: simple, explainable and surprisingly hard to beat. It's also the baseline every smarter model has to beat, and your tests mean you can change it with confidence. If you go on to the AI track, this is exactly the number your first machine learning model will be judged against.",
+      solution: CAP_LOAD + CAP_AVERAGES + CAP_KIBUYE + CAP_FORECAST + `print(f"Forecast for Kibuye, January 2026: KSh {forecast}/kg")`,
+    },
+    {
+      id: "report",
+      kind: "code",
+      title: "Deliver the report",
+      brief:
+        "The cooperative's SMS service needs the results as data. Write `report.json`, indented by 2 spaces, holding `best_market`, `best_market_average`, `kibuye_peak`, `kibuye_forecast_jan_2026` and `rows_skipped`. Then read it back into `report` to check what you wrote.",
+      starterCode: CAP_LOAD + CAP_AVERAGES + CAP_KIBUYE + CAP_FORECAST + `
+# write report.json here
 
-forecast = sum(kibuye[-3:]) / 3
-print(f"Forecast for Jan 2026: KSh {forecast:.2f}")`,
+
+report = {}
+print(report)
+`,
+      checks: [
+        {
+          expr: "report == {'best_market': 'Kongowea', 'best_market_average': 69.09, 'kibuye_peak': 'June 2025', 'kibuye_forecast_jan_2026': 52.67, 'rows_skipped': 3}",
+          label: "The report holds the five results",
+          failHint: "Build a dictionary from `best_market`, `averages[best_market]`, `kibuye_peak`, `forecast` and `skipped`, `json.dump` it, then `json.load` it back.",
+        },
+        { expr: "json.load(open('report.json', encoding='utf-8')) == report and '\\n  \"' in open('report.json', encoding='utf-8').read()", label: "`report.json` is indented and matches", failHint: "`json.dump(summary, f, indent=2)` inside `with open(\"report.json\", \"w\", encoding=\"utf-8\") as f:`." },
+      ],
+      hints: ["Reading it back with `json.load` proves the file is valid JSON, not just a string that looks right."],
+      why:
+        "The analysis now ends in a file that a website, an SMS service or another program can read, which is how real analysis gets used. And because every number in it came from a named, tested function, you can stand behind each one.",
+      solution: CAP_LOAD + CAP_AVERAGES + CAP_KIBUYE + CAP_FORECAST + `
+summary = {
+    "best_market": best_market,
+    "best_market_average": averages[best_market],
+    "kibuye_peak": kibuye_peak,
+    "kibuye_forecast_jan_2026": forecast,
+    "rows_skipped": skipped,
+}
+with open("report.json", "w", encoding="utf-8") as f:
+    json.dump(summary, f, indent=2)
+
+with open("report.json", encoding="utf-8") as f:
+    report = json.load(f)
+print(report)`,
     },
     {
       id: "recommend",
@@ -263,7 +366,7 @@ print(f"Forecast for Jan 2026: KSh {forecast:.2f}")`,
         { label: "Notes a limitation or risk", patterns: ["transport", "cost", "risk", "uncertain", "one year", "illustrative", "may", "might", "could", "only", "missing", "baseline", "guarantee"], nudge: "What might make your recommendation wrong?" },
       ],
       modelAnswer:
-        "Kongowea in Mombasa paid the most on average (about KSh 69/kg), but after transport, selling locally at Kibuye may pay more. Kibuye prices peaked in June (KSh 66) before the harvest and fell to KSh 48 in September, so if they can store it they should hold stock until the pre-harvest months. A 3-month moving average forecasts about KSh 52.70 for January. Caveats: this is one year of data with gaps, and the forecast is only a baseline.",
+        "Kongowea in Mombasa paid the most on average (about KSh 69/kg), but after transport, selling locally at Kibuye may pay more. Kibuye prices peaked in June (KSh 66) before the harvest and fell to KSh 48 in September, so if they can store it they should hold stock until the pre-harvest months. A 3-month moving average forecasts about KSh 52.70 for January. Caveats: this is one year of data with three missing months, and the forecast is only a baseline.",
     },
   ],
 };
