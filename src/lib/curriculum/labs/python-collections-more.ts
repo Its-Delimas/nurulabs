@@ -675,3 +675,303 @@ print(rolling)`,
     },
   ],
 };
+
+export const pyMatch: Lab = {
+  slug: "py-match",
+  runExamples: true,
+  number: "18",
+  title: "Pattern Matching with match",
+  subject: "match and case",
+  summary:
+    "`match` compares a value against patterns and runs the first one that fits: menu choices, commands typed as text, and records of different shapes. When the shape of the data decides what happens next, it's clearer than a long if/elif chain.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Match values against literal patterns, alternatives and a catch-all",
+    "Capture parts of a value with sequence and dictionary patterns",
+    "Add conditions to a case with a guard",
+    "Choose between match and if/elif",
+  ],
+  steps: [
+    {
+      id: "match-basics",
+      kind: "concept",
+      title: "One value, many possible cases",
+      body: [
+        "`match` takes one value and compares it with each `case` in turn. The **first** case that fits runs, and the rest are skipped; there's no falling through to the next one.",
+        "A case can be a plain value (`case \"1\":`), several alternatives joined with `|` (`case \"2\" | \"3\":`), or `case _:`, which matches anything and acts as the catch-all at the end.",
+        "It reads well for menus and codes: one value, a fixed set of possibilities, one action each. (`match` arrived in Python 3.10, so older code uses if/elif for the same job.)",
+      ],
+      code: `choice = "2"   # what the user pressed on a USSD menu
+
+match choice:
+    case "1":
+        print("Check balance")
+    case "2" | "3":
+        print("Send money")
+    case "0":
+        print("Goodbye")
+    case _:
+        print("Invalid choice")`,
+      keyIdea: "`match value:` runs the first `case` that fits. `|` joins alternatives, and `case _:` catches everything else.",
+    },
+    {
+      id: "capture",
+      kind: "concept",
+      title: "Patterns that capture",
+      body: [
+        "Patterns can describe a **shape** and pull out its parts. `case [\"send\", amount, phone]:` matches a list of exactly three items whose first is `\"send\"`, and names the other two. `case [word, *rest]:` matches any non-empty list. Matching `command.split()` turns typed commands into clean cases.",
+        "A **guard** adds a condition: `case [\"send\", amount, phone] if int(amount) > 50000:` only matches when the condition is also True. Put the more specific case first, because the first match wins.",
+        "Dictionary patterns match records: `case {\"type\": \"deposit\", \"amount\": amount}:` fits any dict with those keys (extra keys are fine) and captures the amount. Later, in the object-oriented module, you'll match objects the same way.",
+      ],
+      code: `for command in ["balance", "send 500 0712345678", "send 90000 0700111222", "buy airtime"]:
+    match command.split():
+        case ["balance"]:
+            print("Your balance is KSh 1,250")
+        case ["send", amount, phone] if int(amount) > 50000:
+            print(f"KSh {amount} needs approval")
+        case ["send", amount, phone]:
+            print(f"Sending KSh {amount} to {phone}")
+        case [word, *rest]:
+            print(f"Unknown command: {word}")
+
+event = {"type": "deposit", "amount": 1500, "agent": "A102"}
+match event:
+    case {"type": "deposit", "amount": amount}:
+        print("Deposit of", amount)
+    case {"type": "withdraw", "amount": amount}:
+        print("Withdrawal of", amount)`,
+      keyIdea: "Sequence patterns (`[\"send\", amount, phone]`) and dict patterns (`{\"type\": \"deposit\", \"amount\": a}`) match a shape and capture its parts; a guard adds `if`.",
+    },
+    {
+      id: "watch-match",
+      kind: "experiment",
+      title: "Watch the cases",
+      prompt:
+        "Step through and watch which `case` line runs for each command. Notice that the approval case comes **before** the plain send case. Then **Edit code**: swap those two cases round and run it again. What happens to the KSh 90,000 transfer?",
+      widget: "visualiser",
+      visualise: {
+        code: `commands = ["balance", "send 500 0712345678", "send 90000 0700111222", "buy airtime"]
+
+for command in commands:
+    match command.split():
+        case ["balance"]:
+            print("Your balance is KSh 1,250")
+        case ["send", amount, phone] if int(amount) > 50000:
+            print(f"KSh {amount} needs approval")
+        case ["send", amount, phone]:
+            print(f"Sending KSh {amount} to {phone}")
+        case [word, *rest]:
+            print(f"Unknown command: {word}")`,
+      },
+      observe:
+        "Python tries the cases from the top and stops at the first that fits, capturing `amount` and `phone` as it goes. With the guarded case first, KSh 90,000 is held for approval. Swap them and the plain send case matches first, so the big transfer goes straight through: the guard never even gets checked. In a `match`, order is part of the logic.",
+    },
+    {
+      id: "predict-point",
+      kind: "predict",
+      title: "Which case fits?",
+      prompt: "A point on a map, matched against four shapes. What's printed?",
+      code: `point = (0, 5)
+match point:
+    case (0, 0):
+        print("origin")
+    case (0, y):
+        print("on the y axis at", y)
+    case (x, 0):
+        print("on the x axis at", x)
+    case _:
+        print("somewhere else")`,
+      options: ["on the y axis at 5", "origin", "somewhere else", "on the x axis at 0"],
+      answer: 0,
+      explanation:
+        "`(0, 0)` doesn't fit, because the second value is 5. `(0, y)` fits: the first value must be 0, and `y` captures whatever the second is, 5. Matching stops there, so the later cases never run.",
+    },
+    {
+      id: "predict-order",
+      kind: "predict",
+      title: "Pass or distinction?",
+      prompt: "Guards on two cases. What's printed for a score of 85?",
+      code: `score = 85
+match score:
+    case s if s >= 50:
+        print("pass")
+    case s if s >= 80:
+        print("distinction")`,
+      options: ["pass", "distinction", "pass\ndistinction", "Nothing"],
+      answer: 0,
+      explanation:
+        "85 satisfies the first guard (`>= 50`), and the first match wins, so it prints `pass` and stops. The distinction case can never be reached for anyone who passed. Put the most specific case first: `>= 80` before `>= 50`.",
+    },
+    {
+      id: "ussd",
+      kind: "code",
+      title: "A USSD menu",
+      brief:
+        "Write the menu logic with `match`: set `screen` to `\"Check balance\"` for `\"1\"`, `\"Send money\"` for `\"2\"`, `\"Buy airtime\"` for `\"3\"` **or** `\"4\"`, `\"Goodbye\"` for `\"0\"`, and `\"Invalid choice\"` for anything else. It's tested with every option.",
+      starterCode: `choice = "3"
+
+screen = ""
+
+print(screen)
+`,
+      checks: [
+        { expr: "screen == 'Buy airtime'", label: "`\"3\"` shows Buy airtime", failHint: "Use `case \"3\" | \"4\":` for the airtime options." },
+        {
+          expr: "[_with(choice=c)['screen'] for c in ['1', '2', '4', '0']] == ['Check balance', 'Send money', 'Buy airtime', 'Goodbye']",
+          label: "Every menu option shows the right screen",
+          failHint: "One `case` per option, with `|` joining 3 and 4.",
+        },
+        { expr: "_with(choice='9')['screen'] == 'Invalid choice' and _with(choice='')['screen'] == 'Invalid choice'", label: "Anything else is `Invalid choice`", failHint: "End with `case _:` to catch everything else." },
+        { expr: "'match' in _source and 'case' in _source", label: "Uses `match` and `case`", failHint: "Write it as `match choice:` with a `case` for each option." },
+      ],
+      hints: ["`match choice:` then indented `case \"1\":` lines, each with an indented `screen = ...`.", "`case _:` at the end catches every other input."],
+      why:
+        "Each menu option is one case, alternatives share a line with `|`, and `case _:` guarantees the user always gets an answer. Every USSD menu, from M-Pesa to bank balances, has this shape behind it.",
+      solution: `choice = "3"
+
+match choice:
+    case "1":
+        screen = "Check balance"
+    case "2":
+        screen = "Send money"
+    case "3" | "4":
+        screen = "Buy airtime"
+    case "0":
+        screen = "Goodbye"
+    case _:
+        screen = "Invalid choice"
+
+print(screen)`,
+    },
+    {
+      id: "transactions",
+      kind: "code",
+      title: "Process the transactions",
+      brief:
+        "Each transaction is a dictionary. With `match` and dictionary patterns: a `\"deposit\"` adds its `amount` to `balance`, a `\"withdraw\"` subtracts its `amount`, and a `\"fee\"` subtracts its `charge`. Anything else is skipped and counted in `unknown`.",
+      starterCode: `transactions = [
+    {"type": "deposit", "amount": 5000},
+    {"type": "withdraw", "amount": 1200, "agent": "A102"},
+    {"type": "fee", "charge": 33},
+    {"type": "reversal", "amount": 500},
+    {"type": "deposit", "amount": 750},
+]
+
+balance = 0
+unknown = 0
+
+print(balance, unknown)
+`,
+      checks: [
+        { expr: "balance == 4517", label: "`balance` is 4,517", failHint: "5000 − 1200 − 33 + 750. Use one case per type." },
+        { expr: "unknown == 1", label: "One unknown transaction", failHint: "End with `case _:` and add 1 to `unknown`." },
+        {
+          expr: "(lambda ns: ns['balance'] == 90 and ns['unknown'] == 0)(_with(transactions=[{'type': 'deposit', 'amount': 100}, {'type': 'fee', 'charge': 10}]))",
+          label: "Works on other transactions",
+          failHint: "Work it out from `transactions`, capturing each amount from its pattern.",
+        },
+      ],
+      hints: [
+        "`for t in transactions:` then `match t:` with cases like `case {\"type\": \"deposit\", \"amount\": amount}:`.",
+        "The fee pattern captures a different key: `case {\"type\": \"fee\", \"charge\": charge}:`.",
+      ],
+      why:
+        "Each dictionary pattern checked the type **and** pulled out the number it needed, even though fees use a different key. Extra keys like `agent` didn't get in the way, and the reversal fell safely through to the catch-all instead of being misread.",
+      solution: `transactions = [
+    {"type": "deposit", "amount": 5000},
+    {"type": "withdraw", "amount": 1200, "agent": "A102"},
+    {"type": "fee", "charge": 33},
+    {"type": "reversal", "amount": 500},
+    {"type": "deposit", "amount": 750},
+]
+
+balance = 0
+unknown = 0
+for t in transactions:
+    match t:
+        case {"type": "deposit", "amount": amount}:
+            balance += amount
+        case {"type": "withdraw", "amount": amount}:
+            balance -= amount
+        case {"type": "fee", "charge": charge}:
+            balance -= charge
+        case _:
+            unknown += 1
+
+print(balance, unknown)`,
+    },
+    {
+      id: "stock-bot",
+      kind: "code",
+      challenge: true,
+      title: "A stock-keeping bot",
+      brief:
+        "A shop types commands to its stock bot. Process `commands` with `match` on `command.split()`: `add <item> <kg>` adds to `stock`; `remove <item> <kg>` takes it away, unless there isn't enough, in which case log `\"Not enough <item>\"` and change nothing; `clear <item>` sets it to 0; `show <item>` logs `\"<item>: <kg> kg\"`; anything else logs `\"Unknown: <command>\"`.",
+      starterCode: `commands = ["add maize 50", "add beans 20", "remove maize 15", "show maize",
+            "remove beans 30", "clear beans", "sell rice", "show rice"]
+
+stock = {}
+log = []
+
+print(stock)
+print(log)
+`,
+      checks: [
+        { expr: "stock == {'maize': 35, 'beans': 0}", label: "Stock ends at 35 kg maize and 0 kg beans", failHint: "Add, remove (only if there's enough) and clear, converting the kg with `int()`." },
+        {
+          expr: "log == ['maize: 35 kg', 'Not enough beans', 'Unknown: sell rice', 'rice: 0 kg']",
+          label: "The log has the four messages, in order",
+          failHint: "Log for `show`, for a remove that's too big, and for unknown commands. An item never added shows 0 kg.",
+        },
+        {
+          expr: "(lambda ns: ns['stock'] == {'tea': 5} and ns['log'] == ['tea: 5 kg'])(_with(commands=['add tea 10', 'remove tea 5', 'show tea']))",
+          label: "Works on other commands",
+          failHint: "Everything should come from `commands`.",
+        },
+      ],
+      hints: [
+        "Put the guarded remove first: `case [\"remove\", item, kg] if stock.get(item, 0) >= int(kg):`, then a plain `case [\"remove\", item, kg]:` for the not-enough message.",
+        "`stock.get(item, 0)` gives 0 for items that were never added, for both `remove` and `show`.",
+      ],
+      why:
+        "Each command shape became one case, the guard handled the \"not enough\" rule before the ordinary remove, and `case _:` caught everything else. That's the core of every command-line tool and chatbot: split the input, match its shape, act.",
+      solution: `commands = ["add maize 50", "add beans 20", "remove maize 15", "show maize",
+            "remove beans 30", "clear beans", "sell rice", "show rice"]
+
+stock = {}
+log = []
+for command in commands:
+    match command.split():
+        case ["add", item, kg]:
+            stock[item] = stock.get(item, 0) + int(kg)
+        case ["remove", item, kg] if stock.get(item, 0) >= int(kg):
+            stock[item] -= int(kg)
+        case ["remove", item, kg]:
+            log.append(f"Not enough {item}")
+        case ["clear", item]:
+            stock[item] = 0
+        case ["show", item]:
+            log.append(f"{item}: {stock.get(item, 0)} kg")
+        case _:
+            log.append(f"Unknown: {command}")
+
+print(stock)
+print(log)`,
+    },
+    {
+      id: "explain-match",
+      kind: "explain",
+      title: "match or if/elif?",
+      prompt: "Explain how `match` decides which case runs, and when you'd choose it over a chain of `if`/`elif`.",
+      ideas: [
+        { label: "Cases are tried in order; the first match wins", patterns: ["first", "order", "top", "stops"], nudge: "What happens when two cases could both fit?" },
+        { label: "Patterns can capture parts (lists, dicts)", patterns: ["captur", "shape", "pattern", "pull out", "names? the", "list", "dict"], nudge: "What can a pattern do besides compare?" },
+        { label: "case _ catches everything else", patterns: ["case _", "wildcard", "catch.?all", "anything else", "default", "underscore"], nudge: "How do you handle any other value?" },
+        { label: "Good when the shape of the data decides; if/elif for ranges or unrelated conditions", patterns: ["shape", "structure", "menu", "command", "if.?elif", "range", "comparison"], nudge: "When is if/elif still the better choice?" },
+      ],
+      modelAnswer:
+        "`match` compares one value with each case from the top and runs the first one that fits; the rest are skipped, so order matters, especially with guards. Cases can be plain values, alternatives with `|`, or patterns that describe a shape and capture its parts, like `[\"send\", amount, phone]` or `{\"type\": \"deposit\", \"amount\": amount}`, and `case _:` catches everything else. I'd choose `match` when the structure of the data decides what to do, like menus, commands or records of different types, and keep `if`/`elif` for range checks and conditions about several unrelated values.",
+    },
+  ],
+};

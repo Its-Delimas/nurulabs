@@ -3,7 +3,7 @@ import { pyValues, pyDecisions } from "./python-basics";
 import { pyNumbers, pyTextInput, pyTruth } from "./python-first-steps";
 import { pyWhile, pyLoopTools } from "./python-lists-loops";
 import { pyReferences, pyTuples, pyFormatting } from "./python-sequences";
-import { pySets, pyComprehensions, pyCollectionsModule } from "./python-collections-more";
+import { pySets, pyComprehensions, pyCollectionsModule, pyMatch } from "./python-collections-more";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
@@ -53,6 +53,7 @@ export const pythonLabs: Lab[] = [
   pySets,
   pyComprehensions,
   pyCollectionsModule,
+  pyMatch,
   pyFiles,
   pyErrors,
   pyModules,
