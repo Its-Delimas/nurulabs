@@ -298,3 +298,344 @@ print(log_event("ping"))`,
     },
   ],
 };
+
+export const pyScope: Lab = {
+  slug: "py-scope",
+  runExamples: true,
+  number: "21",
+  title: "Scope & Closures",
+  subject: "LEGB, global, nonlocal, closures",
+  summary:
+    "Where does Python look when it meets a name? Learn the LEGB rule, why assigning inside a function makes a new local, when `global` and `nonlocal` are needed, and how inner functions can remember values: closures.",
+  minutes: 40,
+  kind: "lab",
+  skills: [
+    "Predict which variable a name refers to: local, enclosing, global or built-in",
+    "Explain and fix an UnboundLocalError",
+    "Write closures that remember their settings",
+    "Keep private state in a closure with nonlocal",
+  ],
+  steps: [
+    {
+      id: "legb",
+      kind: "concept",
+      title: "Where Python looks for a name",
+      body: [
+        "When Python meets a name, it looks in four places, in order: the **L**ocal scope (the function that's running), any **E**nclosing functions around it, the **G**lobal scope (the top level of the file), and finally the **B**uilt-ins such as `len` and `print`. The first match wins. That's the **LEGB** rule.",
+        "So a function can **read** a global variable. But **assigning** to a name inside a function creates a new local variable, even when a global has the same name, and the global is left alone.",
+        "The built-ins come last, which is why naming a variable `sum`, `list` or `input` quietly hides the real function for the rest of your program.",
+      ],
+      code: `rate = 129                       # a global
+
+def to_usd(ksh):
+    return round(ksh / rate, 2)  # reads the global rate
+
+def special_rate():
+    rate = 140                   # a new local; the global is untouched
+    return rate
+
+print(to_usd(5000))              # 38.76
+print(special_rate(), rate)      # 140 129`,
+      keyIdea: "Local, Enclosing, Global, Built-in: Python uses the first match. Reading a global works; assigning inside a function makes a new local.",
+    },
+    {
+      id: "watch-scope",
+      kind: "experiment",
+      title: "Two variables called rate",
+      prompt:
+        "Step through and watch the **Frames** panel. There are two variables called `rate`: one in the global frame and one in `convert`'s frame. When `one` runs, which `rate` does it use? Look at the `one` function in the **Objects** panel too.",
+      widget: "visualiser",
+      visualise: {
+        code: `rate = 129
+
+def convert(amounts):
+    rate = 140
+    def one(ksh):
+        return round(ksh / rate, 2)
+    return [one(a) for a in amounts]
+
+print(convert([1400, 2800]), rate)`,
+      },
+      observe:
+        "`one` has no `rate` of its own, so Python looks outwards and finds the **enclosing** one, 140, before it ever reaches the global 129. The Objects panel shows `one` carrying `rate` with it. And the global `rate` is still 129 at the end: the assignment inside `convert` made a separate local.",
+    },
+    {
+      id: "predict-unbound",
+      kind: "predict",
+      title: "Counting visits",
+      prompt: "The function reads `count` and adds 1. What happens?",
+      code: `count = 0
+
+def add_visit():
+    count = count + 1
+    return count
+
+print(add_visit())`,
+      options: ["UnboundLocalError: cannot access local variable 'count' where it is not associated with a value", "1", "0", "NameError: name 'count' is not defined"],
+      answer: 0,
+      explanation:
+        "Because `count` is **assigned** inside `add_visit`, Python treats it as local for the **whole** function, decided before the function even runs. So `count + 1` tries to read the local `count` before it has a value, and Python raises `UnboundLocalError: cannot access local variable 'count'`.",
+    },
+    {
+      id: "global",
+      kind: "concept",
+      title: "global, and why to avoid it",
+      body: [
+        "`global visits` inside a function tells Python that `visits` means the global variable, so assigning to it changes the global. It works, but use it sparingly: when any function can change a value, bugs become hard to trace.",
+        "Usually it's clearer to **pass values in and return results**: `visits = add_one(visits)`. The function then depends only on its arguments.",
+        "You only need `global` to **assign**. Changing a list or dictionary in place, like `log.append(name)`, isn't assignment, so it works without it.",
+      ],
+      code: `visits = 0
+log = []
+
+def add_visit(name):
+    global visits
+    visits += 1          # assignment: needs global
+    log.append(name)     # changes the list in place: no global needed
+
+add_visit("Amina")
+add_visit("Juma")
+print(visits, log)       # 2 ['Amina', 'Juma']
+
+# Usually clearer: pass the value in, return the new one
+def add_one(count):
+    return count + 1
+
+visits = add_one(visits)
+print(visits)            # 3`,
+      keyIdea: "`global name` lets a function assign to a global, but passing values in and returning results is usually the better design.",
+    },
+    {
+      id: "bug-sum",
+      kind: "bug",
+      title: "The total that broke sum()",
+      prompt:
+        "The total prints fine, then the average line crashes with `TypeError: 'int' object is not callable`. The crash is on line 6, but that's not where the mistake is. Find the line that causes it.",
+      code: `prices = [120, 80, 45]
+sum = 0
+for p in prices:
+    sum += p
+print("Total:", sum)
+print("Average:", sum(prices) / len(prices))`,
+      line: 2,
+      fix: "total = 0   # and use total on lines 4 and 5",
+      explanation:
+        "`sum = 0` creates a global variable called `sum`, which hides the built-in `sum()` function. Python checks the global scope before the built-ins, so on line 6 it finds your number, 245, and tries to call it. Use a different name, like `total`, and never name variables after built-ins such as `sum`, `list`, `max` or `input`.",
+      wrong: {
+        1: "The prices list is fine.",
+        3: "Looping over the prices is right.",
+        4: "Adding up the prices is right. But look at the name the total is stored under.",
+        5: "This line works: it prints `Total: 245`.",
+        6: "This is where it crashes, but `sum(prices) / len(prices)` is a correct way to average. Why isn't `sum` a function any more?",
+      },
+    },
+    {
+      id: "closures",
+      kind: "concept",
+      title: "Closures: functions that remember",
+      body: [
+        "A function defined inside another function can use the outer function's variables, and it **keeps** them even after the outer function has returned. That's a **closure**: a function bundled with the variables it needs.",
+        "Closures make function factories. `make_converter(129)` builds and returns a converter with its rate baked in; call the factory again with 151 and you get a second, independent converter.",
+        "To **change** a remembered variable, the inner function declares it `nonlocal`, just as `global` works for globals. Each call to the outer function creates fresh variables, so every closure gets its own.",
+      ],
+      code: `def make_converter(rate):
+    def convert(ksh):
+        return round(ksh / rate, 2)
+    return convert          # the function itself, not a call
+
+to_usd = make_converter(129)
+to_eur = make_converter(151)
+print(to_usd(5000), to_eur(5000))    # 38.76 33.11
+
+def make_counter():
+    count = 0
+    def next_ticket():
+        nonlocal count
+        count += 1
+        return count
+    return next_ticket
+
+ticket = make_counter()
+print(ticket(), ticket(), ticket())  # 1 2 3`,
+      keyIdea: "An inner function keeps the outer function's variables after it returns: a closure. Use `nonlocal` to change them.",
+    },
+    {
+      id: "watch-closure",
+      kind: "experiment",
+      title: "Watch closures keep their own state",
+      prompt:
+        "Step through and watch the **Objects** panel. Each call to `make_counter` returns a new `next_ticket` function. What does each one carry with it, and does calling `bank()` change `clinic`'s count?",
+      widget: "visualiser",
+      visualise: {
+        code: `def make_counter(prefix):
+    count = 0
+    def next_ticket():
+        nonlocal count
+        count += 1
+        return f"{prefix}-{count}"
+    return next_ticket
+
+bank = make_counter("B")
+clinic = make_counter("C")
+print(bank(), bank(), clinic())`,
+      },
+      observe:
+        "`make_counter` finished long ago, yet each `next_ticket` still carries its own `prefix` and `count`. `bank` counted to 2 while `clinic` was still at 0, because each call to `make_counter` made separate variables. Nothing else in the program can reach those counts: the state is private.",
+    },
+    {
+      id: "converter",
+      kind: "code",
+      title: "A converter factory",
+      brief:
+        "Write `make_converter(rate)` that returns a **function**: given an amount in shillings, it returns the amount divided by `rate`, rounded to 2 decimal places. Use it to make `to_usd` (129 shillings to the dollar) and `to_gbp` (172 to the pound).",
+      starterCode: `def make_converter(rate):
+    pass
+
+
+to_usd = None
+to_gbp = None
+
+print(to_usd(5000), to_gbp(1720))
+`,
+      checks: [
+        { expr: "callable(make_converter(5))", label: "`make_converter` returns a function", failHint: "Define a function inside `make_converter` and `return` it, without brackets." },
+        { expr: "to_usd(5000) == 38.76", label: "`to_usd(5000)` is 38.76", failHint: "`to_usd = make_converter(129)`." },
+        { expr: "to_gbp(1720) == 10.0", label: "`to_gbp(1720)` is 10.0", failHint: "`to_gbp = make_converter(172)`." },
+        { expr: "make_converter(100)(250) == 2.5", label: "Works for any rate", failHint: "The inner function should use the `rate` passed to `make_converter`." },
+      ],
+      hints: [
+        "Inside `make_converter`: `def convert(ksh): return round(ksh / rate, 2)`, then `return convert`.",
+        "Make each converter by calling the factory: `to_usd = make_converter(129)`.",
+      ],
+      errorHints: [{ pattern: "'NoneType' object is not callable", hint: "Something you're calling is `None`. `make_converter` must `return` the inner function, and `to_usd` must be set by calling `make_converter(...)`." }],
+      why:
+        "Each call to `make_converter` built a new function with its own `rate` remembered inside. That's how you configure behaviour once and reuse it: one converter per currency, one tax calculator per country.",
+      solution: `def make_converter(rate):
+    def convert(ksh):
+        return round(ksh / rate, 2)
+    return convert
+
+
+to_usd = make_converter(129)
+to_gbp = make_converter(172)
+
+print(to_usd(5000), to_gbp(1720))`,
+    },
+    {
+      id: "queue",
+      kind: "code",
+      title: "Clinic queue tickets",
+      brief:
+        "A clinic gives each queue its own tickets. Write `make_queue(prefix)` that returns a function `next_ticket()`. Each call returns the next ticket for that queue, `\"T-001\"`, `\"T-002\"` and so on, numbered with three digits. Different queues count separately.",
+      starterCode: `def make_queue(prefix):
+    pass
+
+
+triage = make_queue("T")
+pharmacy = make_queue("P")
+print(triage(), triage(), pharmacy(), triage())
+`,
+      checks: [
+        { expr: "(lambda q: (q(), q(), q()))(make_queue('A')) == ('A-001', 'A-002', 'A-003')", label: "Tickets count up from 001", failHint: "Keep a `count` in `make_queue`, add 1 on each call, and format it with `{count:03}`." },
+        {
+          expr: "(lambda a, b: (a(), a(), b(), a()))(make_queue('A'), make_queue('B')) == ('A-001', 'A-002', 'B-001', 'A-003')",
+          label: "Each queue counts separately",
+          failHint: "Keep the count inside `make_queue`, not as a global, so each queue gets its own.",
+        },
+        { expr: "'nonlocal' in _source", label: "Uses `nonlocal`", failHint: "Declare `nonlocal count` in the inner function before changing it." },
+      ],
+      hints: [
+        "Inside `make_queue`, set `count = 0`, define `next_ticket()`, then `return next_ticket` (no brackets).",
+        "In `next_ticket`: `nonlocal count`, then `count += 1`, then `return f\"{prefix}-{count:03}\"`.",
+      ],
+      errorHints: [
+        { pattern: "UnboundLocalError", hint: "Assigning to `count` inside `next_ticket` makes it local. Declare `nonlocal count` first." },
+        { pattern: "'NoneType' object is not callable", hint: "`make_queue` must `return` the inner function." },
+      ],
+      why:
+        "Each queue is a separate closure with its own `count`, so triage and pharmacy never interfere, and nothing outside can reset or skip a number by accident. That's private state, without a global in sight.",
+      solution: `def make_queue(prefix):
+    count = 0
+    def next_ticket():
+        nonlocal count
+        count += 1
+        return f"{prefix}-{count:03}"
+    return next_ticket
+
+
+triage = make_queue("T")
+pharmacy = make_queue("P")
+print(triage(), triage(), pharmacy(), triage())`,
+    },
+    {
+      id: "budget",
+      kind: "code",
+      challenge: true,
+      title: "A spending budget",
+      brief:
+        "Write `make_budget(limit)` that returns **two** functions as a tuple: `spend(amount)` and `remaining()`. `spend` records the spending and returns `True` if it fits in what's left; otherwise it returns `False` and records nothing. `remaining()` returns how much is left.",
+      starterCode: `def make_budget(limit):
+    pass
+
+
+spend, remaining = make_budget(5000)
+print(spend(1200), spend(4000), spend(800))
+print("Left:", remaining())
+`,
+      checks: [
+        {
+          expr: "(lambda s, r: (s(1200), s(4000), s(800), r()))(*make_budget(5000)) == (True, False, True, 3000)",
+          label: "Spending that fits goes through; the rest is declined",
+          failHint: "Check `spent + amount > limit` before recording anything.",
+        },
+        { expr: "(lambda s, r: (s(5000), r()))(*make_budget(5000)) == (True, 0)", label: "Spending exactly the limit is allowed", failHint: "Only decline when the total would go **over** the limit." },
+        {
+          expr: "(lambda a, b: (a[0](300), b[0](50), a[1](), b[1]()))(make_budget(1000), make_budget(100)) == (True, True, 700, 50)",
+          label: "Two budgets are independent",
+          failHint: "Keep `spent` inside `make_budget`, so each budget has its own.",
+        },
+      ],
+      hints: [
+        "Set `spent = 0` in `make_budget` and define both inner functions there, then `return spend, remaining`.",
+        "`spend` needs `nonlocal spent` because it assigns to it. `remaining` only reads it, so it doesn't.",
+      ],
+      errorHints: [{ pattern: "cannot unpack non-iterable NoneType", hint: "`make_budget` should return both inner functions: `return spend, remaining`." }],
+      why:
+        "Both functions share the same `spent`, closed over from the same call, so spending through one shows up in the other, while a second budget gets a completely separate `spent`. You've built a tiny object out of functions; classes, later in the track, do the same job with their own syntax.",
+      solution: `def make_budget(limit):
+    spent = 0
+
+    def spend(amount):
+        nonlocal spent
+        if spent + amount > limit:
+            return False
+        spent += amount
+        return True
+
+    def remaining():
+        return limit - spent
+
+    return spend, remaining
+
+
+spend, remaining = make_budget(5000)
+print(spend(1200), spend(4000), spend(800))
+print("Left:", remaining())`,
+    },
+    {
+      id: "explain-scope",
+      kind: "explain",
+      title: "Names, scopes and closures",
+      prompt:
+        "Explain how Python decides which variable a name refers to, why assigning to a name inside a function can cause an `UnboundLocalError`, and what a closure is useful for.",
+      ideas: [
+        { label: "Local, enclosing, global, built-in", patterns: ["legb", "enclosing", "built.?in", "global"], nudge: "In what order does Python look for a name?" },
+        { label: "Assigning makes a name local to the whole function", patterns: ["assign", "unbound", "before", "whole function"], nudge: "What does an assignment inside a function do to that name?" },
+        { label: "global and nonlocal allow assigning to outer names", patterns: ["global", "nonlocal"], nudge: "How can a function change a variable outside it?" },
+        { label: "A closure remembers variables from where it was made", patterns: ["remember", "closure", "keeps?", "factory", "state"], nudge: "What does an inner function keep after the outer one returns?" },
+      ],
+      modelAnswer:
+        "Python looks a name up in order: the local function, any enclosing functions, the global scope, then the built-ins, and uses the first match (LEGB). Assigning to a name anywhere inside a function makes it local for the whole function, so reading it before the assignment raises `UnboundLocalError`; `global` or `nonlocal` tell Python to assign to the outer variable instead. A closure is an inner function that remembers the variables of the function that made it, even after that function returns. That's useful for factories like a converter with its rate built in, and for keeping private state like a ticket counter.",
+    },
+  ],
+};
