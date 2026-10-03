@@ -10,6 +10,7 @@ import StreakCalendar from "@/components/dashboard/StreakCalendar";
 import WeekBars from "@/components/dashboard/WeekBars";
 import TrackCatalog from "@/components/tracks/TrackCatalog";
 import { stepMeta } from "@/components/lab/StepRail";
+import RichText from "@/components/lab/RichText";
 import {
   bonusLabs,
   enrolledTrack,
@@ -131,7 +132,9 @@ function ContinueCard({ track, progress }: { track: Track; progress: Progress })
           {started ? "Continue" : "Up next"} · Module {mi + 1} · {labLabel(lab, track)}
         </p>
         <h2 className="mt-3 font-display text-3xl font-semibold leading-tight">{lab.title}</h2>
-        <p className="mt-2 max-w-md text-sm leading-relaxed text-ink/60">{lab.summary}</p>
+        <p className="mt-2 max-w-md text-sm leading-relaxed text-ink/60">
+          <RichText text={lab.summary} />
+        </p>
 
         <div className="mt-6 flex gap-1.5">
           {lab.steps.map((s) => {

@@ -7,6 +7,7 @@ import type { Lab } from "@/lib/curriculum/types";
 import { bonusLabs, isLabDone, isModuleDone, labNumber, moduleOfLab, nextLabAfter, trackOfLab, tracksUnlockedBy } from "@/lib/curriculum";
 import { getProgress } from "@/lib/progress";
 import Logo from "@/components/landing/Logo";
+import RichText from "./RichText";
 
 export default function LabComplete({ lab }: { lab: Lab }) {
   const progress = getProgress();
@@ -112,7 +113,9 @@ export default function LabComplete({ lab }: { lab: Lab }) {
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-sun">Optional bonus</p>
               <p className="mt-1 font-display text-lg font-semibold">{bonusModule.title}</p>
-              <p className="mt-0.5 text-sm text-ink/60">{bonusModule.summary}</p>
+              <p className="mt-0.5 text-sm text-ink/60">
+                <RichText text={bonusModule.summary} />
+              </p>
             </div>
             <Link href={`/labs/${bonus.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink underline-offset-4 hover:underline">
               Open it <ArrowRight size={15} />

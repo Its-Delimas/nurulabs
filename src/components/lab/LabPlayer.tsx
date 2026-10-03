@@ -25,6 +25,7 @@ import ScenarioView from "./steps/ScenarioView";
 import ParsonsView from "./steps/ParsonsView";
 import TraceTableView from "./steps/TraceTableView";
 import BugView from "./steps/BugView";
+import RichText from "./RichText";
 import LabComplete from "./LabComplete";
 import LabOverview from "./LabOverview";
 
@@ -329,7 +330,9 @@ function LockedLab({
 
           <section className="rounded-3xl bg-paper p-7 ring-1 ring-ink/10 md:p-8">
             <p className="eyebrow text-ink/45">What you&apos;ll learn here</p>
-            <p className="mt-3 leading-relaxed text-ink/70">{lab.summary}</p>
+            <p className="mt-3 leading-relaxed text-ink/70">
+              <RichText text={lab.summary} />
+            </p>
             <ul className="mt-5 space-y-2.5">
               {lab.skills.map((s) => (
                 <li key={s} className="flex items-start gap-3 text-sm text-ink/75">

@@ -131,7 +131,9 @@ function ModuleSection({
             </div>
           )}
           <h3 className={`font-display text-2xl font-semibold tracking-tight ${locked ? "text-ink/50" : "text-ink"}`}>{mod.title}</h3>
-          <p className="mt-1 max-w-2xl text-ink/60">{mod.summary}</p>
+          <p className="mt-1 max-w-2xl text-ink/60">
+            <RichText text={mod.summary} />
+          </p>
           <p className="mt-2 text-xs font-medium text-ink/45">
             {labs.length
               ? `${plural(labs.length, "lab")} · ${activities} activities`
@@ -242,7 +244,9 @@ function LabCard({
       </div>
       <div className={locked ? "opacity-55" : ""}>
         <p className="mt-2 font-display text-lg font-semibold leading-snug text-ink">{lab.title}</p>
-        <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-ink/60">{lab.summary}</p>
+        <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-ink/60">
+          <RichText text={lab.summary} />
+        </p>
 
         {/* One segment per activity, coloured by kind; finished ones stay solid */}
         <div className="mt-4 flex gap-1" aria-hidden>

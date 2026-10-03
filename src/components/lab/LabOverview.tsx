@@ -9,6 +9,7 @@ import { isLabDone, labAccess, labLabel, moduleLabs, moduleOfLab, nextLabAfter, 
 import { useProgress } from "@/lib/progress";
 import Logo from "@/components/landing/Logo";
 import { stepMeta, stepTone, stepTones } from "./StepRail";
+import RichText from "./RichText";
 
 const nouns: Record<string, [string, string]> = {
   Lesson: ["lesson", "lessons"],
@@ -123,7 +124,9 @@ export default function LabOverview({
         <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0 space-y-14">
             <motion.section {...rise} transition={{ delay: 0.05 }}>
-              <p className="max-w-3xl text-xl leading-relaxed text-ink/75">{lab.summary}</p>
+              <p className="max-w-3xl text-xl leading-relaxed text-ink/75">
+                <RichText text={lab.summary} />
+              </p>
               <div className="mt-6 lg:hidden">{startButton}</div>
             </motion.section>
 
@@ -184,7 +187,9 @@ export default function LabOverview({
               <section>
                 <p className="eyebrow text-lime-deep">Module {mod.index + 1}</p>
                 <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">{mod.module.title}</h2>
-                <p className="mt-1 max-w-2xl text-ink/60">{mod.module.summary}</p>
+                <p className="mt-1 max-w-2xl text-ink/60">
+                  <RichText text={mod.module.summary} />
+                </p>
                 <ol className="mt-6 grid gap-3 sm:grid-cols-2">
                   {siblings.map((l) => {
                     const here = l.slug === lab.slug;
@@ -279,7 +284,9 @@ export default function LabOverview({
               <div className="rounded-2xl bg-paper p-5 ring-1 ring-ink/10">
                 <p className="text-xs font-semibold text-ink/45">After this: {labLabel(next, track)}</p>
                 <p className="mt-0.5 font-display font-semibold text-ink">{next.title}</p>
-                <p className="mt-1 line-clamp-2 text-sm text-ink/55">{next.summary}</p>
+                <p className="mt-1 line-clamp-2 text-sm text-ink/55">
+                  <RichText text={next.summary} />
+                </p>
               </div>
             )}
           </motion.aside>

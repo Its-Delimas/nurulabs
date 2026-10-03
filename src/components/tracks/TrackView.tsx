@@ -19,6 +19,7 @@ import {
 } from "@/lib/curriculum";
 import { useProgress } from "@/lib/progress";
 import ProgressBar from "@/components/ui/ProgressBar";
+import RichText from "@/components/lab/RichText";
 import EnrollAction from "./EnrollAction";
 import TrackSyllabus from "./TrackSyllabus";
 import SectionHeading from "./SectionHeading";
@@ -232,7 +233,9 @@ export default function TrackView({ track }: { track: Track }) {
                       </span>
                     )}
                   </div>
-                  <p className="p-5 text-sm leading-relaxed text-ink/65">{p.summary}</p>
+                  <p className="p-5 text-sm leading-relaxed text-ink/65">
+                    <RichText text={p.summary} />
+                  </p>
                 </>
               );
               return (
