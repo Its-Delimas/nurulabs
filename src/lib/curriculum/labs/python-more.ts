@@ -683,84 +683,131 @@ with open("weather.json") as f:
     data = json.load(f)
 `;
 
+const PAYLOAD = `import json
+
+# The body of an API response: recent transactions from a payments service
+payload = """{"status": "ok", "results": [
+  {"id": "T1", "amount": 1500, "phone": "0712345678"},
+  {"id": "T2", "amount": null, "phone": "0733111222"},
+  {"id": "T3", "phone": "0700555666"},
+  {"id": "T4", "amount": "2,500", "phone": "0799000111"},
+  {"id": "T5", "amount": 800, "phone": null},
+  {"id": "T6", "amount": 950, "phone": "0711222333"},
+  {"id": "T7", "amount": 3200.5, "phone": "0722333444"}
+]}"""
+`;
+
 export const pyModules: Lab = {
   slug: "py-modules",
   runExamples: true,
   number: "11",
-  title: "Modules, JSON & APIs",
-  subject: "import & json",
+  title: "JSON & APIs",
+  subject: "json, nested data, APIs",
   summary:
-    "Stand on other people's code with import, and read JSON — the format almost every web API speaks — by working with a week of Kisumu weather data.",
-  minutes: 30,
+    "JSON is the format almost every web API speaks. Convert between JSON text and Python, find your way around nested responses, write JSON files, and check data from an API before you trust it, using a week of Kisumu weather.",
+  minutes: 40,
   kind: "lab",
   skills: [
-    "Import and use Python's built-in modules",
-    "Read JSON into dictionaries and lists",
-    "Navigate a nested API-style response",
+    "Convert between JSON text and Python objects",
+    "Navigate nested API responses",
+    "Write JSON files that people and programs can read",
+    "Validate data from an API before trusting it",
   ],
   files: { "weather.json": WEATHER_JSON },
   steps: [
     {
-      id: "import",
+      id: "json-basics",
       kind: "concept",
-      title: "Don't write what already exists",
+      title: "JSON: the language of APIs",
       body: [
-        "Python ships with a big **standard library** of modules: `math`, `statistics`, `random`, `datetime`, `json`, `csv`… You bring one in with `import`.",
-        "`import statistics` gives you `statistics.mean(...)`. `from statistics import median` brings in just one name.",
-        "Beyond the standard library are **packages** other people publish — NumPy, pandas, scikit-learn. That's what the AI & ML track is built on, and they work the same way: `import pandas as pd`.",
+        "**JSON** (JavaScript Object Notation) is plain text for structured data. Web APIs, configuration files and mobile apps all use it, because almost every programming language can read it.",
+        "It maps neatly onto Python: a JSON object `{...}` becomes a `dict`, an array `[...]` becomes a `list`, strings and numbers stay strings and numbers, `true`/`false` become `True`/`False`, and `null` becomes `None`.",
+        "`json.loads(text)` turns JSON text into Python objects, and `json.dumps(obj)` turns Python objects back into JSON text. (The `s` stands for string; `json.load` and `json.dump`, without it, work with files.)",
       ],
-      code: `import math
-import statistics
-from datetime import date
+      code: `import json
 
-print(math.sqrt(144))                   # 12.0
-print(statistics.median([3, 9, 4]))     # 4
-print(date(2026, 4, 15).strftime("%A")) # Wednesday`,
-      keyIdea: "`import module` then `module.thing` — the dot tells you where each tool comes from.",
+text = '{"name": "Amina", "age": 24, "verified": true, "phone": null, "loans": [1500, 3000]}'
+member = json.loads(text)          # JSON text -> Python objects
+print(member)
+print(type(member), member["verified"], member["phone"])
+
+print(json.dumps(member))          # Python objects -> JSON text`,
+      keyIdea: "JSON objects become dicts, arrays become lists, `true`/`false`/`null` become `True`/`False`/`None`. `loads` reads text; `dumps` writes it.",
+    },
+    {
+      id: "predict-dumps",
+      kind: "predict",
+      title: "What survives the trip?",
+      prompt: "A dictionary with a number key and a tuple value, turned into JSON. What's printed?",
+      code: `import json
+
+data = {1: ("maize", 50)}
+print(json.dumps(data))`,
+      options: ['{"1": ["maize", 50]}', '{1: ("maize", 50)}', '{"1": ("maize", 50)}', "TypeError: keys must be str"],
+      answer: 0,
+      explanation:
+        "JSON is simpler than Python. Object keys are always strings, so the key `1` becomes `\"1\"`, and JSON has no tuples, only arrays, so the tuple becomes a list. Load it back and you get `{\"1\": [\"maize\", 50]}`, which is not quite what you started with: something to remember when you save Python data as JSON.",
     },
     {
       id: "json-tree",
       kind: "experiment",
       title: "Find your way around a JSON response",
       prompt:
-        "This is what a weather API sends back. Click on values, lists and objects — and watch the Python you'd write to reach each one.",
+        "This is what a weather API sends back. Click on values, lists and objects, and watch the Python you'd write to reach each one.",
       widget: "json-explorer",
       observe:
-        "JSON is just dictionaries and lists nested inside each other. Curly braces become dicts, square brackets become lists — so you reach any value by chaining keys and positions: `data[\"daily\"][1][\"rain_mm\"]`.",
-    },
-    {
-      id: "predict-mean",
-      kind: "predict",
-      title: "Use a module",
-      prompt: "What does this print?",
-      code: `import statistics
-print(statistics.mean([2, 4, 9]))`,
-      options: ["5", "15", "5.0", "It raises an error"],
-      answer: 0,
-      explanation:
-        "`statistics.mean` adds the numbers (15) and divides by how many there are (3). With whole numbers that divide evenly it gives back `5`. You didn't have to write the average yourself — that's the point of modules.",
+        "JSON is dictionaries and lists nested inside each other. Curly braces become dicts and square brackets become lists, so you reach any value by chaining keys and positions: `data[\"daily\"][1][\"rain_mm\"]`.",
     },
     {
       id: "api",
       kind: "concept",
       title: "What an API actually is",
       body: [
-        "An **API** is a way for programs to ask other programs for data. Your code sends a request — \"weather for Kisumu, next 7 days\" — and gets back a response, almost always as **JSON** text.",
-        "`json.load(file)` turns JSON text into Python dicts and lists; `json.dumps(obj)` turns them back into text you can save or send.",
-        "Python here runs inside your browser without internet access, so we saved a response to `weather.json` for you. The code to read it is exactly what you'd use on a live API response.",
+        "An **API** is a way for programs to ask other programs for data. Your code sends a **request** to a web address, such as \"the forecast for Kisumu, 7 days\", and gets back a **response**: a status code saying how it went, and a body, almost always JSON.",
+        "Status codes tell you what happened: 200 means OK; 404, not found; 401 or 403, you're not allowed; 429, too many requests, so slow down; 500, the server itself failed. Check the status before you use the body.",
+        "The `requests` package is the usual way to call an API from your own computer. Python here runs in your browser without internet access, so this lab uses a saved response, `weather.json`. Reading it with `json.load` gives you exactly what `response.json()` would.",
       ],
-      code: LOAD_WEATHER + `
-print(data["city"])                  # Kisumu
-print(len(data["daily"]))            # 7 days
-print(data["daily"][0]["rain_mm"])   # 4.2`,
-      keyIdea: "An API response is JSON; `json.load` turns it into the dicts and lists you already know how to use.",
+      code: `import requests      # a package: install it with  pip install requests
+
+response = requests.get(
+    "https://api.example.com/v1/forecast",
+    params={"city": "Kisumu", "days": 7},     # sent as ?city=Kisumu&days=7
+    timeout=10,
+)
+response.raise_for_status()      # stop with an error unless the status is 2xx
+data = response.json()           # the JSON body, as dicts and lists
+print(data["daily"][0]["rain_mm"])`,
+      run: false,
+      keyIdea: "Request, status code, JSON body. Check the status, then `.json()` (or `json.load`) gives you dicts and lists.",
+    },
+    {
+      id: "navigate",
+      kind: "experiment",
+      title: "Navigate the response",
+      prompt:
+        "The saved response is loaded into `data`. Reach each goal with one expression. Start with `data.keys()` to see what's at the top level.",
+      widget: "playground",
+      playground: {
+        setup: LOAD_WEATHER,
+        goals: [
+          { text: "The city's name.", answer: "data['city']", hint: "`data[\"city\"]`." },
+          { text: "How many days are in the forecast?", answer: "len(data['daily'])", hint: "`data[\"daily\"]` is a list: `len(...)` counts it." },
+          { text: "The rainfall on the **third** day.", answer: "data['daily'][2]['rain_mm']", hint: "Positions start at 0: `data[\"daily\"][2][\"rain_mm\"]`." },
+          { text: "The unit used for temperature.", answer: "data['units']['temp']", hint: "`data[\"units\"]` is another dictionary." },
+          { text: "A list of every day's maximum temperature.", answer: "[d['temp_max'] for d in data['daily']]", hint: "A comprehension over `data[\"daily\"]`." },
+          { text: "Ask for a key that isn't there, and read the error.", raises: "KeyError", example: "data['humidity']", hint: "`data[\"humidity\"]`. Use `data.get(\"humidity\")` when a key might be missing." },
+        ],
+        suggestions: ["data.keys()", "data['daily'][0]", "data.get('humidity', 'not given')", "json.dumps(data['units'])"],
+      },
+      observe:
+        "Every answer was a chain of keys and positions: dict, then list, then dict. When an API might leave a field out, `.get()` with a default is safer than square brackets, which raise a `KeyError`.",
     },
     {
       id: "week-rain",
       kind: "code",
       title: "Summarise the week",
       brief:
-        "`weather.json` holds seven days of Kisumu weather. Load it, then compute `total_rain` for the week and find `wettest_day` — the **date** with the most rain.",
+        "`weather.json` holds seven days of Kisumu weather. Load it, then compute `total_rain` for the week and find `wettest_day`: the **date** with the most rain.",
       starterCode: LOAD_WEATHER + `
 total_rain = 0
 wettest_day = None
@@ -769,17 +816,15 @@ print(f"Total: {total_rain} mm, wettest: {wettest_day}")
 `,
       checks: [
         { expr: "abs(total_rain - 74.0) < 0.001", label: "`total_rain` is 74.0 mm", failHint: 'Loop over `data["daily"]` and add up each day\'s `"rain_mm"`.' },
-        { expr: 'wettest_day == "2026-04-15"', label: "`wettest_day` is the date with the most rain", failHint: "Track the biggest `rain_mm` seen so far, and remember that day's `\"date\"`." },
+        { expr: 'wettest_day == "2026-04-15"', label: "`wettest_day` is the date with the most rain", failHint: "Find the day with the biggest `rain_mm`, then take its `\"date\"`." },
       ],
       hints: [
-        '`for day in data["daily"]:` gives you one dictionary per day.',
+        '`sum(day["rain_mm"] for day in data["daily"])` adds up the rain.',
         "`max(data[\"daily\"], key=lambda d: d[\"rain_mm\"])` finds the wettest day's dictionary in one line.",
       ],
-      errorHints: [
-        { pattern: "KeyError", hint: "Check the exact key names in the JSON — click around the explorer from the previous step if you need to." },
-      ],
+      errorHints: [{ pattern: "KeyError", hint: "Check the exact key names in the JSON: click around the explorer if you need to." }],
       why:
-        "Load, navigate, aggregate: the same three moves work on any API — weather, prices, exchange rates. Once data is in dicts and lists, it's just Python.",
+        "Load, navigate, aggregate: the same three moves work on any API, whether it's weather, prices or exchange rates. Once data is in dicts and lists, it's just Python.",
       solution: LOAD_WEATHER + `
 total_rain = sum(day["rain_mm"] for day in data["daily"])
 wettest = max(data["daily"], key=lambda d: d["rain_mm"])
@@ -788,27 +833,100 @@ wettest_day = wettest["date"]
 print(f"Total: {total_rain} mm, wettest: {wettest_day}")`,
     },
     {
+      id: "writing-json",
+      kind: "concept",
+      title: "Writing JSON, and what it can't hold",
+      body: [
+        "`json.dump(obj, f)` writes JSON to a file. Add `indent=2` to make it readable for people, and `ensure_ascii=False` to keep letters like the ũ in Mũrang'a as they are, instead of codes like `\\u0169`.",
+        "JSON only knows dicts, lists, strings, numbers, booleans and `None`. A date, a set or anything else raises a `TypeError`. Convert those first, a date to a string or a set to a sorted list, or pass `default=str` to convert whatever JSON can't hold into text.",
+      ],
+      code: `import json
+from datetime import date
+
+report = {"city": "Kisumu", "rainy_days": 5, "towns": ["Kisumu", "Mũrang'a"]}
+
+with open("report.json", "w", encoding="utf-8") as f:
+    json.dump(report, f, indent=2, ensure_ascii=False)
+print(open("report.json", encoding="utf-8").read())
+
+try:
+    json.dumps({"day": date(2026, 4, 15), "tags": {"rain"}})
+except TypeError as e:
+    print("TypeError:", e)
+
+print(json.dumps({"day": date(2026, 4, 15)}, default=str))`,
+      keyIdea: "`json.dump(obj, f, indent=2, ensure_ascii=False)` writes readable JSON. Convert dates and sets first, or use `default=str`.",
+    },
+    {
+      id: "validate-api",
+      kind: "code",
+      title: "Don't trust the response",
+      brief:
+        "Data from an API can be incomplete or wrong. Parse `payload` and go through its `results`. Keep a transaction in `valid` only if its `amount` is a number (an `int` or a `float`) and it has a `phone` that isn't `None`. Count the others in `rejected`, and add up the valid amounts in `total`.",
+      starterCode: PAYLOAD + `
+valid = []
+rejected = 0
+total = 0
+
+print([t["id"] for t in valid], rejected, total)
+`,
+      checks: [
+        { expr: "[t['id'] for t in valid] == ['T1', 'T6', 'T7']", label: "Three transactions are valid", failHint: "Use `t.get(\"amount\")` (a missing key gives `None`) and check it with `isinstance(amount, (int, float))`." },
+        { expr: "rejected == 4", label: "Four are rejected", failHint: "A null amount, a missing amount, an amount sent as text, and a null phone." },
+        { expr: "total == 5650.5", label: "`total` is 5,650.5", failHint: "Add up the amounts of the valid transactions only." },
+        {
+          expr: "(lambda ns: [t['id'] for t in ns['valid']] == ['A'] and ns['rejected'] == 1)(_with(payload='{\"results\": [{\"id\": \"A\", \"amount\": 5, \"phone\": \"07\"}, {\"id\": \"B\"}]}'))",
+          label: "Works on another response",
+          failHint: "Work everything out from `payload`.",
+        },
+      ],
+      hints: [
+        "`response = json.loads(payload)`, then loop over `response[\"results\"]`.",
+        "`amount = t.get(\"amount\")`; keep it if `isinstance(amount, (int, float)) and t.get(\"phone\") is not None`.",
+      ],
+      why:
+        "Four of seven records would have crashed a sum or quietly corrupted a report: a `null`, a missing key, a number sent as text with a comma, and a missing phone. `.get()` let you inspect without crashing, and `isinstance` caught the wrong types. Validate at the edge, and everything after can trust the data.",
+      solution: PAYLOAD + `
+response = json.loads(payload)
+valid = []
+rejected = 0
+for t in response["results"]:
+    amount = t.get("amount")
+    if isinstance(amount, (int, float)) and t.get("phone") is not None:
+        valid.append(t)
+    else:
+        rejected += 1
+total = sum(t["amount"] for t in valid)
+
+print([t["id"] for t in valid], rejected, total)`,
+    },
+    {
       id: "report",
       kind: "code",
       challenge: true,
       title: "Send back a report",
       brief:
-        "Build a summary dictionary and turn it into JSON text stored in `report`. It must have the keys `\"city\"`, `\"avg_temp\"` (use the `statistics` module, rounded to 1 decimal) and `\"hot_days\"` (how many days had `temp_max` above 30).",
+        "Build a summary dictionary and turn it into JSON text stored in `report`. It must have the keys `\"city\"`, `\"avg_temp\"` (use the `statistics` module, rounded to 1 decimal place) and `\"hot_days\"` (how many days had a `temp_max` above 30). Also save it to `summary.json`, indented by 2 spaces.",
       starterCode: LOAD_WEATHER + `import statistics
 
 `,
       checks: [
         { expr: "isinstance(report, str)", label: "`report` is JSON text (a string)", failHint: "Use `json.dumps(summary)` to turn your dictionary into text." },
         { expr: 'json.loads(report)["city"] == "Kisumu"', label: "It includes the city", failHint: 'Include `"city": data["city"]` in your summary.' },
-        { expr: 'json.loads(report)["avg_temp"] == 29.1', label: "`avg_temp` is 29.1", failHint: "`round(statistics.mean(temps), 1)` where `temps` is a list of every `temp_max`." },
-        { expr: 'json.loads(report)["hot_days"] == 2', label: "`hot_days` is 2", failHint: "Count days where `temp_max > 30` — strictly above." },
+        { expr: 'json.loads(report)["avg_temp"] == 29.1', label: "`avg_temp` is 29.1", failHint: "`round(statistics.mean(temps), 1)`, where `temps` is a list of every `temp_max`." },
+        { expr: 'json.loads(report)["hot_days"] == 2', label: "`hot_days` is 2", failHint: "Count the days where `temp_max > 30`: strictly above." },
+        {
+          expr: "json.load(open('summary.json', encoding='utf-8')) == json.loads(report) and '\\n  \"' in open('summary.json', encoding='utf-8').read()",
+          label: "`summary.json` holds the same summary, indented",
+          failHint: "`with open(\"summary.json\", \"w\", encoding=\"utf-8\") as f: json.dump(summary, f, indent=2)`.",
+        },
       ],
       hints: [
         '`temps = [d["temp_max"] for d in data["daily"]]` collects the temperatures.',
-        "`report = json.dumps({\"city\": ..., \"avg_temp\": ..., \"hot_days\": ...})`",
+        "`report = json.dumps(summary)` for the text, and `json.dump(summary, f, indent=2)` inside a `with open(...)` for the file.",
       ],
       why:
-        "You consumed JSON and produced JSON — which is exactly what a web service does. When you deploy a model later, it will take JSON in and send predictions out the same way.",
+        "You consumed JSON and produced JSON, which is exactly what a web service does. When you deploy a model later, it will take JSON in and send predictions out in the same way.",
       solution: LOAD_WEATHER + `import statistics
 
 temps = [d["temp_max"] for d in data["daily"]]
@@ -818,20 +936,25 @@ summary = {
     "hot_days": len([t for t in temps if t > 30]),
 }
 report = json.dumps(summary)
+
+with open("summary.json", "w", encoding="utf-8") as f:
+    json.dump(summary, f, indent=2)
+
 print(report)`,
     },
     {
       id: "explain-json",
       kind: "explain",
       title: "From API to Python",
-      prompt: "Explain what happens between asking a weather API for data and having a number like tomorrow's rainfall in a Python variable.",
+      prompt: "Explain what happens between asking a weather API for data and having a number like tomorrow's rainfall in a Python variable, and what you should check along the way.",
       ideas: [
-        { label: "The API responds with JSON text", patterns: ["json", "text", "response"], nudge: "What format does the API send back?" },
+        { label: "A request gets a response with a status code and a JSON body", patterns: ["request", "response", "status", "200", "json"], nudge: "What does the API send back?" },
         { label: "json.load/loads converts it to dicts and lists", patterns: ["json\\.load", "loads?", "convert", "dict", "list", "parse"], nudge: "How does JSON text become Python objects?" },
         { label: "You navigate with keys and positions", patterns: ["key", "index", "\\[", "position", "navigate", "access"], nudge: "How do you reach one value inside the nested data?" },
+        { label: "Check the data before trusting it", patterns: ["check", "valid", "missing", "\\.get", "none", "null", "isinstance", "trust"], nudge: "What could be wrong with the data, and how would you catch it?" },
       ],
       modelAnswer:
-        "The API sends back its answer as JSON text. `json.load` (or `json.loads`) converts that text into Python dictionaries and lists, and then you reach the value you want with keys and positions — like `data[\"daily\"][1][\"rain_mm\"]`.",
+        "Your code sends a request and the API sends back a response with a status code and a body of JSON text. After checking the status is OK, `json.loads` (or `response.json()`) converts the text into Python dictionaries and lists, and you reach the value you want with keys and positions, like `data[\"daily\"][1][\"rain_mm\"]`. Along the way, check the data: use `.get()` for fields that might be missing, and test that values are the right type and not `None` before you use them.",
     },
   ],
 };
