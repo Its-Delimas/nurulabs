@@ -225,13 +225,15 @@ export const pyDicts: Lab = {
   title: "Dictionaries: Data With Labels",
   subject: "Dicts & records",
   summary:
-    "Look values up by name instead of position. A dictionary is one row of data; a list of dictionaries is a whole dataset.",
-  minutes: 30,
+    "Look values up by name instead of position. A dictionary is one row of data; a list of dictionaries is a whole dataset. Learn every dictionary method, nested dictionaries, grouping, and finding the key with the biggest value.",
+  minutes: 40,
   kind: "lab",
   skills: [
     "Store and look up labelled data in dictionaries",
     "Read KeyErrors and use `.get()` safely",
     "Loop over a list of records like a dataset",
+    "Change dictionaries with update, pop, setdefault and |",
+    "Build nested dictionaries and group records by a key",
   ],
   steps: [
     {
@@ -430,6 +432,133 @@ for farm in farms:
         maize_counties.append(farm["county"])
 
 print(total_yield, maize_counties)`,
+    },
+    {
+      id: "dict-methods",
+      kind: "concept",
+      title: "Every way to change a dictionary",
+      body: [
+        "`update(other)` adds or overwrites several keys at once. `pop(key)` removes a key **and hands back its value**; `pop(key, default)` won't crash if the key is missing. `del d[key]` just deletes. `setdefault(key, value)` adds the key only if it isn't there yet, and returns whatever is there.",
+        "`keys()`, `values()` and `items()` are live **views** of the dictionary: wrap them in `list(...)` to keep a snapshot. `d1 | d2` merges two dictionaries into a new one, with `d2` winning any clashes, and `dict(zip(keys, values))` builds one from two lists.",
+        "Dictionaries remember the order keys were added. Keys must be values that can't change: strings, numbers and tuples work, but a list as a key raises `TypeError: unhashable type`.",
+      ],
+      code: `prices = {"maize": 58, "beans": 120}
+prices.update({"rice": 150, "maize": 60})   # add rice, change maize
+old = prices.pop("beans")                    # remove, and keep the value
+prices.setdefault("sugar", 140)              # add only if missing
+print(prices, old)
+
+print(list(prices.keys()), sum(prices.values()))
+
+defaults = {"unit": "kg", "currency": "KSh"}
+record = defaults | {"crop": "maize"}        # a new, merged dict
+print(record)
+
+print(dict(zip(["maize", "beans"], [90, 50])))   # {'maize': 90, 'beans': 50}
+
+towns = {(-1.29, 36.82): "Nairobi"}         # tuples can be keys
+print(towns[(-1.29, 36.82)])`,
+      keyIdea: "`update`, `pop`, `setdefault` and `|` change and combine dictionaries; `keys()`, `values()` and `items()` let you look inside.",
+    },
+    {
+      id: "predict-pop",
+      kind: "predict",
+      title: "What's left in stock?",
+      prompt: "A shop's stock changes three times. What's printed?",
+      code: `stock = {"maize": 10, "beans": 4}
+stock["maize"] -= 3
+removed = stock.pop("beans", 0)
+missing = stock.pop("rice", 0)
+print(stock, removed, missing)`,
+      options: ["{'maize': 7} 4 0", "{'maize': 7, 'beans': 4} 4 0", "{'maize': 10} 4 0", "KeyError: 'rice'"],
+      answer: 0,
+      explanation:
+        "Maize drops to 7. `pop(\"beans\", 0)` removes beans and returns its value, 4. `pop(\"rice\", 0)` finds no rice, so instead of a KeyError it returns the default, 0, and changes nothing.",
+    },
+    {
+      id: "nested-dicts",
+      kind: "concept",
+      title: "Dictionaries inside dictionaries, and the key with the biggest value",
+      body: [
+        "A dictionary's values can be anything, including lists and other dictionaries. `prices[\"Kisumu\"][\"beans\"]` reads left to right: first the county, then the crop. A **dictionary of lists** is the natural way to **group** records: one key per group, a list of members as the value.",
+        "To find the key with the biggest value, pass the dictionary's own `get` method as the key function: `max(sales, key=sales.get)` compares the keys by their values and gives you the winning key. `sorted(sales, key=sales.get, reverse=True)` ranks every key the same way.",
+      ],
+      code: `prices = {
+    "Nairobi": {"maize": 71, "beans": 130},
+    "Kisumu": {"maize": 57, "beans": 118},
+}
+print(prices["Kisumu"]["beans"])     # 118
+
+by_crop = {}
+for county, crop in [("Nakuru", "maize"), ("Kisii", "tea"), ("Bungoma", "maize")]:
+    by_crop.setdefault(crop, []).append(county)
+print(by_crop)   # {'maize': ['Nakuru', 'Bungoma'], 'tea': ['Kisii']}
+
+sales = {"Gikomba": 4650, "Kongowea": 4050, "Kibuye": 5670}
+print(max(sales, key=sales.get))                 # Kibuye
+print(sorted(sales, key=sales.get, reverse=True))`,
+      keyIdea: "Nest dictionaries for two-level lookups; group with `setdefault(key, []).append(...)`; find the top key with `max(d, key=d.get)`.",
+    },
+    {
+      id: "group-farms",
+      kind: "code",
+      title: "Group the farms by county",
+      brief:
+        "Build `by_county`, a dictionary mapping each county to the **list** of crops grown there, in the order they appear. Then set `busiest`, the county with the most farms. It's tested on other data too.",
+      starterCode: `farms = [
+    ("Nakuru", "maize"),
+    ("Kisii", "tea"),
+    ("Nakuru", "beans"),
+    ("Kericho", "tea"),
+    ("Nakuru", "potatoes"),
+    ("Kisii", "bananas"),
+]
+
+by_county = {}
+busiest = None
+
+print(by_county, busiest)
+`,
+      checks: [
+        {
+          expr: "by_county == {'Nakuru': ['maize', 'beans', 'potatoes'], 'Kisii': ['tea', 'bananas'], 'Kericho': ['tea']}",
+          label: "Every county maps to its list of crops",
+          failHint: "For each `(county, crop)`, `by_county.setdefault(county, []).append(crop)`.",
+        },
+        { expr: "busiest == 'Nakuru'", label: "`busiest` is Nakuru, with three farms", failHint: "Compare counties by how many crops they have: `max(by_county, key=lambda c: len(by_county[c]))`, or count in a loop." },
+        {
+          expr: "(lambda ns: ns['by_county'] == {'A': ['x'], 'B': ['y', 'z']} and ns['busiest'] == 'B')(_with(farms=[('A', 'x'), ('B', 'y'), ('B', 'z')]))",
+          label: "Works on other farms",
+          failHint: "Build everything from `farms`, not by hand.",
+        },
+      ],
+      hints: [
+        "`for county, crop in farms:` then `by_county.setdefault(county, []).append(crop)`.",
+        "For `busiest`, loop over `by_county.items()` keeping the county with the longest list.",
+      ],
+      why:
+        "`setdefault(county, [])` hands you the county's list, creating an empty one the first time, so one line both starts and extends each group. Grouping records is what pandas' `groupby` does at scale in the data tracks.",
+      solution: `farms = [
+    ("Nakuru", "maize"),
+    ("Kisii", "tea"),
+    ("Nakuru", "beans"),
+    ("Kericho", "tea"),
+    ("Nakuru", "potatoes"),
+    ("Kisii", "bananas"),
+]
+
+by_county = {}
+for county, crop in farms:
+    by_county.setdefault(county, []).append(crop)
+
+busiest = None
+most = 0
+for county, crops in by_county.items():
+    if len(crops) > most:
+        most = len(crops)
+        busiest = county
+
+print(by_county, busiest)`,
     },
     {
       id: "crop-counts",
