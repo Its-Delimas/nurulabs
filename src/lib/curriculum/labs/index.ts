@@ -3,11 +3,11 @@ import { pyValues, pyDecisions } from "./python-basics";
 import { pyNumbers, pyTextInput, pyTruth } from "./python-first-steps";
 import { pyWhile, pyLoopTools } from "./python-lists-loops";
 import { pyReferences, pyTuples, pyFormatting } from "./python-sequences";
-import { pySets } from "./python-collections-more";
+import { pySets, pyComprehensions } from "./python-collections-more";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
-import { pyStrings, pyToolkit, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
+import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
 import { scientificLabs } from "./ai-scientific";
@@ -48,10 +48,10 @@ export const pythonLabs: Lab[] = [
   pyTuples,
   pyStrings,
   pyFormatting,
-  pyToolkit,
   pyFunctions,
   pyDicts,
   pySets,
+  pyComprehensions,
   pyFiles,
   pyErrors,
   pyModules,

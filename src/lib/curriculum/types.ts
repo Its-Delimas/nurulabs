@@ -49,7 +49,6 @@ export type WidgetId =
   | "decision-threshold"
   | "csv-rows"
   | "line-fit"
-  | "comprehension-builder"
   | "try-except"
   | "json-explorer"
   | "array-ops"

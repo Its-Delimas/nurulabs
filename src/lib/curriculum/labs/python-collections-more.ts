@@ -193,3 +193,256 @@ print(loyal, total_customers, only_gikomba)`,
     },
   ],
 };
+
+export const pyComprehensions: Lab = {
+  slug: "py-comprehensions",
+  runExamples: true,
+  number: "16",
+  title: "Comprehensions",
+  subject: "List, dict and set comprehensions",
+  summary:
+    "Build a whole list, dictionary or set in one readable line: transform every item, keep only the ones you want, choose between two values, and flatten a table. And learn when a plain loop reads better.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Write list comprehensions that transform and filter",
+    "Build dictionaries and sets with comprehensions",
+    "Choose a value with if/else inside a comprehension",
+    "Flatten a table, and know when a loop is clearer",
+  ],
+  steps: [
+    {
+      id: "anatomy",
+      kind: "concept",
+      title: "A loop in one line",
+      body: [
+        "So many loops have the same shape: start an empty list, loop, append something. A **list comprehension** writes that shape in one line: `[p * 2 for p in prices]` means \"give me `p * 2` for each `p` in `prices`\".",
+        "Add an `if` at the end to keep only some items: `[p for p in prices if p > 100]`. Read it left to right: **what** to keep, **for** each item **in** a list, **if** a condition holds.",
+        "The comprehension builds a brand-new list and leaves the original alone, exactly like the loop it replaces.",
+      ],
+      code: `prices = [120, 95, 140, 110]
+
+# The loop...
+big = []
+for p in prices:
+    if p > 100:
+        big.append(p)
+
+# ...and the same thing as a comprehension
+big = [p for p in prices if p > 100]
+
+in_usd = [round(p / 129, 2) for p in prices]
+labels = [f"KSh {p}" for p in prices]
+print(big, in_usd, labels)`,
+      keyIdea: "`[expression for item in items if condition]`: what to keep, for each item, if it passes.",
+    },
+    {
+      id: "comp-playground",
+      kind: "experiment",
+      title: "Build it in one line",
+      prompt: "Each goal is one comprehension. Type it at the prompt and compare the result with what you expected. Try one with a mistake in it too, and read the error.",
+      widget: "playground",
+      playground: {
+        setup: `temps = [34, 36, 38, 37, 35, 39, 41]      # °C, one week in Garissa
+markets = ["Gikomba", "Kongowea", "Kibuye", "Marikiti"]
+prices = [58, 65, 53, 61]`,
+        goals: [
+          { text: "Convert every temperature to Fahrenheit (°C × 9 / 5 + 32).", answer: "[t * 9 / 5 + 32 for t in temps]", uses: "\\bfor\\b", hint: "`[t * 9 / 5 + 32 for t in temps]`." },
+          { text: "Keep only the days above 37 °C.", answer: "[t for t in temps if t > 37]", uses: "\\bif\\b", hint: "Put the condition at the end: `[t for t in temps if t > 37]`." },
+          { text: "Upper-case every market name.", answer: "[m.upper() for m in markets]", uses: "\\bfor\\b", hint: "`[m.upper() for m in markets]`." },
+          {
+            text: "Make a dictionary from each market to its price.",
+            answer: "{m: p for m, p in zip(markets, prices)}",
+            uses: "\\{.*for",
+            hint: "Curly braces and `key: value`: `{m: p for m, p in zip(markets, prices)}`.",
+          },
+          {
+            text: "Make a **set** of the markets' first letters.",
+            answer: "{m[0] for m in markets}",
+            uses: "\\{.*for",
+            hint: "Curly braces without a colon make a set: `{m[0] for m in markets}`.",
+          },
+        ],
+        suggestions: ["[t - 30 for t in temps]", "[len(m) for m in markets]", "sum(p for p in prices)", "[p for p in prices if p > 60]"],
+      },
+      observe:
+        "Square brackets make a list, curly braces with `key: value` make a dictionary, and curly braces with a single value make a set. The `if` at the end filters; the expression at the front transforms. Notice the set of first letters has only three members: G, K and M. Sets keep each value once, even in a comprehension.",
+    },
+    {
+      id: "predict-squares",
+      kind: "predict",
+      title: "Filter, then transform",
+      prompt: "What does this comprehension build?",
+      code: `print([n * n for n in range(5) if n % 2 == 0])`,
+      options: ["[0, 4, 16]", "[0, 1, 4, 9, 16]", "[4, 16]", "[1, 9]"],
+      answer: 0,
+      explanation:
+        "`range(5)` gives 0 to 4. The `if` keeps the even ones, 0, 2 and 4, and the expression squares each: `[0, 4, 16]`. The filter decides **which** items; the expression decides **what** they become.",
+    },
+    {
+      id: "more-shapes",
+      kind: "concept",
+      title: "Choosing values, flattening, and when to stop",
+      body: [
+        "To **choose** a value for every item rather than filter, put a conditional expression at the front: `[\"hot\" if t > 37 else \"ok\" for t in temps]`. An `if` at the **end** filters; `if ... else` at the **front** chooses.",
+        "Two `for`s flatten a table, read in the same order as nested loops: `[x for row in sales for x in row]`. And without brackets, the same shape feeds `sum`, `any` or `all` directly: `sum(p for p in prices if p > 60)`.",
+        "Comprehensions are for building a collection. If you need more than one condition and one loop, or you're doing something with side effects like printing, a plain loop is clearer. Readable beats short.",
+      ],
+      code: `temps = [34, 38, 41, 36]
+labels = ["hot" if t > 37 else "ok" for t in temps]
+print(labels)              # ['ok', 'hot', 'hot', 'ok']
+
+sales = [[1200, 950], [800, 1050], [1500, 1320]]
+every_sale = [x for row in sales for x in row]
+print(every_sale)          # [1200, 950, 800, 1050, 1500, 1320]
+
+print(sum(x for x in every_sale if x > 1000))   # 5070`,
+      keyIdea: "`if` at the end filters; `a if c else b` at the front chooses. Two `for`s flatten. When it stops reading easily, use a loop.",
+    },
+    {
+      id: "predict-choose",
+      kind: "predict",
+      title: "Choose, don't filter",
+      prompt: "A conditional expression inside a comprehension. What's printed?",
+      code: `print(["even" if n % 2 == 0 else "odd" for n in [3, 4]])`,
+      options: ["['odd', 'even']", "['even']", "['odd']", "[3, 4]"],
+      answer: 0,
+      explanation:
+        "With `if ... else` at the front, every item produces a value, so the list has the same length as the input: 3 becomes `'odd'` and 4 becomes `'even'`. Nothing is filtered out.",
+    },
+    {
+      id: "rewrite",
+      kind: "code",
+      title: "Rewrite the loops",
+      brief:
+        "The starter code builds three lists with loops. Rewrite each as a **comprehension** (no `.append`), producing the same `hot_days`, `in_f` and `clean_names`.",
+      starterCode: `temps = [34, 36, 38, 37, 35, 39, 41]
+names = ["  achieng", "OTIENO ", " wanjiru "]
+
+hot_days = []
+for t in temps:
+    if t >= 38:
+        hot_days.append(t)
+
+in_f = []
+for t in temps:
+    in_f.append(round(t * 9 / 5 + 32, 1))
+
+clean_names = []
+for n in names:
+    clean_names.append(n.strip().title())
+
+print(hot_days, in_f, clean_names)
+`,
+      checks: [
+        { expr: "hot_days == [38, 39, 41]", label: "`hot_days` is `[38, 39, 41]`", failHint: "`[t for t in temps if t >= 38]`." },
+        { expr: "in_f == [93.2, 96.8, 100.4, 98.6, 95.0, 102.2, 105.8]", label: "`in_f` converts every day", failHint: "`[round(t * 9 / 5 + 32, 1) for t in temps]`." },
+        { expr: "clean_names == ['Achieng', 'Otieno', 'Wanjiru']", label: "`clean_names` is tidy", failHint: "`[n.strip().title() for n in names]`." },
+        { expr: "'.append' not in _source", label: "No loops with `.append` left", failHint: "Replace each loop-and-append with a single comprehension." },
+      ],
+      hints: ["Each loop becomes `name = [ ... for ... in ... ]`.", "The `if` inside the first loop moves to the end of its comprehension."],
+      why:
+        "Three loops, nine lines, became three lines that say what each list **is**: the hot days, the temperatures in Fahrenheit, the cleaned names. That's the real win of comprehensions: the code reads like the definition of the result.",
+      solution: `temps = [34, 36, 38, 37, 35, 39, 41]
+names = ["  achieng", "OTIENO ", " wanjiru "]
+
+hot_days = [t for t in temps if t >= 38]
+in_f = [round(t * 9 / 5 + 32, 1) for t in temps]
+clean_names = [n.strip().title() for n in names]
+
+print(hot_days, in_f, clean_names)`,
+    },
+    {
+      id: "price-table",
+      kind: "code",
+      title: "A price lookup table",
+      brief:
+        "Rows from a market survey, some with a missing price. Build `price_of`, a **dictionary** from crop to price that skips rows where the price is `None`, with one dict comprehension. Then build `expensive`, a **set** of the crops priced over 100, with a set comprehension.",
+      starterCode: `rows = [
+    {"crop": "maize", "price": 58},
+    {"crop": "beans", "price": None},
+    {"crop": "rice", "price": 150},
+    {"crop": "sugar", "price": 140},
+]
+
+price_of = {}
+expensive = set()
+
+print(price_of, sorted(expensive))
+`,
+      checks: [
+        { expr: "price_of == {'maize': 58, 'rice': 150, 'sugar': 140}", label: "`price_of` skips the missing price", failHint: "`{r[\"crop\"]: r[\"price\"] for r in rows if r[\"price\"] is not None}`." },
+        { expr: "expensive == {'rice', 'sugar'}", label: "`expensive` is rice and sugar", failHint: "Build it from `price_of`: `{c for c, p in price_of.items() if p > 100}`." },
+        { expr: "_source.count('for') >= 2 and '.append' not in _source", label: "Built with comprehensions", failHint: "Use one dict comprehension and one set comprehension." },
+      ],
+      hints: ["A dict comprehension: `{key: value for r in rows if condition}`.", "Loop over `price_of.items()` to get each crop and its price."],
+      why:
+        "Filtering out missing values while building a lookup table is a two-in-one move you'll make constantly with real data. And building the set from `price_of` rather than `rows` meant the missing price was already gone.",
+      solution: `rows = [
+    {"crop": "maize", "price": 58},
+    {"crop": "beans", "price": None},
+    {"crop": "rice", "price": 150},
+    {"crop": "sugar", "price": 140},
+]
+
+price_of = {r["crop"]: r["price"] for r in rows if r["price"] is not None}
+expensive = {c for c, p in price_of.items() if p > 100}
+
+print(price_of, sorted(expensive))`,
+    },
+    {
+      id: "flatten",
+      kind: "code",
+      challenge: true,
+      title: "Summarise the sales table",
+      brief:
+        "`sales` has one row per stall and one column per day. With comprehensions only, build `totals` (a dict from each stall's name to its total), `big_sales` (every single sale over 1,200, in table order), and `labels` (`\"busy\"` for each stall whose total is over 5,000, otherwise `\"quiet\"`, in stall order).",
+      starterCode: `names = ["Achieng", "Otieno", "Wanjiru"]
+sales = [
+    [1200, 950, 1100, 1400],
+    [800, 1050, 990, 1210],
+    [1500, 1320, 1250, 1600],
+]
+
+`,
+      checks: [
+        { expr: "totals == {'Achieng': 4650, 'Otieno': 4050, 'Wanjiru': 5670}", label: "`totals` maps each stall to its total", failHint: "`{n: sum(r) for n, r in zip(names, sales)}`." },
+        { expr: "big_sales == [1400, 1210, 1500, 1320, 1250, 1600]", label: "`big_sales` flattens the table and filters", failHint: "Two `for`s: `[x for row in sales for x in row if x > 1200]`." },
+        { expr: "labels == ['quiet', 'quiet', 'busy']", label: "`labels` chooses busy or quiet for every stall", failHint: "Choose at the front: `[\"busy\" if totals[n] > 5000 else \"quiet\" for n in names]`." },
+        { expr: "'.append' not in _source", label: "No loops with `.append`", failHint: "Build all three with comprehensions." },
+      ],
+      hints: [
+        "`zip(names, sales)` pairs each name with its row.",
+        "For `labels`, loop over `names` and look up each total in `totals`.",
+      ],
+      why:
+        "A dict comprehension, a flattening comprehension with a filter, and a choosing comprehension: the three shapes you've learned, used together. Each line still reads as a definition of its result.",
+      solution: `names = ["Achieng", "Otieno", "Wanjiru"]
+sales = [
+    [1200, 950, 1100, 1400],
+    [800, 1050, 990, 1210],
+    [1500, 1320, 1250, 1600],
+]
+
+totals = {n: sum(r) for n, r in zip(names, sales)}
+big_sales = [x for row in sales for x in row if x > 1200]
+labels = ["busy" if totals[n] > 5000 else "quiet" for n in names]
+
+print(totals, big_sales, labels)`,
+    },
+    {
+      id: "explain-comprehensions",
+      kind: "explain",
+      title: "Read a comprehension aloud",
+      prompt: "Explain how to read `[p * 2 for p in prices if p > 100]`, and when you'd use a plain loop instead.",
+      ideas: [
+        { label: "It builds a new list from another", patterns: ["new list", "builds?", "creates?", "makes? a list"], nudge: "What does the comprehension produce?" },
+        { label: "The expression at the front is what each item becomes", patterns: ["p \\* 2", "double", "times 2", "expression", "each item becomes", "transform"], nudge: "What does `p * 2` at the front do?" },
+        { label: "The if at the end filters which items are kept", patterns: ["filter", "only", "keep", "if p > 100", "over 100", "more than 100"], nudge: "What does the `if` at the end do?" },
+        { label: "Use a loop when it gets complicated or has side effects", patterns: ["complicated", "complex", "readab", "side effect", "print", "several", "multiple", "clearer"], nudge: "When would a loop be better?" },
+      ],
+      modelAnswer:
+        "It reads as \"give me p times 2, for each p in prices, but only if p is over 100\". It builds a new list from `prices`: the `if` at the end filters which items are kept, and the expression at the front, `p * 2`, says what each kept item becomes. I'd use a plain loop instead when the logic needs several conditions or loops, or does something with side effects like printing, because then a loop is clearer to read.",
+    },
+  ],
+};

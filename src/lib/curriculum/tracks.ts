@@ -26,7 +26,7 @@ export const tracks: Track[] = [
         slug: "py-lists-loops",
         title: "Lists & loops",
         summary: "One name for many values, and code that repeats for every one of them.",
-        labs: ["py-lists", "py-loops", "py-while", "py-loop-tools", "py-toolkit"],
+        labs: ["py-lists", "py-loops", "py-while", "py-loop-tools"],
         milestone: {
           title: "Code that scales to any amount of data",
           description: "You can hold a column of data and total, count, filter or search it with loops of every kind.",
@@ -46,9 +46,8 @@ export const tracks: Track[] = [
         slug: "py-collections",
         title: "Collections",
         summary: "Dictionaries, sets, comprehensions, the collections module and pattern matching.",
-        labs: ["py-dicts", "py-sets"],
+        labs: ["py-dicts", "py-sets", "py-comprehensions"],
         planned: [
-          { title: "Comprehensions", summary: "List, dict and set comprehensions with conditions, and when a plain loop reads better." },
           { title: "The collections Module", summary: "Counter, defaultdict, deque and namedtuple: the standard library's power tools." },
           { title: "Pattern Matching with match", summary: "match and case for values, sequences, dictionaries and guards." },
           { title: "Project: Chama Contributions Ledger", summary: "Reconcile a savings group's contributions and loans with dictionaries, sets and counters." },
@@ -242,7 +241,7 @@ export const tracks: Track[] = [
         code: `print([n * 10 for n in [1, 5, 2, 8] if n > 2])`,
         options: ["[50, 80]", "[10, 50, 20, 80]", "[5, 8]", "[50, 20, 80]"],
         answer: 0,
-        lab: "py-toolkit",
+        lab: "py-comprehensions",
       },
       {
         prompt: "What does this print?",
