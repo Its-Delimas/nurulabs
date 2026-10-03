@@ -12,6 +12,7 @@ import { pyGenerators, pyItertools } from "./python-iteration";
 import { pyPaths, pyContext } from "./python-files-more";
 import { pyImports, pyDatetime, pyRegex } from "./python-stdlib";
 import { pyInheritance, pySpecialMethods, pyDataclasses } from "./python-oop";
+import { pyCleanCode } from "./python-professional";
 import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
@@ -81,6 +82,7 @@ export const pythonLabs: Lab[] = [
   pyDataclasses,
   pyProjectWallet,
   pyDebugging,
+  pyCleanCode,
   pyProjectMarket,
 ];
 
