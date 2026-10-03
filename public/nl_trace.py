@@ -108,7 +108,10 @@ def _nl_trace(code, max_steps=500, inputs=None):
                 params = str(_inspect.signature(v))
             except (TypeError, ValueError):
                 params = "(…)"
-            info = {"k": "function", "type": "function", "name": v.__qualname__, "params": params}
+            # "make_counter.<locals>.next_ticket" reads better as "next_ticket";
+            # what it remembers from make_counter is listed underneath.
+            name = v.__qualname__.rsplit(".<locals>.", 1)[-1]
+            info = {"k": "function", "type": "function", "name": name, "params": params}
             if v.__closure__:
                 info["attrs"] = [
                     [name, encode(cell.cell_contents, heap, depth)]
