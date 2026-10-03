@@ -9,6 +9,7 @@ import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectChama, pyProjectMarket } from "./python-project";
 import { pyArguments, pyScope, pyFunctional, pyRecursion, pyDecorators } from "./python-functions-more";
 import { pyGenerators, pyItertools } from "./python-iteration";
+import { pyPaths } from "./python-files-more";
 import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
@@ -65,6 +66,7 @@ export const pythonLabs: Lab[] = [
   pyMatch,
   pyProjectChama,
   pyFiles,
+  pyPaths,
   pyErrors,
   pyModules,
   pyClasses,

@@ -709,7 +709,7 @@ print(crop_counts)`,
   ],
 };
 
-const PRICES_CSV = `market,county,month,maize_ksh
+export const PRICES_CSV = `market,county,month,maize_ksh
 Gikomba,Nairobi,2025-06,71
 Kongowea,Mombasa,2025-06,76
 Kibuye,Kisumu,2025-06,66
