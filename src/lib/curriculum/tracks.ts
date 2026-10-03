@@ -36,10 +36,7 @@ export const tracks: Track[] = [
         slug: "py-sequences-text",
         title: "Sequences & text",
         summary: "How Python stores values, tuples and unpacking, and text from messy input to polished output.",
-        labs: ["py-references", "py-tuples", "py-strings"],
-        planned: [
-          { title: "Formatting Output", summary: "f-string formats for money, percentages and tables, and repr versus str." },
-        ],
+        labs: ["py-references", "py-tuples", "py-strings", "py-formatting"],
         milestone: {
           title: "Fluent with sequences and text",
           description: "You know what a variable really points at, and you can clean, slice, split and format any text.",

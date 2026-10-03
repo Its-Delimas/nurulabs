@@ -2,7 +2,7 @@ import type { Lab } from "../types";
 import { pyValues, pyDecisions } from "./python-basics";
 import { pyNumbers, pyTextInput, pyTruth } from "./python-first-steps";
 import { pyWhile, pyLoopTools } from "./python-lists-loops";
-import { pyReferences, pyTuples } from "./python-sequences";
+import { pyReferences, pyTuples, pyFormatting } from "./python-sequences";
 import { pyLists, pyLoops } from "./python-collections";
 import { pyFunctions, pyDicts, pyFiles } from "./python-data";
 import { pyProjectMarket } from "./python-project";
@@ -46,6 +46,7 @@ export const pythonLabs: Lab[] = [
   pyReferences,
   pyTuples,
   pyStrings,
+  pyFormatting,
   pyToolkit,
   pyFunctions,
   pyDicts,

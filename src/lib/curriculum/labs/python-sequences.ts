@@ -508,3 +508,234 @@ print(roster)`,
     },
   ],
 };
+
+export const pyFormatting: Lab = {
+  slug: "py-formatting",
+  runExamples: true,
+  number: "13",
+  title: "Formatting Output",
+  subject: "f-string formats, repr and str",
+  summary:
+    "Numbers people can read at a glance: money with thousands separators, percentages, signed changes, aligned columns for receipts and reports, and the repr that shows you exactly what a value is when you're debugging.",
+  minutes: 35,
+  kind: "lab",
+  skills: [
+    "Format numbers with decimals, separators, percentages and signs",
+    "Align text in columns to print tables and receipts",
+    "See exactly what a value is with repr() and f\"{x=}\"",
+    "Recognise .format() and % formatting in older code",
+  ],
+  steps: [
+    {
+      id: "specs",
+      kind: "concept",
+      title: "Format specifiers",
+      body: [
+        "Inside an f-string, a colon after the value adds a **format specifier**: `{amount:,.2f}` means \"thousands separators, two decimals\". The value doesn't change; only how it's shown.",
+        "The pieces you'll use most: `.2f` for a fixed number of decimals, `,` for thousands separators, `%` for a percentage (`0.072` shows as `7.2%` with `.1%`), `+` to always show the sign, `05d` to pad a whole number with zeros, and `e` for scientific notation.",
+        "Formatting rounds what's **shown**, so it's the right way to display money and the wrong way to calculate with it: keep the full value for the maths, format it at the end.",
+      ],
+      code: `amount = 1250000.5
+rate = 0.072
+change = -3.5
+
+print(f"KSh {amount:,.2f}")    # KSh 1,250,000.50
+print(f"{rate:.1%}")           # 7.2%
+print(f"{change:+.1f}%")       # -3.5%
+print(f"{42:05d}")             # 00042
+print(f"{0.000123:.2e}")       # 1.23e-04
+print(f"{amount:,.0f}")        # 1,250,000`,
+      keyIdea: "`{value:spec}` controls how a value is shown: `,.2f` for money, `.1%` for rates, `+` for signs.",
+    },
+    {
+      id: "format-playground",
+      kind: "experiment",
+      title: "Make it readable",
+      prompt:
+        "Each goal shows the text you're aiming for. Write an f-string (or call `format(value, spec)`) using the values below, and the console shows the string you made, quotes and all.",
+      widget: "playground",
+      playground: {
+        setup: `price = 1234.5
+share = 0.4137     # 41.37%
+growth = -0.052    # down 5.2%
+code = 7
+name = "Kibuye"`,
+        goals: [
+          { text: "Show `price` as `'1,234.50'`.", answer: "f\"{price:,.2f}\"", hint: "`f\"{price:,.2f}\"`: a comma for thousands, two decimals." },
+          { text: "Show `share` as `'41.4%'`.", answer: "f\"{share:.1%}\"", hint: "`.1%` multiplies by 100, shows one decimal and adds the % sign." },
+          { text: "Show `growth` as `'-5.2%'`, with its sign.", answer: "f\"{growth:+.1%}\"", hint: "Add `+` to always show the sign: `{growth:+.1%}`." },
+          { text: "Pad `code` with zeros to three digits: `'007'`.", answer: "f\"{code:03d}\"", hint: "`03d`: a whole number, 3 wide, padded with zeros." },
+          { text: "Right-align `name` in 10 characters: `'    Kibuye'`.", answer: "f\"{name:>10}\"", hint: "`>10` right-aligns in a space 10 characters wide." },
+        ],
+        suggestions: ["f\"{price:.0f}\"", "f\"{name:^12}\"", "f\"{name:*<10}\"", "f\"{share:.2f}\"", "format(price, ',')"],
+      },
+      observe:
+        "The specifier after the colon only changes how the value is shown: `price` itself is still 1234.5. Width and alignment (`>10`, `<10`, `^10`) pad with spaces, or any character you put before the arrow (`*<10`). Percentages multiply by 100 for you, so store rates as fractions and let the format do the rest.",
+    },
+    {
+      id: "predict-format",
+      kind: "predict",
+      title: "Three formats",
+      prompt: "One line, three specifiers. What's printed?",
+      code: `print(f"{0.5:.0%} | {1234567:,} | {3.14159:.2f}")`,
+      options: ["50% | 1,234,567 | 3.14", "0.5% | 1234567 | 3.14", "50% | 1.234.567 | 3.142", "0% | 1,234,567 | 3.14"],
+      answer: 0,
+      explanation:
+        "`.0%` turns 0.5 into `50%` (no decimals). `,` adds thousands separators to the integer. `.2f` rounds 3.14159 to two decimals: `3.14`.",
+    },
+    {
+      id: "columns",
+      kind: "concept",
+      title: "Columns and tables",
+      body: [
+        "A width with an arrow aligns text: `<` left, `>` right, `^` centre. `{name:<12}` pads the name with spaces to 12 characters, so the next column starts in the same place on every line. Numbers usually read best right-aligned, so their digits line up.",
+        "Combine width with the other specifiers: `{cost:>10,.2f}` is a 10-character, right-aligned, two-decimal amount with separators. Print the same widths on every line, header included, and you have a table.",
+      ],
+      code: `items = [("Tomatoes", 2.5, 80), ("Onions", 1, 120), ("Sukuma wiki", 3, 30)]
+
+print(f"{'Item':<12}{'Kg':>5}{'KSh':>10}")
+print("-" * 27)
+total = 0
+for name, kg, price in items:
+    cost = kg * price
+    total += cost
+    print(f"{name:<12}{kg:>5}{cost:>10,.2f}")
+print("-" * 27)
+print(f"{'Total':<12}{'':>5}{total:>10,.2f}")`,
+      keyIdea: "Give every line the same widths (`<12`, `>5`, `>10`) and the columns line up into a table.",
+    },
+    {
+      id: "repr",
+      kind: "concept",
+      title: "repr, str and the debugging =",
+      body: [
+        "Every value has two text forms. `str(x)` is for people, and it's what `print` shows. `repr(x)` is for programmers: it shows quotes around strings and makes invisible things visible, like a trailing space or a `\\n`. Containers like lists always show the repr of their items, which is why you see quotes inside a printed list.",
+        "`f\"{x!r}\"` uses the repr in an f-string, and `f\"{x=}\"` prints the expression **and** its value, `kg=2.5`, which is the fastest way to debug.",
+        "You'll also meet two older styles in other people's code: `\"{} sold {}\".format(name, kg)` and `\"%s sold %.1f\" % (name, kg)`. They do the same job; f-strings are the modern choice.",
+      ],
+      code: `name = "Achieng "
+print(name)          # Achieng   (the trailing space is invisible)
+print(repr(name))    # 'Achieng ' (now you can see it)
+print([name])        # lists show the repr
+
+kg = 2.5
+print(f"{kg=}")         # kg=2.5
+print(f"{kg * 80 = }")  # kg * 80 = 200.0
+
+# Older styles you'll see in other people's code
+print("{} sold {} kg".format(name.strip(), kg))
+print("%s sold %.1f kg" % (name.strip(), kg))`,
+      keyIdea: "`print` shows `str`; `repr` shows exactly what a value is. `f\"{x=}\"` is a one-line debug print.",
+    },
+    {
+      id: "predict-repr",
+      kind: "predict",
+      title: "Quotes or not?",
+      prompt: "The number five, two ways, and the text five. What's printed?",
+      code: `print(repr("5"), repr(5), str("5"))`,
+      options: ["'5' 5 5", "5 5 5", "'5' '5' '5'", "\"5\" 5 \"5\""],
+      answer: 0,
+      explanation:
+        "`repr` of a string includes its quotes, `'5'`, so you can tell it from the number 5, whose repr is just `5`. `str(\"5\")` is the text itself, shown without quotes. When a value looks right but behaves wrong, `repr` usually reveals why.",
+    },
+    {
+      id: "receipt",
+      kind: "code",
+      title: "Print the receipt",
+      brief:
+        "Print a receipt for the basket: for each item, the name **left-aligned in 12** characters, the kilograms **right-aligned in 5**, and the cost (kg × price) **right-aligned in 10 with two decimals and separators**. Finish with a `Total` line in the same layout, and keep the total in `total`.",
+      starterCode: `basket = [("Tomatoes", 2.5, 80), ("Onions", 1, 120), ("Sukuma wiki", 3, 30)]
+
+total = 0
+for name, kg, price in basket:
+    cost = kg * price
+    total += cost
+    print(name, kg, cost)
+
+print("Total", total)
+`,
+      checks: [
+        { expr: "total == 410", label: "`total` is 410", failHint: "Add each `cost` to `total` inside the loop." },
+        {
+          expr: "all(f'{n:<12}{k:>5}{k * p:>10,.2f}' in _stdout for n, k, p in basket)",
+          label: "Every item line uses the 12 / 5 / 10 layout",
+          failHint: "Print each line as `f\"{name:<12}{kg:>5}{cost:>10,.2f}\"`.",
+        },
+        { expr: "'410.00' in _stdout and 'Total' in _stdout", label: "A Total line with 410.00", failHint: "Format the total the same way: `{total:>10,.2f}`." },
+      ],
+      hints: ["`f\"{name:<12}{kg:>5}{cost:>10,.2f}\"` does the whole item line.", "For the total line, use an empty string for the middle column: `f\"{'Total':<12}{'':>5}{total:>10,.2f}\"`."],
+      why:
+        "The same three widths on every line turned loose numbers into a receipt anyone can read. Notice the maths used the full values; only the printing was rounded.",
+      solution: `basket = [("Tomatoes", 2.5, 80), ("Onions", 1, 120), ("Sukuma wiki", 3, 30)]
+
+total = 0
+for name, kg, price in basket:
+    cost = kg * price
+    total += cost
+    print(f"{name:<12}{kg:>5}{cost:>10,.2f}")
+
+print(f"{'Total':<12}{'':>5}{total:>10,.2f}")`,
+    },
+    {
+      id: "report",
+      kind: "code",
+      challenge: true,
+      title: "The monthly sales report",
+      brief:
+        "A cooperative's board wants a sales table. For each `(month, sales, growth)` in `report`, print the month **left in 6**, sales **right in 12 with thousands separators** (no decimals), and growth **right in 9 as a signed percentage with one decimal** (`+5.0%`). Then print the best month's name in a line like `Best month: Mar`, and store it in `best_month`.",
+      starterCode: `report = [
+    ("Jan", 125000, 0.05),
+    ("Feb", 118750, -0.05),
+    ("Mar", 142500, 0.2),
+    ("Apr", 139650, -0.02),
+]
+
+`,
+      checks: [
+        {
+          expr: "all(f'{m:<6}{s:>12,}{g:>+9.1%}' in _stdout for m, s, g in report)",
+          label: "Every month uses the 6 / 12 / 9 layout",
+          failHint: "Print each line as `f\"{month:<6}{sales:>12,}{growth:>+9.1%}\"`.",
+        },
+        { expr: "best_month == 'Mar' and 'Best month: Mar' in _stdout", label: "The best month is March", failHint: "Track the highest sales as you loop, or use `max(report, key=...)`." },
+        { expr: "_with(report=[('Jan', 1, 0.0), ('Feb', 9, 0.5)])['best_month'] == 'Feb'", label: "Works for other reports", failHint: "Work out `best_month` from `report`, not by hand." },
+      ],
+      hints: [
+        "Unpack in the loop: `for month, sales, growth in report:`.",
+        "`{growth:>+9.1%}` puts the sign, the percentage and the width together. For the best month, keep the highest sales seen so far.",
+      ],
+      why:
+        "Signed percentages make ups and downs obvious at a glance, and right-aligned figures line up their digits for easy comparison. That's the difference between a list of numbers and a report a board can read in ten seconds.",
+      solution: `report = [
+    ("Jan", 125000, 0.05),
+    ("Feb", 118750, -0.05),
+    ("Mar", 142500, 0.2),
+    ("Apr", 139650, -0.02),
+]
+
+best_month = None
+best_sales = -1
+for month, sales, growth in report:
+    print(f"{month:<6}{sales:>12,}{growth:>+9.1%}")
+    if sales > best_sales:
+        best_sales = sales
+        best_month = month
+
+print(f"Best month: {best_month}")`,
+    },
+    {
+      id: "explain-format",
+      kind: "explain",
+      title: "Why format at all?",
+      prompt: "Explain why it's worth formatting numbers before showing them to people, and when `repr` is more useful than `print`.",
+      ideas: [
+        { label: "Readable numbers: separators, decimals, percentages", patterns: ["separator", "comma", "decimal", "percent", "readab", "easier to read"], nudge: "What makes `1250000.5` hard to read?" },
+        { label: "Format for display, keep full values for maths", patterns: ["display", "show", "keep.*(full|value)", "calculat", "rounded only", "only changes"], nudge: "Should you round before or after calculating?" },
+        { label: "Aligned columns make tables", patterns: ["align", "column", "table", "width", "line up"], nudge: "How do you print a neat table?" },
+        { label: "repr shows exactly what a value is (quotes, spaces)", patterns: ["repr", "quote", "space", "exact", "debug", "invisible"], nudge: "How would you spot a trailing space in a name?" },
+      ],
+      modelAnswer:
+        "Formatting makes numbers readable: thousands separators, a fixed number of decimals, percentages and signs let people take in a figure at a glance, and aligned columns turn lines of numbers into a table. Formatting only changes how a value is shown, so I keep the full values for calculations and format at the end. When I'm debugging, `repr` (or `f\"{x=}\"`) is better than `print` because it shows exactly what a value is, including quotes and invisible things like trailing spaces.",
+    },
+  ],
+};
