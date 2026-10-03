@@ -22,7 +22,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import RichText from "@/components/lab/RichText";
 import EnrollAction from "./EnrollAction";
 import TrackSyllabus from "./TrackSyllabus";
-import SectionHeading from "./SectionHeading";
+import SectionHeading from "@/components/ui/SectionHeading";
 import { plural } from "./format";
 import { isModuleLocked } from "./moduleLock";
 

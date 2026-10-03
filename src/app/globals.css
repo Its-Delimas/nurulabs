@@ -85,6 +85,24 @@ html {
   html {
     scroll-behavior: auto;
   }
+  /* CSS animations and transitions too (framer-motion is handled by
+     MotionProvider). */
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* One visible focus style for keyboard users, everywhere. In the base layer,
+   so a component's own focus ring (a utility class) still wins. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-lime-deep);
+    outline-offset: 2px;
+  }
 }
 
 body {

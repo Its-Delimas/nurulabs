@@ -9,7 +9,7 @@ import { isLabDone, isModuleDone, labAccess, labLabel, moduleLabs } from "@/lib/
 import type { Progress } from "@/lib/progress";
 import { stepMeta, stepTone as tone, stepTones as tones } from "@/components/lab/StepRail";
 import RichText from "@/components/lab/RichText";
-import SectionHeading from "./SectionHeading";
+import SectionHeading from "@/components/ui/SectionHeading";
 import { plural } from "./format";
 import { isModuleLocked } from "./moduleLock";
 
