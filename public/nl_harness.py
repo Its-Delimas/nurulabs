@@ -198,6 +198,10 @@ def _nl_fresh_imports():
 def _nl_run(code, ns, inputs=None):
     _nl_fresh_imports()
     _nl_state["source"] = code
+    # Let tracebacks quote the learner's lines, as they would from a real file.
+    import linecache
+
+    linecache.cache["main.py"] = (len(code), None, code.splitlines(True), "main.py")
     _nl_state["inputs"] = list(inputs or [])
     # Learner code runs as the main program, so `if __name__ == "__main__":` works.
     ns.setdefault("__name__", "__main__")
