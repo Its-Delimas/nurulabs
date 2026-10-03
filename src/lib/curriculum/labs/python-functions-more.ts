@@ -969,3 +969,318 @@ print(clean_names)`,
     },
   ],
 };
+
+const ORG = `org = {
+    "name": "Wambui", "role": "CEO", "reports": [
+        {"name": "Otieno", "role": "Finance", "reports": [
+            {"name": "Akinyi", "role": "Accountant", "reports": []},
+            {"name": "Kamau", "role": "Cashier", "reports": []},
+        ]},
+        {"name": "Fatuma", "role": "Operations", "reports": [
+            {"name": "Juma", "role": "Field officer", "reports": [
+                {"name": "Chebet", "role": "Intern", "reports": []},
+            ]},
+        ]},
+        {"name": "Baraka", "role": "IT", "reports": []},
+    ],
+}
+`;
+
+export const pyRecursion: Lab = {
+  slug: "py-recursion",
+  runExamples: true,
+  number: "23",
+  title: "Recursion",
+  subject: "Base cases and the call stack",
+  summary:
+    "A function that calls itself can solve a problem by solving a smaller copy of it. Learn base cases, watch the call stack grow and shrink, walk nested data like folders and organisation charts, and know when a loop is the better tool.",
+  minutes: 40,
+  kind: "lab",
+  skills: [
+    "Write recursive functions with a base case and a recursive case",
+    "Follow the call stack as recursive calls return",
+    "Walk nested data such as folders and organisation charts",
+    "Recognise a RecursionError, and when a loop is the better tool",
+  ],
+  steps: [
+    {
+      id: "calls-itself",
+      kind: "concept",
+      title: "A function that calls itself",
+      body: [
+        "A **recursive** function solves a problem by calling itself on a smaller version of the same problem. Counting down from 3 is: say 3, then count down from 2.",
+        "Every recursive function has two parts. The **base case** is a version so small that the answer is obvious, so the function returns without calling itself. The **recursive case** makes the problem smaller and calls the function again. Without a base case, it would never stop.",
+        "To add up a list: an empty list adds up to 0 (the base case); any other list is its first number plus the total of the rest (the recursive case).",
+      ],
+      code: `def countdown(n):
+    if n == 0:                  # base case: stop
+        print("Liftoff!")
+        return
+    print(n)
+    countdown(n - 1)            # recursive case: a smaller problem
+
+countdown(3)
+
+def total(numbers):
+    if not numbers:             # an empty list adds up to 0
+        return 0
+    return numbers[0] + total(numbers[1:])
+
+print(total([5, 10, 20]))       # 35`,
+      keyIdea: "A recursive function needs a base case that stops, and a recursive case that calls itself on a smaller problem.",
+    },
+    {
+      id: "watch-stack",
+      kind: "experiment",
+      title: "Watch the call stack",
+      prompt:
+        "Step through `factorial(4)` and watch the **Frames** panel. How many frames for `factorial` are open at the deepest point, and in which order do they return? Then **Edit code** and try `factorial(6)`.",
+      widget: "visualiser",
+      visualise: {
+        code: `def factorial(n):
+    if n == 1:
+        return 1
+    return n * factorial(n - 1)
+
+print(factorial(4))`,
+      },
+      observe:
+        "Each call waits on line 4 for the one below it, so four `factorial` frames pile up, each with its **own** `n`. The deepest, `n = 1`, hits the base case and returns 1 first. Then each waiting frame finishes its multiplication on the way back up: 2 × 1 = 2, 3 × 2 = 6, 4 × 6 = 24. That pile of frames is the **call stack**.",
+    },
+    {
+      id: "predict-updown",
+      kind: "predict",
+      title: "Down and back up",
+      prompt: "One print before the recursive call and one after it. What's printed?",
+      code: `def show(n):
+    if n == 0:
+        return
+    print("down", n)
+    show(n - 1)
+    print("up", n)
+
+show(2)`,
+      options: ["down 2\ndown 1\nup 1\nup 2", "down 2\nup 2\ndown 1\nup 1", "down 2\ndown 1\nup 2\nup 1", "down 2\ndown 1"],
+      answer: 0,
+      explanation:
+        "The \"down\" prints happen on the way in, before each call goes deeper. The \"up\" prints wait until the call below has returned, so they happen on the way back out, deepest first: `up 1`, then `up 2`. Code after a recursive call runs in reverse order.",
+    },
+    {
+      id: "trace-total",
+      kind: "trace",
+      title: "Results come back in reverse",
+      prompt:
+        "This version of `total` keeps each part in a variable. Fill in `first`, `rest` and `result` each time line 6 finishes. Think carefully about **which call** reaches line 6 first.",
+      code: `def total(numbers):
+    if not numbers:
+        return 0
+    first = numbers[0]
+    rest = total(numbers[1:])
+    result = first + rest
+    return result
+
+print(total([5, 10, 20]))`,
+      columns: ["first", "rest", "result"],
+      line: 6,
+      explanation:
+        "No call can reach line 6 until the call below it has returned, so the **deepest** call gets there first: `total([20])` receives `rest = 0` from the empty list and makes 20. Then `total([10, 20])` makes 30, and finally the first call makes 35. Recursive answers are built on the way back up.",
+    },
+    {
+      id: "parsons-power",
+      kind: "parsons",
+      title: "Assemble power()",
+      prompt:
+        "`power(base, exp)` should work out `base` to the power `exp` by multiplying: anything to the power 0 is 1, and `base` to the power `exp` is `base` times `base` to the power `exp - 1`. Put the lines in order and indent them. One line doesn't belong.",
+      lines: [
+        "def power(base, exp):",
+        "    if exp == 0:",
+        "        return 1",
+        "    return base * power(base, exp - 1)",
+        "print(power(2, 10))",
+      ],
+      distractors: ["    return base * power(base, exp)"],
+      checks: [
+        { expr: "power(2, 10) == 1024", label: "`power(2, 10)` is 1024", failHint: "Each call should multiply by `base` once and recurse with `exp - 1`." },
+        { expr: "power(5, 0) == 1", label: "`power(5, 0)` is 1", failHint: "The base case: when `exp` is 0, return 1." },
+        { expr: "power(3, 3) == 27", label: "`power(3, 3)` is 27", failHint: "Check the order: the base case comes before the recursive call." },
+      ],
+      explanation:
+        "The base case comes first, so a call with `exp == 0` returns before recursing. The recursive case calls `power` with `exp - 1`, which moves every call closer to the base case. The extra line called `power(base, exp)` with the **same** `exp`: it would never get closer to 0, and would recurse until Python gave up.",
+    },
+    {
+      id: "nested-data",
+      kind: "concept",
+      title: "Recursion follows the shape of the data",
+      body: [
+        "Recursion really shines when data contains smaller copies of itself: folders inside folders, comments with replies to replies, an organisation chart where every manager has a team. A loop can't know in advance how deep to go, but a recursive function just handles one level and lets the recursive calls handle the rest.",
+        "The pattern: for each item, if it's a simple value, deal with it; if it's another container of the same shape, call the function on it. `isinstance(item, dict)` tells you which is which.",
+      ],
+      code: `drive = {
+    "notes.txt": 12,
+    "photos": {"farm.jpg": 340, "market.jpg": 410},
+    "work": {
+        "report.docx": 85,
+        "data": {"sales.csv": 120, "old": {"2023.csv": 95}},
+    },
+}
+
+def total_size(folder):
+    size = 0
+    for name, item in folder.items():
+        if isinstance(item, dict):      # a folder: recurse into it
+            size += total_size(item)
+        else:                           # a file: add its size
+            size += item
+    return size
+
+print(total_size(drive))      # 1062 (KB)`,
+      keyIdea: "When data is nested, a recursive function mirrors its shape: handle the simple items, and recurse into the nested ones.",
+    },
+    {
+      id: "nested-sum",
+      kind: "code",
+      title: "Add up a nested list",
+      brief:
+        "Write `nested_sum(items)` that adds up every number in a list, however deeply lists are nested inside it. `nested_sum([1, [2, 3], [4, [5, 6]], 7])` is 28.",
+      starterCode: `def nested_sum(items):
+    pass
+
+
+print(nested_sum([1, [2, 3], [4, [5, 6]], 7]))   # 28
+`,
+      checks: [
+        { expr: "nested_sum([1, [2, 3], [4, [5, 6]], 7]) == 28", label: "The example adds up to 28", failHint: "Loop over `items`. Add numbers directly, and call `nested_sum` on any item that's a list." },
+        { expr: "nested_sum([10, [20, [30, [40]]]]) == 100", label: "Works however deep the nesting goes", failHint: "Recurse on every list you meet, not just the first level." },
+        { expr: "nested_sum([]) == 0 and nested_sum([[[]]]) == 0", label: "Empty lists add up to 0", failHint: "Start your total at 0, so an empty list returns 0." },
+        { expr: "any('nested_sum' in c.co_names for c in [nested_sum.__code__, *[k for k in nested_sum.__code__.co_consts if hasattr(k, 'co_names')]])", label: "`nested_sum` calls itself", failHint: "For an item that's a list, call `nested_sum(item)`." },
+      ],
+      hints: [
+        "`isinstance(item, list)` tells you whether an item is a list.",
+        "Start `total = 0`; for each item, add either `nested_sum(item)` or the item itself, then return `total`.",
+      ],
+      why:
+        "Your function only ever looks at one level of the list; the recursive calls take care of the levels below. That's why it works for any depth, which no fixed number of nested loops could do.",
+      solution: `def nested_sum(items):
+    total = 0
+    for item in items:
+        if isinstance(item, list):
+            total += nested_sum(item)
+        else:
+            total += item
+    return total
+
+
+print(nested_sum([1, [2, 3], [4, [5, 6]], 7]))`,
+    },
+    {
+      id: "headcount",
+      kind: "code",
+      title: "Count the team",
+      brief:
+        "A SACCO's organisation chart is a dictionary: each person has a `name`, a `role` and a list of `reports`, who have reports of their own. Write `headcount(person)` that returns how many people are in that person's team, counting the person themself.",
+      starterCode: ORG + `
+
+def headcount(person):
+    pass
+
+
+print(headcount(org))   # everyone
+`,
+      checks: [
+        { expr: "headcount(org) == 8", label: "The whole SACCO has 8 people", failHint: "Count the person (1) plus the headcount of each of their reports." },
+        { expr: "headcount(org['reports'][0]) == 3", label: "Otieno's team is 3, counting him", failHint: "Work it out from the `person` you're given, not from `org`." },
+        { expr: "headcount({'name': 'Solo', 'role': 'Owner', 'reports': []}) == 1", label: "Someone with no reports is a team of 1", failHint: "With no reports, there's nothing to add to the 1." },
+        { expr: "any('headcount' in c.co_names for c in [headcount.__code__, *[k for k in headcount.__code__.co_consts if hasattr(k, 'co_names')]])", label: "`headcount` calls itself", failHint: "Call `headcount` on each person in `person[\"reports\"]`." },
+      ],
+      hints: [
+        "Start with `count = 1` for the person, then add `headcount(r)` for each `r` in `person[\"reports\"]`.",
+        "Or in one line: `return 1 + sum(headcount(r) for r in person[\"reports\"])`.",
+      ],
+      why:
+        "Notice there's no explicit `if` for the base case: a person with no reports runs the loop zero times and returns 1. The base case is still there; it's just built into the data, because every branch of the chart ends in an empty list.",
+      solution: ORG + `
+
+def headcount(person):
+    return 1 + sum(headcount(r) for r in person["reports"])
+
+
+print(headcount(org))`,
+    },
+    {
+      id: "limits",
+      kind: "concept",
+      title: "RecursionError, and when to use a loop",
+      body: [
+        "Every call adds a frame to the call stack, and Python stops a runaway recursion at about 1,000 frames deep with a `RecursionError`. If you see one, check the base case: is there one, and does every call move closer to it?",
+        "Recursion isn't always the best tool. Adding up a flat list is clearer with a loop or `sum()`. A naive recursive Fibonacci makes over 20,000 calls to work out `fib(20)`, because it solves the same small problems again and again (the Decorators lab fixes that with a cache). Reach for recursion when the problem or the data is **nested or branching**: folders, organisation charts, JSON, family trees.",
+      ],
+      code: `import sys
+print(sys.getrecursionlimit())     # 1000
+
+def forever(n):
+    return forever(n + 1)          # no base case: it never stops
+
+forever(1)`,
+      runError: "RecursionError",
+      keyIdea: "No base case, or no progress towards it, means a RecursionError. Use recursion for nested, branching problems, and loops for flat ones.",
+    },
+    {
+      id: "reporting-line",
+      kind: "code",
+      challenge: true,
+      title: "The reporting line",
+      brief:
+        "Write `chain(person, name)` that returns the list of names from `person` down to the person called `name`, following the reports. For example, `chain(org, \"Chebet\")` is `[\"Wambui\", \"Fatuma\", \"Juma\", \"Chebet\"]`. If `name` isn't in that part of the chart, return `None`.",
+      starterCode: ORG + `
+
+def chain(person, name):
+    pass
+
+
+print(chain(org, "Chebet"))
+print(chain(org, "Nobody"))
+`,
+      checks: [
+        { expr: "chain(org, 'Chebet') == ['Wambui', 'Fatuma', 'Juma', 'Chebet']", label: "Chebet's line goes through Fatuma and Juma", failHint: "When a report's chain isn't `None`, put this person's name in front of it and return it." },
+        { expr: "chain(org, 'Wambui') == ['Wambui']", label: "The person themself is a chain of one", failHint: "Base case: if `person[\"name\"] == name`, return `[person[\"name\"]]`." },
+        { expr: "chain(org, 'Kamau') == ['Wambui', 'Otieno', 'Kamau']", label: "Kamau's line goes through Otieno", failHint: "Try every report in turn, not just the first." },
+        { expr: "chain(org, 'Nobody') is None and chain(org['reports'][0], 'Chebet') is None", label: "Someone not in that part of the chart gives `None`", failHint: "If no report leads to `name`, return `None` after the loop." },
+      ],
+      hints: [
+        "Base case: if this person is the one you want, return a list with just their name.",
+        "Otherwise, for each report `r`: `path = chain(r, name)`. If `path` isn't `None`, return `[person[\"name\"]] + path`. After the loop, return `None`.",
+      ],
+      why:
+        "Each call asks its reports, \"is `name` somewhere below you?\" and passes the answer back up, adding its own name on the way. Using the **result** of a recursive call, including `None` for \"not here\", is how searches through trees, folders and family trees work.",
+      solution: ORG + `
+
+def chain(person, name):
+    if person["name"] == name:
+        return [person["name"]]
+    for r in person["reports"]:
+        path = chain(r, name)
+        if path is not None:
+            return [person["name"]] + path
+    return None
+
+
+print(chain(org, "Chebet"))
+print(chain(org, "Nobody"))`,
+    },
+    {
+      id: "explain-recursion",
+      kind: "explain",
+      title: "How recursion works",
+      prompt:
+        "Explain how a recursive function works, what the base case is for, what happens on the call stack, and when you'd choose recursion over a loop.",
+      ideas: [
+        { label: "Calls itself on a smaller problem", patterns: ["calls? itself", "smaller", "simpler", "recursive case"], nudge: "What does each recursive call work on?" },
+        { label: "The base case stops it", patterns: ["base case", "stop", "end", "recursionerror"], nudge: "What stops the calls?" },
+        { label: "Frames stack up and return in reverse", patterns: ["stack", "frame", "reverse", "way back", "deepest", "return"], nudge: "What happens to each call while it waits?" },
+        { label: "Best for nested or branching data", patterns: ["nested", "tree", "folder", "branch", "chart", "loop"], nudge: "When is recursion the right tool?" },
+      ],
+      modelAnswer:
+        "A recursive function calls itself on a smaller version of the problem, like the rest of a list or one person's team. The base case is a version small enough to answer directly, and it stops the calls; without it you get a RecursionError. Each call waits on the call stack in its own frame until the call below returns, so results are combined on the way back, deepest first. I'd choose recursion for nested or branching data, like folders or an organisation chart, and a loop for flat data like a single list.",
+    },
+  ],
+};
