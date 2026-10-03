@@ -2,49 +2,29 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Play } from "lucide-react";
-import { AFRICA, AFRICA_DOTS, AFRICA_PATH } from "./africa";
+import { ArrowRight } from "lucide-react";
+import { AFRICA, AFRICA_PATH } from "./africa";
+import { button } from "@/components/ui/button";
+import { useProgress } from "@/lib/progress";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.55, ease: [0.16, 1, 0.3, 1] as const },
-  }),
-};
-
-// Small decorative accents around the map, as on a printed poster.
-const SPECKS = [
-  { top: "8%", left: "18%", size: 14, color: "var(--color-sun)" },
-  { top: "26%", left: "4%", size: 9, color: "var(--color-sky)" },
-  { top: "14%", right: "6%", size: 11, color: "var(--color-danger)" },
-  { top: "58%", left: "2%", size: 12, color: "var(--color-lime-deep)" },
-  { bottom: "10%", left: "30%", size: 10, color: "var(--color-sky)" },
-  { bottom: "18%", right: "4%", size: 15, color: "var(--color-sun)" },
-];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 /** Counts come from the server (app/page.tsx) so lab content never ships to the landing page. */
-export default function Hero({ liveLabs, activities }: { liveLabs: number; activities: number }) {
+export default function Hero({ tracks, liveLabs, activities }: { tracks: number; liveLabs: number; activities: number }) {
+  const progress = useProgress();
+  const started = !!progress?.enrolled || Object.keys(progress?.labs ?? {}).length > 0;
   const stats = [
-    { value: "Free", label: "Every track, every lab" },
-    { value: String(liveLabs), label: "Hands-on labs" },
-    { value: `${activities}+`, label: "Lessons & exercises" },
+    { value: String(tracks), label: "learning tracks" },
+    { value: String(liveLabs), label: "hands-on labs" },
+    { value: `${(Math.floor(activities / 100) * 100).toLocaleString("en")}+`, label: "lessons and exercises" },
   ];
 
   return (
-    <section className="relative overflow-hidden bg-cream pt-[76px] text-ink">
-      {/* A faint dotted continent behind everything, like a map on the wall. */}
-      <svg viewBox={`0 0 ${AFRICA.width} ${AFRICA.height}`} className="pointer-events-none absolute -top-24 -right-40 hidden h-[130%] opacity-[0.07] md:block" aria-hidden="true">
-        {AFRICA_DOTS.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={3.2} className="fill-ink" />)}
-      </svg>
-
-      <div className="relative grid items-center gap-10 px-6 pt-10 pb-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:px-10 md:pt-16 md:pb-24 xl:px-16">
-        <div className="max-w-xl">
-          <motion.p custom={0} initial="hidden" animate="show" variants={fadeUp} className="eyebrow text-lime-deep">
-            Free · Built for African learners
-          </motion.p>
-          <motion.h1 custom={1} initial="hidden" animate="show" variants={fadeUp} className="mt-5 font-display text-5xl font-semibold leading-[1.02] tracking-tight md:text-6xl xl:text-7xl">
+    <section aria-labelledby="hero-title" className="bg-cream pt-16 md:pt-[72px]">
+      <div className="grid grid-cols-1 items-center gap-12 px-4 pt-10 pb-16 sm:px-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:px-10 md:pt-16 md:pb-24 xl:px-16">
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease }} className="max-w-xl">
+          <p className="eyebrow text-lime-deep">Free · Built for African learners</p>
+          <h1 id="hero-title" className="mt-5 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink md:text-6xl xl:text-7xl">
             Africa&apos;s AI builders{" "}
             <span className="relative whitespace-nowrap">
               start here
@@ -53,36 +33,37 @@ export default function Hero({ liveLabs, activities }: { liveLabs: number; activ
               </svg>
             </span>
             .
-          </motion.h1>
-          <motion.p custom={2} initial="hidden" animate="show" variants={fadeUp} className="mt-7 text-lg leading-relaxed text-ink/65">
-            A free, structured path from your first line of Python to models you trained yourself — on data about
-            farms, clinics, markets and mobile money. Everything runs in your browser, so any laptop will do.
-          </motion.p>
-          <motion.div custom={3} initial="hidden" animate="show" variants={fadeUp} className="mt-9 flex flex-wrap items-center gap-4">
-            <Link href="/tracks" className="inline-flex items-center gap-2 rounded-full bg-ink px-7 py-4 text-sm font-semibold text-paper">
-              Start learning free
-              <ArrowRight size={16} />
+          </h1>
+          <p className="mt-7 text-lg leading-relaxed text-ink/70">
+            A structured path from your first line of Python to models you trained yourself, on data about farms, clinics,
+            markets and mobile money. It all runs in your browser, so any laptop will do.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Link href={started ? "/dashboard" : "/tracks/python-essentials"} className={button({ size: "lg" })}>
+              {started ? "Continue learning" : "Start learning"}
+              <ArrowRight size={17} />
             </Link>
-            <a href="#try" className="inline-flex items-center gap-3 text-sm font-semibold text-ink">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-lime-deep text-paper">
-                <Play size={16} fill="currentColor" />
-              </span>
-              Try an interactive
+            <a href="#try" className={button({ variant: "secondary", size: "lg" })}>
+              Try it in your browser
             </a>
-          </motion.div>
-          <motion.dl custom={4} initial="hidden" animate="show" variants={fadeUp} className="mt-12 flex flex-wrap gap-x-10 gap-y-4">
+          </div>
+          <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-ink/10 pt-6">
             {stats.map((s) => (
-              <div key={s.label}>
-                <dt className="sr-only">{s.label}</dt>
-                <dd className="font-display text-3xl font-semibold text-ink">{s.value}</dd>
-                <dd className="text-xs text-ink/50">{s.label}</dd>
+              <div key={s.label} className="flex flex-col gap-1">
+                <dt className="order-2 text-sm leading-snug text-ink/60">{s.label}</dt>
+                <dd className="order-1 font-display text-3xl font-semibold text-ink">{s.value}</dd>
               </div>
             ))}
-          </motion.dl>
-        </div>
+          </dl>
+        </motion.div>
 
         {/* Students, in the shape of the continent they're building for. */}
-        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="relative mx-auto w-full max-w-[640px]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease }}
+          className="relative mx-auto w-full max-w-[600px]"
+        >
           <svg viewBox={`-20 -20 ${AFRICA.width + 40} ${AFRICA.height + 40}`} className="w-full" role="img" aria-label="Students with laptops, shown inside a map of Africa">
             <defs>
               <clipPath id="hero-africa">
@@ -98,12 +79,11 @@ export default function Hero({ liveLabs, activities }: { liveLabs: number; activ
             </g>
             <path d={AFRICA_PATH} fill="none" className="stroke-paper" strokeWidth={4} />
           </svg>
-          {SPECKS.map((s, i) => (
-            <span key={i} aria-hidden="true" className="absolute rounded-full" style={{ ...s, width: s.size, height: s.size, background: s.color }} />
-          ))}
-          <div className="absolute bottom-[14%] left-0 hidden rounded-2xl bg-paper p-4 shadow-xl ring-1 ring-ink/10 sm:block">
-            <code className="block font-mono text-xs text-ink">print(&quot;Habari, dunia!&quot;)</code>
-            <p className="mt-2 flex items-center gap-2 text-xs text-ink/55"><span className="h-2 w-2 rounded-full bg-lime-deep" /> Python, running in your browser</p>
+          <div className="absolute bottom-[12%] left-0 hidden rounded-xl bg-paper px-4 py-3 shadow-lg ring-1 ring-ink/10 sm:block" aria-hidden="true">
+            <code className="block font-mono text-[13px] text-ink">print(&quot;Habari, dunia!&quot;)</code>
+            <p className="mt-1.5 flex items-center gap-2 text-xs text-ink/60">
+              <span className="h-2 w-2 rounded-full bg-lime-deep" /> Python, running in your browser
+            </p>
           </div>
         </motion.div>
       </div>

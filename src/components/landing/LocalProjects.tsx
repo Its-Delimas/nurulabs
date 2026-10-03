@@ -1,112 +1,97 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { Leaf, Car, Smartphone, Scale, MessageSquareText, Images } from "lucide-react";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { AFRICA, AFRICA_DOTS, project } from "./africa";
 
-const mosaic = [
-  { src: "/images/farm-harvest.webp", alt: "Farmers harvesting leafy greens in the evening light", caption: "AI & ML Lab 09", sub: "Predict maize yield from rainfall" },
-  { src: "/images/entebbe-market.webp", alt: "A busy open-air produce market in Entebbe, Uganda", caption: "AI & ML capstone", sub: "Forecast market prices, with honest error bars" },
-  { src: "/images/city-dusk.webp", alt: "An African city seen from above at dusk, its lights coming on", caption: "AI & ML capstone", sub: "Audit a lending model for fairness" },
+export interface ProjectCard {
+  slug: string;
+  title: string;
+  track: string;
+  blurb: string;
+}
+
+// Places the labs' datasets come from or describe.
+const PLACES: { name: string; lon: number; lat: number; what: string }[] = [
+  { name: "Nairobi", lon: 36.82, lat: -1.29, what: "clinic records, mobile money, census" },
+  { name: "Kisumu", lon: 34.77, lat: -0.09, what: "maize prices, malaria" },
+  { name: "Nakuru", lon: 36.07, lat: -0.3, what: "farm yields" },
+  { name: "Lodwar", lon: 35.6, lat: 3.12, what: "clinic records" },
+  { name: "Mombasa", lon: 39.67, lat: -4.04, what: "clinic records" },
+  { name: "Kampala", lon: 32.58, lat: 0.35, what: "World Bank data" },
+  { name: "Kigali", lon: 30.06, lat: -1.95, what: "World Bank data" },
+  { name: "Addis Ababa", lon: 38.76, lat: 9.03, what: "World Bank data" },
+  { name: "Lagos", lon: 3.38, lat: 6.52, what: "World Bank data" },
+  { name: "Accra", lon: -0.19, lat: 5.6, what: "World Bank data" },
+  { name: "Dakar", lon: -17.45, lat: 14.69, what: "World Bank data" },
+  { name: "Kinshasa", lon: 15.27, lat: -4.44, what: "World Bank data" },
+  { name: "Lusaka", lon: 28.28, lat: -15.42, what: "World Bank data" },
+  { name: "Johannesburg", lon: 28.05, lat: -26.2, what: "World Bank data" },
+  { name: "Cairo", lon: 31.24, lat: 30.04, what: "World Bank data" },
 ];
 
-// Capstones that are live today, then what's still on the roadmap.
-const projects = [
-  { icon: Leaf, live: true, title: "Blight early warning", body: "Flag farms at risk of crop disease before it spreads, and plan extension visits." },
-  { icon: Smartphone, live: true, title: "Mobile-money fraud watch", body: "Find suspicious transactions with no fraud labels, using anomaly detection." },
-  { icon: MessageSquareText, live: true, title: "Swahili & English feedback assistant", body: "Flag unhappy customers, find what they complain about, and draft grounded replies." },
-  { icon: Scale, live: true, title: "Responsible lending audit", body: "Measure and reduce a credit model's bias against rural applicants, then publish a model card." },
-  { icon: Images, live: false, title: "Crop disease from photos", body: "Identify disease in cassava and maize leaves from pictures taken on a phone." },
-  { icon: Car, live: false, title: "Nairobi traffic prediction", body: "Forecast congestion on major routes from historical trip data." },
-];
-
-export default function LocalProjects() {
+/** Projects for local clients, beside a dotted map of the places the data describes. */
+export default function LocalProjects({ projects }: { projects: ProjectCard[] }) {
   return (
-    <section id="projects" className="bg-cream pb-24 md:pb-32">
-      <div className="grid grid-cols-1 gap-px bg-cream sm:grid-cols-3">
-        {mosaic.map((m, i) => (
-          <motion.figure
-            key={m.src}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6, delay: i * 0.1 }}
-            className="group relative aspect-[4/3] overflow-hidden sm:aspect-[3/4] lg:aspect-[4/5]"
-          >
-            <Image
-              src={m.src}
-              alt={m.alt}
-              fill
-              sizes="(min-width: 640px) 33vw, 100vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-black/70 px-6 py-5 text-white">
-              <p className="eyebrow text-lime">{m.caption}</p>
-              <p className="mt-1 font-display text-lg font-semibold">{m.sub}</p>
-            </figcaption>
-          </motion.figure>
-        ))}
-      </div>
-      <div className="px-6 md:px-10 xl:px-16 pt-24 md:pt-32">
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
-          className="eyebrow text-lime-deep"
-        >
-          Local data, local problems
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="mt-4 max-w-2xl font-display text-3xl font-semibold leading-tight text-ink md:text-4xl"
-        >
-          Not another Titanic dataset.
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-5 max-w-2xl text-ink/55"
-        >
-          The labs use data about places you know — Nakuru farms, Kisumu
-          maize prices, mobile-money customers, reviews in Swahili and
-          English. Each module ends in a capstone for a realistic local
-          client. The datasets are illustrative, built to behave like the
-          real thing; a few more projects are still on the roadmap.
-        </motion.p>
-
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project, i) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45, delay: (i % 3) * 0.08 }}
-              className="bg-paper p-6"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper text-ink/50">
-                  <project.icon size={18} />
-                </div>
-                <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${project.live ? "bg-lime-soft text-lime-deep" : "bg-cream text-ink/40"}`}>
-                  {project.live ? "Live capstone" : "Planned"}
-                </span>
-              </div>
-              <h3 className={`mt-4 font-display text-base font-semibold ${project.live ? "text-ink" : "text-ink/60"}`}>
-                {project.title}
-              </h3>
-              <p className={`mt-2 text-sm leading-relaxed ${project.live ? "text-ink/60" : "text-ink/45"}`}>
-                {project.body}
-              </p>
-            </motion.div>
-          ))}
+    <section id="projects" aria-labelledby="projects-title" className="scroll-mt-20 border-t border-ink/10 bg-paper px-4 py-20 sm:px-6 md:px-10 md:py-28 xl:px-16">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
+        <div>
+          <SectionHeading
+            id="projects-title"
+            size="lg"
+            eyebrow="Local data, real problems"
+            title="Learn on the problems around you."
+            lede="Not another Titanic dataset. Labs use data about Kenyan farms, clinics and markets, mobile money, reviews in Swahili and English, and World Bank indicators for 20 African countries. Every module ends in a project for a realistic local client."
+          />
+          <ul className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+            {projects.map((p, i) => (
+              <motion.li
+                key={p.slug}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: (i % 2) * 0.05 }}
+                className="border-t border-ink/10 pt-4"
+              >
+                <p className="text-xs font-semibold text-lime-deep">{p.track}</p>
+                <h3 className="mt-1 font-display text-lg font-semibold text-ink">{p.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink/65">{p.blurb}</p>
+              </motion.li>
+            ))}
+          </ul>
+          <p className="mt-8 max-w-2xl text-sm leading-relaxed text-ink/60">
+            The World Bank indicators, census figures and county boundaries are real. The other datasets are illustrative,
+            built to behave like the real thing.
+          </p>
         </div>
+
+        <figure className="hidden self-center sm:block">
+          <svg viewBox={`-10 -10 ${AFRICA.width + 20} ${AFRICA.height + 20}`} className="mx-auto w-full max-w-[520px]" role="img" aria-label="Dotted map of Africa marking the places the labs' data comes from">
+            {AFRICA_DOTS.map(([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r={5.4} className="fill-lime-deep" opacity={0.25 + ((x * 7 + y * 3) % 10) / 45} />
+            ))}
+            {PLACES.map((p) => {
+              const [x, y] = project(p.lon, p.lat);
+              const kenya = p.what !== "World Bank data";
+              return (
+                <g key={p.name}>
+                  <circle cx={x} cy={y} r={kenya ? 15 : 12} className={kenya ? "fill-sun" : "fill-sky"} opacity={0.22} />
+                  <circle cx={x} cy={y} r={kenya ? 7 : 6} className={kenya ? "fill-sun" : "fill-sky"} stroke="var(--color-paper)" strokeWidth={2.5}>
+                    <title>{`${p.name}: ${p.what}`}</title>
+                  </circle>
+                </g>
+              );
+            })}
+          </svg>
+          <figcaption className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-ink/65">
+            <span className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-sun" aria-hidden="true" /> Kenyan datasets in the labs
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-sky" aria-hidden="true" /> Countries in the World Bank project
+            </span>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );
