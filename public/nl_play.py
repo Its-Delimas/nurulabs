@@ -73,6 +73,7 @@ def _nl_play_setup_ns(setup):
 
 
 def _nl_play_reset(sid, setup, goals_json):
+    _nl_fresh_imports()  # from nl_harness.py: a lab's own modules load afresh
     goals = _json.loads(goals_json)
     ns = {"__name__": "__main__"}
     out = _io.StringIO()

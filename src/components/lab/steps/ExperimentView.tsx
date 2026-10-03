@@ -191,11 +191,16 @@ export default function ExperimentView({
   step,
   done,
   onComplete,
+  files,
+  packages,
   python,
 }: {
   step: ExperimentStep;
   done: boolean;
   onComplete: () => void;
+  /** The lab's files and packages, for the visualiser and the playground. */
+  files?: Record<string, string>;
+  packages?: string[];
   python: PythonWorker;
 }) {
   const [count, setCount] = useState(done ? INTERACTIONS_NEEDED : 0);
@@ -234,6 +239,8 @@ export default function ExperimentView({
             setup={step.playground?.setup ?? ""}
             goals={step.playground?.goals ?? []}
             suggestions={step.playground?.suggestions}
+            files={files}
+            packages={packages}
             python={python}
             onInteract={onInteract}
           />
@@ -242,6 +249,8 @@ export default function ExperimentView({
             code={step.visualise?.code ?? ""}
             editable={step.visualise?.editable ?? true}
             inputs={step.visualise?.inputs}
+            files={files}
+            packages={packages}
             python={python}
             onInteract={onInteract}
           />

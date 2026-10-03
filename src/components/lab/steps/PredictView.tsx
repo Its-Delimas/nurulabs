@@ -13,9 +13,11 @@ export default function PredictView({
   done,
   onComplete,
   python,
+  files,
   packages,
 }: {
   step: PredictStep;
+  files?: Record<string, string>;
   packages?: string[];
   done: boolean;
   onComplete: () => void;
@@ -41,7 +43,7 @@ export default function PredictView({
 
   async function runIt() {
     setRan(true);
-    const result = await python.run(step.code, undefined, packages);
+    const result = await python.run(step.code, files, packages);
     setImages(result.images ?? []);
   }
 

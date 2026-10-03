@@ -49,12 +49,23 @@ async function prepare(packages = []) {
   missing.forEach((p) => prepared.add(p));
 }
 
-function run(code, files, inputs = []) {
+// Same as writeFiles() in public/pyodide-worker.js: "pkg/mod.py" goes inside a folder.
+function writeLabFile(name, content) {
+  if (name.includes("/")) py.FS.mkdirTree(`${py.FS.cwd()}/${name.slice(0, name.lastIndexOf("/"))}`);
+  py.FS.writeFile(name, content);
+}
+
+// A lab's files, written into the sandbox before each run, as the worker does.
+function writeLabFiles(files) {
   for (const [name, source] of Object.entries(files ?? {})) {
     // Datasets are published under /data/ (see scripts/export-data.mjs).
     const content = /^\/(data|datasets|notebooks)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
-    py.FS.writeFile(name, content);
+    writeLabFile(name, content);
   }
+}
+
+function run(code, files, inputs = []) {
+  writeLabFiles(files);
   out = [];
   const ns = py.toPy({});
   const err = py.globals.get("_nl_run")(code, ns, py.toPy(inputs));
@@ -127,11 +138,7 @@ for (const lab of labs) {
       const ok = r1.every(Boolean) && !r0.every(Boolean);
       report(ok, tag, `starter=${JSON.stringify(r0)} solution=${JSON.stringify(r1)} solutionError=${so.error?.summary ?? "none"}`);
     } else if (s.kind === "experiment" && s.widget === "visualiser") {
-      const files = lab.files ?? {};
-      for (const [name, source] of Object.entries(files)) {
-        const content = /^\/(data|datasets|notebooks)\//.test(source) ? readFileSync(path.join(root, "public", source)) : source;
-        py.FS.writeFile(name, content);
-      }
+      writeLabFiles(lab.files);
       const t = JSON.parse(py.globals.get("_nl_trace")(s.visualise?.code ?? "", 500, py.toPy(s.visualise?.inputs ?? [])));
       const ok = !!s.visualise?.code && t.steps.length > 1 && !t.error && !t.truncated;
       report(ok, tag, `steps=${t.steps.length} error=${t.error?.summary ?? "none"} truncated=${t.truncated}`);
@@ -139,6 +146,7 @@ for (const lab of labs) {
       // The setup runs; each goal is met by its own answer/solution/example on fresh data,
       // and no check goal is already met before the learner does anything.
       const pg = s.playground ?? { setup: "", goals: [] };
+      writeLabFiles(lab.files);
       const reset = () => JSON.parse(py.globals.get("_nl_play_reset")("validate", pg.setup, JSON.stringify(pg.goals)));
       const evalIn = (src) => JSON.parse(py.globals.get("_nl_play_eval")("validate", src));
       const problems = [];

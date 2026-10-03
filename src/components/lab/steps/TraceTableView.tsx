@@ -20,11 +20,16 @@ export default function TraceTableView({
   step,
   done,
   onComplete,
+  files,
+  packages,
   python,
 }: {
   step: TraceTableStep;
   done: boolean;
   onComplete: () => void;
+  /** The lab's files and packages, so the code can open and import them. */
+  files?: Record<string, string>;
+  packages?: string[];
   python: Pick<PythonWorker, "status" | "trace">;
 }) {
   const [expected, setExpected] = useState<(string | null)[][] | null>(null);
@@ -39,13 +44,13 @@ export default function TraceTableView({
   useEffect(() => {
     if (status !== "ready" || loaded.current) return;
     loaded.current = true;
-    void trace(step.code).then((t) => {
+    void trace(step.code, { files, packages }).then((t) => {
       const rows = traceRows(t, step.line, step.columns);
       setExpected(rows);
       // The first row is filled in as a worked example; a finished table shows everything.
       setAnswers(rows.map((row, r) => row.map((v) => (done || r === 0 ? (v ?? "") : ""))));
     });
-  }, [status, trace, step, done]);
+  }, [status, trace, step, done, files, packages]);
 
   function check() {
     if (!expected) return;
@@ -184,7 +189,7 @@ export default function TraceTableView({
 
       {watch && (
         <div className="mt-10 rounded-[28px] bg-paper p-5 ring-1 ring-ink/10 md:p-8">
-          <CodeVisualiser code={step.code} editable={false} python={python} />
+          <CodeVisualiser code={step.code} editable={false} files={files} packages={packages} python={python} />
         </div>
       )}
     </div>

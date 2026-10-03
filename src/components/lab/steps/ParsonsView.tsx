@@ -38,11 +38,16 @@ export default function ParsonsView({
   step,
   done,
   onComplete,
+  files,
+  packages,
   python,
 }: {
   step: ParsonsStep;
   done: boolean;
   onComplete: () => void;
+  /** The lab's files and packages, so the code can open and import them. */
+  files?: Record<string, string>;
+  packages?: string[];
   python: Pick<PythonWorker, "status" | "run" | "check">;
 }) {
   const pieces = useMemo<Piece[]>(() => {
@@ -97,7 +102,7 @@ export default function ParsonsView({
 
   async function check() {
     setChecking(true);
-    const run = await python.run(code);
+    const run = await python.run(code, files, packages);
     setLastRun(run);
     if (!run.ok) {
       setResults(null);

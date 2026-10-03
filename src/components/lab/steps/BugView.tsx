@@ -19,11 +19,16 @@ export default function BugView({
   step,
   done,
   onComplete,
+  files,
+  packages,
   python,
 }: {
   step: BugStep;
   done: boolean;
   onComplete: () => void;
+  /** The lab's files and packages, so the code can open and import them. */
+  files?: Record<string, string>;
+  packages?: string[];
   python: Pick<PythonWorker, "status" | "run" | "trace">;
 }) {
   const [picked, setPicked] = useState<number[]>(done ? [step.line] : []);
@@ -43,7 +48,7 @@ export default function BugView({
 
   async function runIt() {
     setRunning(true);
-    setRun(await python.run(step.code));
+    setRun(await python.run(step.code, files, packages));
     setRunning(false);
   }
 
@@ -147,7 +152,7 @@ export default function BugView({
 
       {stepping && (
         <div className="rounded-[28px] bg-paper p-5 ring-1 ring-ink/10 md:p-8 lg:col-span-2">
-          <CodeVisualiser code={step.code} editable={false} python={python} />
+          <CodeVisualiser code={step.code} editable={false} files={files} packages={packages} python={python} />
         </div>
       )}
     </div>

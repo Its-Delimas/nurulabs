@@ -180,7 +180,23 @@ def _nl_inputs(values):
         builtins.input = real
 
 
+def _nl_fresh_imports():
+    """Forget modules imported from the working folder (a lab's own .py files),
+    so each run imports them afresh, as a new program would, and make sure
+    module files created since the last run can be found."""
+    import importlib
+    import os
+
+    here = os.path.join(os.getcwd(), "")
+    for name, mod in list(_sys.modules.items()):
+        path = getattr(mod, "__file__", None)
+        if path and os.path.abspath(path).startswith(here):
+            del _sys.modules[name]
+    importlib.invalidate_caches()
+
+
 def _nl_run(code, ns, inputs=None):
+    _nl_fresh_imports()
     _nl_state["source"] = code
     _nl_state["inputs"] = list(inputs or [])
     # Learner code runs as the main program, so `if __name__ == "__main__":` works.
@@ -208,6 +224,7 @@ def _nl_make_with_inputs(source):
     checks can test an interactive program on several answers."""
 
     def _with_inputs(*values):
+        _nl_fresh_imports()
         ns = {"__name__": "__main__"}
         out = _io.StringIO()
         with _ctx.redirect_stdout(out), _nl_inputs(values):
@@ -237,6 +254,7 @@ def _nl_make_with(source):
         for i, line in enumerate(source.split("\n"), 1):
             out.append(line)
             out.extend(inserts.get(i, []))
+        _nl_fresh_imports()
         ns = {"__name__": "__main__"}
         with _ctx.redirect_stdout(_io.StringIO()), _nl_inputs(_nl_state["inputs"]):
             exec(compile("\n".join(out), "main.py", "exec"), ns)
@@ -244,6 +262,23 @@ def _nl_make_with(source):
         return ns
 
     return _with
+
+
+def _nl_make_as_module(source):
+    """Run the learner's code as if another file had imported it (so
+    `__name__` isn't "__main__"), for checking `if __name__ == "__main__":`."""
+
+    def _as_module(name="learner"):
+        _nl_fresh_imports()
+        ns = {"__name__": name}
+        out = _io.StringIO()
+        with _ctx.redirect_stdout(out), _nl_inputs(_nl_state["inputs"]):
+            exec(compile(source, "main.py", "exec"), ns)
+        _nl_figures()
+        ns["_stdout"] = out.getvalue()
+        return ns
+
+    return _as_module
 
 
 def _nl_raises(fn, error=BaseException):
@@ -262,6 +297,7 @@ def _nl_check(exprs, ns):
     ns["_with"] = _nl_make_with(ns.get("_source", ""))
     ns["_with_inputs"] = _nl_make_with_inputs(ns.get("_source", ""))
     ns["_raises"] = _nl_raises
+    ns["_as_module"] = _nl_make_as_module(ns.get("_source", ""))
     results = []
     for expr in exprs:
         try:

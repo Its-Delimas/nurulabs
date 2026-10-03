@@ -57,6 +57,8 @@ async function fileContent(source) {
 async function writeFiles(pyodide, files) {
   if (!files) return;
   for (const [name, source] of Object.entries(files)) {
+    // A name like "chama/money.py" is a file inside a folder (a package).
+    if (name.includes("/")) pyodide.FS.mkdirTree(`${pyodide.FS.cwd()}/${name.slice(0, name.lastIndexOf("/"))}`);
     pyodide.FS.writeFile(name, await fileContent(source));
   }
 }

@@ -154,10 +154,10 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
               />
             )}
             {step.kind === "experiment" && (
-              <ExperimentView step={step} done={stepDone} onComplete={complete} python={python} />
+              <ExperimentView step={step} done={stepDone} onComplete={complete} files={lab.files} packages={lab.packages} python={python} />
             )}
             {step.kind === "predict" && (
-              <PredictView step={step} done={stepDone} onComplete={complete} python={python} packages={lab.packages} />
+              <PredictView step={step} done={stepDone} onComplete={complete} python={python} files={lab.files} packages={lab.packages} />
             )}
             {step.kind === "code" && (
               <CodeView
@@ -178,12 +178,14 @@ function LabSession({ lab, progress }: { lab: Lab; progress: Progress }) {
               <ScenarioView step={step} done={stepDone} onComplete={complete} />
             )}
             {step.kind === "parsons" && (
-              <ParsonsView step={step} done={stepDone} onComplete={complete} python={python} />
+              <ParsonsView step={step} done={stepDone} onComplete={complete} files={lab.files} packages={lab.packages} python={python} />
             )}
             {step.kind === "trace" && (
-              <TraceTableView step={step} done={stepDone} onComplete={complete} python={python} />
+              <TraceTableView step={step} done={stepDone} onComplete={complete} files={lab.files} packages={lab.packages} python={python} />
             )}
-            {step.kind === "bug" && <BugView step={step} done={stepDone} onComplete={complete} python={python} />}
+            {step.kind === "bug" && (
+              <BugView step={step} done={stepDone} onComplete={complete} files={lab.files} packages={lab.packages} python={python} />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>

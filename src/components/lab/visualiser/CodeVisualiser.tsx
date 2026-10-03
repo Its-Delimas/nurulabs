@@ -204,6 +204,9 @@ export interface CodeVisualiserProps {
   editable?: boolean;
   /** Lines typed in answer to input(), in order. */
   inputs?: string[];
+  /** The lab's files and packages, so traced code can open and import them. */
+  files?: Record<string, string>;
+  packages?: string[];
   python: Pick<PythonWorker, "status" | "trace">;
   onInteract?: () => void;
 }
@@ -212,7 +215,7 @@ export interface CodeVisualiserProps {
  * Step through real Python: the line about to run, every call frame and its
  * variables, the objects they point at (with arrows), and the output so far.
  */
-export default function CodeVisualiser({ code, editable = true, inputs, python, onInteract }: CodeVisualiserProps) {
+export default function CodeVisualiser({ code, editable = true, inputs, files, packages, python, onInteract }: CodeVisualiserProps) {
   const [source, setSource] = useState(code);
   const [draft, setDraft] = useState(code);
   const [editing, setEditing] = useState(false);
@@ -229,12 +232,12 @@ export default function CodeVisualiser({ code, editable = true, inputs, python, 
     async (text: string) => {
       setBusy(true);
       setPlaying(false);
-      const r = await trace(text, { inputs });
+      const r = await trace(text, { inputs, files, packages });
       setResult(r);
       setIndex(0);
       setBusy(false);
     },
-    [trace, inputs],
+    [trace, inputs, files, packages],
   );
 
   // Trace the starting code as soon as Python is ready.

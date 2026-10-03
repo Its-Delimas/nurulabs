@@ -193,6 +193,8 @@ export interface CodeCheck {
    * `_with_inputs("a", "b")` re-runs it answering input() with those values;
    * the namespace it returns has the printed output in `_stdout`.
    * `_raises(lambda: f(x), SomeError)` is True if the call raises that error.
+   * `_as_module()` re-runs the code as if it were imported (`__name__` isn't
+   * "__main__"); the namespace it returns has the printed output in `_stdout`.
    * `_charts` lists each matplotlib chart (one entry per axes): title,
    * xlabel, ylabel, counts of lines, bars, scatter points and text labels,
    * bar_heights / bar_widths, bar_colors (distinct bar colours), xlim, ylim.

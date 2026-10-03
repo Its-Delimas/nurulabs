@@ -49,6 +49,7 @@ def _nl_is_class_body(frame):
 
 
 def _nl_trace(code, max_steps=500, inputs=None):
+    _nl_fresh_imports()  # from nl_harness.py: a lab's own modules load afresh
     steps = []
     numbers = {}  # id(obj) -> small stable number for this run
     alive = []    # every numbered object stays alive, so ids are never reused
