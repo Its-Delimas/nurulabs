@@ -966,13 +966,14 @@ export const pyClasses: Lab = {
   title: "Classes & Objects",
   subject: "class, self, methods",
   summary:
-    "Every ML library is built from classes — `model.fit()`, `model.predict()`. Learn to read and write your own, and build a tiny model with the same interface as scikit-learn.",
-  minutes: 35,
+    "Design your own types: a class bundles data with the methods that work on it. Create objects, understand `self`, share data with class attributes, protect an object's data with checks, and build a tiny model with the same interface as scikit-learn.",
+  minutes: 40,
   kind: "lab",
   skills: [
     "Define classes with attributes and methods",
     "Create objects and understand self",
-    "Read library code like model.fit() and model.predict()",
+    "Tell class attributes from instance attributes",
+    "Protect an object's data with validation and helper methods",
   ],
   steps: [
     {
@@ -980,9 +981,9 @@ export const pyClasses: Lab = {
       kind: "concept",
       title: "You've been using objects all along",
       body: [
-        "`\"text\".upper()` and `prices.append(5)` — those dots mean you're calling a **method** that belongs to an **object**. A string object knows how to upper-case itself; a list knows how to grow.",
+        "`\"text\".upper()` and `prices.append(5)`: those dots mean you're calling a **method** that belongs to an **object**. A string object knows how to upper-case itself; a list knows how to grow.",
         "A **class** is a blueprint for making your own kind of object. It bundles **data** (attributes) with the **functions** that work on that data (methods).",
-        "`__init__` runs when you create an object and sets up its data. `self` means \"this particular object\" — it's how a method reaches its own data.",
+        "`__init__` runs when you create an object and sets up its data. `self` means \"this particular object\": it's how a method reaches its own data.",
       ],
       code: `class Farm:
     def __init__(self, name, acres):
@@ -1044,30 +1045,50 @@ print(a.count, b.count)`,
       options: ["2 1", "3 3", "1 1", "3 0"],
       answer: 0,
       explanation:
-        "`a` and `b` are separate objects, each with its own `self.count`. `a` was added to twice and `b` once — so `2 1`.",
+        "`a` and `b` are separate objects, each with its own `self.count`. `a` was added to twice and `b` once, so `2 1`.",
     },
     {
-      id: "ml-objects",
+      id: "class-attributes",
       kind: "concept",
-      title: "Why every ML model is an object",
+      title: "Class attributes and instance attributes",
       body: [
-        "In scikit-learn — the library you'll use in the AI & ML track — you train a model like this: `model = LinearRegression()`, then `model.fit(X, y)`, then `model.predict(new_X)`.",
-        "That's a class. `fit` learns numbers from data and **stores them on the object** (by convention with a trailing underscore, like `model.coef_`). `predict` uses those stored numbers later.",
-        "Because the learned numbers live inside the object, you can train several models side by side, save one, and use it next week.",
+        "Attributes set on `self` in `__init__` are **instance attributes**: every object gets its own. An attribute written directly in the class body is a **class attribute**: one value, shared by every object of that class, like a market fee that applies to every stall.",
+        "When you read `a.market_fee`, Python looks on the object first and then on its class. So changing `Stall.market_fee` changes it for every stall at once.",
+        "Keep anything that changes per object, especially lists and dictionaries, as instance attributes in `__init__`. A list in the class body would be **one list shared by every object**, the same trap as a mutable default argument.",
       ],
-      code: `# How you'll use scikit-learn in the next track:
-# model = LinearRegression()
-# model.fit(rainfall, yields)     # learns and stores slope & intercept
-# model.predict([[250]])          # uses what it learned
+      code: `class Stall:
+    market_fee = 50              # a class attribute: shared by every stall
 
-class TinyLine:
-    def fit(self, slope, intercept):
-        self.slope_ = slope
-        self.intercept_ = intercept
+    def __init__(self, owner):
+        self.owner = owner       # instance attributes: one per stall
+        self.sales = []
 
-    def predict(self, x):
-        return self.slope_ * x + self.intercept_`,
-      keyIdea: "`fit` stores what the model learned on the object; `predict` uses it. That's the shape of every model you'll train.",
+a = Stall("Njeri")
+b = Stall("Baraka")
+print(a.market_fee, b.market_fee)   # both read the shared value
+Stall.market_fee = 60               # change it on the class...
+print(a.market_fee, b.market_fee)   # ...and every stall sees it
+a.sales.append(200)
+print(a.sales, b.sales)             # but each has its own list`,
+      keyIdea: "Class attributes are shared by every object; instance attributes (set on `self`) belong to one. Lookups check the object, then the class.",
+    },
+    {
+      id: "predict-fee",
+      kind: "predict",
+      title: "Whose fee?",
+      prompt: "One object gets its own `fee`, then the class's `fee` changes. What's printed?",
+      code: `class Stall:
+    fee = 50
+
+a = Stall()
+b = Stall()
+a.fee = 80
+Stall.fee = 60
+print(a.fee, b.fee)`,
+      options: ["80 60", "80 50", "60 60", "80 80"],
+      answer: 0,
+      explanation:
+        "`a.fee = 80` creates an **instance** attribute on `a`, which hides the class's value for `a` only. `b` has no `fee` of its own, so it reads the class attribute, which is now 60. Assigning through an object never changes the class attribute.",
     },
     {
       id: "stall",
@@ -1094,11 +1115,11 @@ print(stall.total_sales) # 280.0
         "`def sell(self, kg):` compute `amount`, add it to `self.total_sales`, then `return amount`.",
       ],
       errorHints: [
-        { pattern: "takes no arguments|takes 1 positional argument", hint: "Your `__init__` doesn't accept `name` and `price_per_kg` yet — or `sell` is missing its `kg` parameter." },
+        { pattern: "takes no arguments|takes 1 positional argument", hint: "Your `__init__` doesn't accept `name` and `price_per_kg` yet, or `sell` is missing its `kg` parameter." },
         { pattern: "missing 1 required positional argument: 'self'|has no attribute 'total_sales'", hint: "Every method's first parameter must be `self`, and `total_sales` has to be created in `__init__`." },
       ],
       why:
-        "The stall remembers its own running total between calls — that's state, living on the object. A trained model does the same with the numbers it learned.",
+        "The stall remembers its own running total between calls: that's state, living on the object. A trained model does the same with the numbers it learned.",
       solution: `class MarketStall:
     def __init__(self, name, price_per_kg):
         self.name = name
@@ -1117,12 +1138,139 @@ print(stall.sell(1))
 print(stall.total_sales)`,
     },
     {
+      id: "guarding",
+      kind: "concept",
+      title: "Objects that protect their data",
+      body: [
+        "A class can make sure its objects never get into a nonsense state. Check arguments in `__init__` and in methods, and `raise ValueError` for anything impossible, like a negative balance.",
+        "Methods can call each other through `self`, so shared checks live in one helper. A name starting with an underscore, like `_balance` or `_check`, is a convention meaning \"internal: use the methods instead\". Python doesn't enforce it, but every Python programmer respects it.",
+        "`isinstance(obj, Wallet)` tells you whether an object was made from a class, just as it does for built-in types.",
+      ],
+      code: `class Wallet:
+    def __init__(self, owner, balance=0):
+        if balance < 0:
+            raise ValueError("a wallet can't start below zero")
+        self.owner = owner
+        self._balance = balance          # internal: use the methods
+
+    def deposit(self, amount):
+        self._check(amount)
+        self._balance += amount
+
+    def withdraw(self, amount):
+        self._check(amount)
+        if amount > self._balance:
+            raise ValueError(f"only KSh {self._balance:,} available")
+        self._balance -= amount
+
+    def balance(self):
+        return self._balance
+
+    def _check(self, amount):            # a helper the other methods share
+        if amount <= 0:
+            raise ValueError("amounts must be positive")
+
+w = Wallet("Amina", 1000)
+w.deposit(500)
+w.withdraw(300)
+print(w.balance(), isinstance(w, Wallet))
+try:
+    w.withdraw(5000)
+except ValueError as e:
+    print("Declined:", e)`,
+      keyIdea: "Validate in `__init__` and methods so objects stay valid; share checks in `_helper` methods; `_name` means internal.",
+    },
+    {
+      id: "savings",
+      kind: "code",
+      title: "A savings account with history",
+      brief:
+        "Write `SavingsAccount(owner)`, starting with `balance` 0 and an empty `history` list. `deposit(amount)` and `withdraw(amount)` raise `ValueError` for amounts of 0 or less, and `withdraw` also raises `ValueError` if the amount is more than the balance. Each successful transaction appends `(\"deposit\", amount)` or `(\"withdraw\", amount)` to `history`.",
+      starterCode: `class SavingsAccount:
+    pass
+
+
+acc = SavingsAccount("Achieng")
+acc.deposit(5000)
+acc.withdraw(1200)
+acc.deposit(800)
+print(acc.balance, acc.history)
+`,
+      checks: [
+        { expr: "acc.owner == 'Achieng' and acc.balance == 4600", label: "The balance is 4,600", failHint: "Add deposits to `self.balance` and subtract withdrawals." },
+        { expr: "acc.history == [('deposit', 5000), ('withdraw', 1200), ('deposit', 800)]", label: "`history` records each transaction", failHint: "Append a tuple like `(\"deposit\", amount)` after each successful transaction." },
+        { expr: "_raises(lambda: SavingsAccount('X').deposit(0), ValueError) and _raises(lambda: SavingsAccount('X').withdraw(-5), ValueError)", label: "Amounts of 0 or less raise `ValueError`", failHint: "Check `if amount <= 0: raise ValueError(...)` at the start of both methods." },
+        {
+          expr: "(lambda a: (a.deposit(100), _raises(lambda: a.withdraw(500), ValueError), a.balance, a.history)[1:])(SavingsAccount('Y')) == (True, 100, [('deposit', 100)])",
+          label: "A refused withdrawal changes nothing",
+          failHint: "Raise the error **before** changing the balance or the history.",
+        },
+        { expr: "(lambda a, b: (a.deposit(10), b.history)[1])(SavingsAccount('A'), SavingsAccount('B')) == []", label: "Each account has its own history", failHint: "Create `self.history = []` inside `__init__`, not in the class body." },
+      ],
+      hints: [
+        "`__init__` sets `self.owner`, `self.balance = 0` and `self.history = []`.",
+        "In `withdraw`, do both checks first, and only then change `self.balance` and append to `self.history`.",
+      ],
+      errorHints: [{ pattern: "takes no arguments", hint: "Add `def __init__(self, owner):` so the account can be created with an owner." }],
+      why:
+        "The account can't be put into an impossible state: a refused withdrawal raises before anything changes, and every account keeps its own history list. Checks first, changes second is the habit that keeps real financial software correct.",
+      solution: `class SavingsAccount:
+    def __init__(self, owner):
+        self.owner = owner
+        self.balance = 0
+        self.history = []
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("deposits must be positive")
+        self.balance += amount
+        self.history.append(("deposit", amount))
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("withdrawals must be positive")
+        if amount > self.balance:
+            raise ValueError("not enough money")
+        self.balance -= amount
+        self.history.append(("withdraw", amount))
+
+
+acc = SavingsAccount("Achieng")
+acc.deposit(5000)
+acc.withdraw(1200)
+acc.deposit(800)
+print(acc.balance, acc.history)`,
+    },
+    {
+      id: "ml-objects",
+      kind: "concept",
+      title: "Why every ML model is an object",
+      body: [
+        "In scikit-learn, the library most Python machine learning uses, you train a model like this: `model = LinearRegression()`, then `model.fit(X, y)`, then `model.predict(new_X)`.",
+        "That's a class. `fit` learns numbers from data and **stores them on the object** (by convention with a trailing underscore, like `model.coef_`). `predict` uses those stored numbers later.",
+        "Because the learned numbers live inside the object, you can train several models side by side, save one, and use it next week.",
+      ],
+      code: `# How scikit-learn models are used:
+# model = LinearRegression()
+# model.fit(rainfall, yields)     # learns and stores slope & intercept
+# model.predict([[250]])          # uses what it learned
+
+class TinyLine:
+    def fit(self, slope, intercept):
+        self.slope_ = slope
+        self.intercept_ = intercept
+
+    def predict(self, x):
+        return self.slope_ * x + self.intercept_`,
+      keyIdea: "`fit` stores what the model learned on the object; `predict` uses it. That's the shape of every scikit-learn model.",
+    },
+    {
       id: "mean-model",
       kind: "code",
       challenge: true,
       title: "Build a model with a scikit-learn interface",
       brief:
-        "Write `MeanModel` — the simplest possible forecasting model. `fit(values)` stores the average of the training values in `self.mean_`. `predict(n)` returns a list of `n` predictions, all equal to that mean. The starter code already trains one on weekly sales.",
+        "Write `MeanModel`, the simplest possible forecasting model. `fit(values)` stores the average of the training values in `self.mean_`. `predict(n)` returns a list of `n` predictions, all equal to that mean. The starter code already trains one on weekly sales.",
       starterCode: `class MeanModel:
     pass
 
@@ -1143,7 +1291,7 @@ print(model.predict(3))
         "`[x] * n` makes a list with `n` copies of `x`.",
       ],
       why:
-        "You just built a genuine baseline model with the same fit/predict shape as scikit-learn. In the next track, every model you train — from linear regression to random forests — will follow this interface, and you'll judge them by whether they beat baselines like this one.",
+        "You just built a genuine baseline model with the same fit/predict shape as scikit-learn. Every scikit-learn model, from linear regression to random forests, follows this interface, and a real model is only worth using if it beats a baseline like this one.",
       solution: `class MeanModel:
     def fit(self, values):
         self.mean_ = sum(values) / len(values)
@@ -1163,14 +1311,15 @@ print(model.predict(3))`,
       kind: "explain",
       title: "Classes, objects and models",
       prompt:
-        "Explain the difference between a class and an object, and why a machine learning model like `model.fit(X, y)` is built as a class.",
+        "Explain the difference between a class and an object, where an object keeps its data (and when data belongs on the class instead), and why a machine learning model like `model.fit(X, y)` is built as a class.",
       ideas: [
         { label: "A class is a blueprint; an object is one instance of it", patterns: ["blueprint", "template", "instance", "made from", "create"], nudge: "What's the relationship between `Farm` and `Farm(\"Wanjiru\", 3)`?" },
         { label: "Objects hold their own data (attributes)", patterns: ["attribute", "own data", "self\\.", "store", "state", "remember"], nudge: "Where does each object keep its values?" },
+        { label: "Class attributes are shared", patterns: ["class attribute", "shared", "every object", "all objects"], nudge: "What kind of data belongs to the class rather than each object?" },
         { label: "fit stores what the model learned; predict uses it", patterns: ["fit.*(learn|store|train)", "predict", "learned", "coef", "parameters"], nudge: "What does `fit` leave behind on the model object for `predict` to use?" },
       ],
       modelAnswer:
-        "A class is a blueprint and an object is one instance made from it, with its own data stored in attributes on `self`. A model is a class because `fit` needs to store what it learned — like the slope and intercept — on the object, so `predict` can use those numbers later.",
+        "A class is a blueprint and an object is one instance made from it, with its own data stored in instance attributes on `self`. Data that every object shares, like a market fee, can be a class attribute instead. A model is a class because `fit` needs to store what it learned, like the slope and intercept, on the object, so `predict` can use those numbers later.",
     },
   ],
 };
