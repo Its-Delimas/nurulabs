@@ -607,3 +607,270 @@ print(busiest_hour, by_day, span_hours)`,
     },
   ],
 };
+
+const MESSAGES = `import re
+
+messages = [
+    "QKT4X9PL2M Confirmed. Ksh1,500.00 sent to AMINA WANJIRU 0712345678 on 15/4/26 at 2:30 PM.",
+    "QKU7Y2AB3C Confirmed. You have received Ksh12,000.00 from JUMA OTIENO 0733111222 on 16/4/26 at 9:05 AM.",
+    "QKV1Z8CD4E Confirmed. Ksh250.00 paid to KPLC PREPAID. on 16/4/26 at 6:40 PM.",
+    "Your M-PESA PIN was changed successfully.",
+]
+`;
+
+export const pyRegex: Lab = {
+  slug: "py-regex",
+  runExamples: true,
+  number: "31",
+  title: "Regular Expressions",
+  subject: "re: patterns in text",
+  summary:
+    "Find and pull out patterns in messy text: phone numbers, transaction codes, amounts and dates in mobile-money messages. Learn the pattern language, use `re.search`, `re.findall`, `re.sub` and groups, validate formats, and know when plain string methods are clearer.",
+  minutes: 40,
+  kind: "lab",
+  skills: [
+    "Write patterns with character classes, quantifiers and anchors",
+    "Find, extract and replace with re.search, re.findall and re.sub",
+    "Capture the parts of a match with groups",
+    "Validate and normalise formats such as phone numbers",
+  ],
+  steps: [
+    {
+      id: "patterns",
+      kind: "concept",
+      title: "Patterns, not exact text",
+      body: [
+        "String methods find **exact** text. A **regular expression** describes a **pattern**: \"ten digits in a row\", \"Ksh, then digits and commas, a dot, two digits\". The `re` module searches text for it.",
+        "The building blocks: `\\d` is any digit, `\\w` any letter, digit or underscore, `\\s` any space, and `.` any character at all. `[A-Z]` is any one of a set of characters. After a piece, `+` means one or more, `*` zero or more, `?` optional, and `{3}` exactly three.",
+        "Write patterns as raw strings, `r\"...\"`, so Python leaves the backslashes alone for `re`. `re.search` returns a **match** object, or `None` when the pattern isn't there.",
+      ],
+      code: `import re
+
+sms = "QKT4X9PL2M Confirmed. Ksh1,500.00 sent to AMINA WANJIRU 0712345678 on 15/4/26"
+
+match = re.search(r"\\d{10}", sms)        # ten digits in a row
+print(match.group())                     # the text that matched
+print(match.start(), match.end())        # where it was found
+
+print(re.search(r"Ksh[\\d,]+\\.\\d\\d", sms).group())
+print(re.search(r"\\d{4}", "no numbers here"))   # None: no match`,
+      keyIdea: "A regex describes a pattern: `\\d` digit, `\\w` word character, `\\s` space, `[...]` a set, `+ * ? {n}` how many. Use raw strings.",
+    },
+    {
+      id: "findall-sub",
+      kind: "concept",
+      title: "findall, sub and split",
+      body: [
+        "`re.findall(pattern, text)` returns **every** match as a list. Put part of the pattern in brackets, a **group**, and `findall` returns just that part: `KSh ([\\d,]+)` finds the amounts without the `KSh`.",
+        "`re.sub(pattern, replacement, text)` replaces every match, which is perfect for clean-up like squashing repeated spaces. `re.split` splits text wherever the pattern matches, so it can split on several different separators at once.",
+      ],
+      code: `import re
+
+text = "Maize 50kg at KSh 3,200; beans 20kg at KSh 2,600; rice 10kg at KSh 1,850"
+
+print(re.findall(r"\\d+kg", text))               # every match
+print(re.findall(r"KSh ([\\d,]+)", text))        # just the group
+print(re.sub(r"\\s+", " ", "too    many   spaces"))
+print(re.split(r"[;,]\\s*", "maize, beans;rice"))`,
+      keyIdea: "`findall` gets every match (or every group), `sub` replaces matches, and `split` splits on a pattern.",
+    },
+    {
+      id: "pattern-lab",
+      kind: "experiment",
+      title: "Pattern lab",
+      prompt:
+        "`re` is imported, with an M-Pesa-style message in `sms` and some phone numbers in `phones`. Write a pattern for each goal. If a pattern finds too much or too little, adjust it and try again.",
+      widget: "playground",
+      playground: {
+        setup: `import re
+sms = "QKT4X9PL2M Confirmed. Ksh1,500.00 sent to AMINA WANJIRU 0712345678 on 15/4/26 at 2:30 PM. New M-PESA balance is Ksh8,250.50."
+phones = "Call 0712 345 678 or +254 733 111 222, office 020-2222333"`,
+        goals: [
+          { text: "Every amount in `sms`, like `Ksh1,500.00`, as a list.", answer: "re.findall(r'Ksh[\\d,]+\\.\\d{2}', sms)", uses: "re\\.", hint: "`Ksh`, then digits and commas `[\\d,]+`, a dot `\\.`, and two digits `\\d{2}`." },
+          { text: "The 10-character transaction code at the start of `sms`.", answer: "re.match(r'[A-Z0-9]{10}', sms).group()", uses: "re\\.", hint: "Capital letters and digits, exactly ten: `[A-Z0-9]{10}`. `re.match` only looks at the start." },
+          { text: "The date in `sms`, as text.", answer: "re.search(r'\\d{1,2}/\\d{1,2}/\\d{2}', sms).group()", uses: "re\\.", hint: "One or two digits, a slash, one or two digits, a slash, two digits: `\\d{1,2}/\\d{1,2}/\\d{2}`." },
+          { text: "`phones` with every space taken out.", answer: "re.sub(r'\\s', '', phones)", uses: "re\\.|replace", hint: "`re.sub(r\"\\s\", \"\", phones)`, or simply `phones.replace(\" \", \"\")`." },
+          { text: "Write a broken pattern, and read the error.", raises: "PatternError", example: "re.search('(unclosed', sms)", hint: "An opening bracket with no closing one: `re.search(\"(unclosed\", sms)`." },
+        ],
+        suggestions: ["re.findall(r'\\d+', sms)", "re.findall(r'[A-Z]+', sms)", "re.search(r'Ksh', sms)", "re.findall(r'\\d', phones)"],
+      },
+      observe:
+        "Each pattern described the **shape** of what you wanted rather than the exact text, so it would work on the next message too, with different codes and amounts. When a pattern matched too much or too little, tightening one piece, a set or a count, usually fixed it.",
+    },
+    {
+      id: "predict-greedy",
+      kind: "predict",
+      title: "Greedy matching",
+      prompt: "A pattern with `.*` between two tags. What's printed?",
+      code: `import re
+
+html = "<b>maize</b> and <b>beans</b>"
+print(re.findall(r"<b>(.*)</b>", html))`,
+      options: ["['maize</b> and <b>beans']", "['maize', 'beans']", "['<b>maize</b>', '<b>beans</b>']", "[]"],
+      answer: 0,
+      explanation:
+        "`*` is **greedy**: `.*` grabs as much as it can while still letting the pattern match, so it runs from the first `<b>` to the **last** `</b>`. Add a `?` to make it lazy, `.*?`, which takes as little as possible, and you get `['maize', 'beans']`. (For real HTML, use a proper parser rather than a regex.)",
+    },
+    {
+      id: "groups",
+      kind: "concept",
+      title: "Groups: pull out the parts",
+      body: [
+        "Brackets in a pattern **capture** what they match. `match.group(1)` is the first group, and `match.groups()` gives them all as a tuple.",
+        "Name a group with `(?P<name>...)` and read it back as `match[\"name\"]`, or get every named group at once as a dictionary with `match.groupdict()`. Named groups make long patterns readable.",
+        "`re.compile(pattern)` turns a pattern into an object you can reuse, which is tidy when one pattern is used on thousands of messages.",
+      ],
+      code: `import re
+
+pattern = re.compile(
+    r"(?P<code>[A-Z0-9]{10}) Confirmed\\. Ksh(?P<amount>[\\d,]+\\.\\d\\d) "
+    r"sent to (?P<name>[A-Z ]+?) (?P<phone>0\\d{9})"
+)
+sms = "QKT4X9PL2M Confirmed. Ksh1,500.00 sent to AMINA WANJIRU 0712345678 on 15/4/26"
+
+m = pattern.search(sms)
+print(m.group("code"), m.group("phone"))
+print(m["name"], float(m["amount"].replace(",", "")))
+print(m.groupdict())`,
+      keyIdea: "Brackets capture parts of a match. `(?P<name>...)` names them; `groupdict()` gives every part as a dictionary.",
+    },
+    {
+      id: "validation",
+      kind: "concept",
+      title: "Validating a whole value",
+      body: [
+        "`re.search` finds a pattern **anywhere** in the text. To check that a whole value has the right format, use `re.fullmatch`: the pattern must match every character, start to end. (In patterns, `^` and `$` mean the start and end of the text.)",
+        "`(?:...)` groups without capturing, which is useful for alternatives with `|`. So `(?:0|\\+254)[17]\\d{8}` accepts a Kenyan mobile number written locally, `07...` or `01...`, or internationally, `+2547...` or `+2541...`.",
+      ],
+      code: `import re
+
+def valid_phone(text):
+    """A Kenyan mobile number: 07/01 then 8 digits, or +2547/+2541 then 8."""
+    return re.fullmatch(r"(?:0|\\+254)[17]\\d{8}", text) is not None
+
+for number in ["0712345678", "+254712345678", "071234567", "0812345678", "0712 345 678"]:
+    print(number, valid_phone(number))`,
+      keyIdea: "`re.fullmatch` checks a whole value against a pattern; `(?:a|b)` groups alternatives without capturing.",
+    },
+    {
+      id: "extract",
+      kind: "code",
+      title: "Read the messages",
+      brief:
+        "Go through `messages`. Build `codes`, the transaction code at the start of every confirmation (ten capital letters or digits, then ` Confirmed`), and `amounts`, every message's `Ksh` amount as a float. Then set `total`. Messages without a code or an amount are simply skipped.",
+      starterCode: MESSAGES + `
+codes = []
+amounts = []
+total = 0
+
+print(codes, amounts, total)
+`,
+      checks: [
+        { expr: "codes == ['QKT4X9PL2M', 'QKU7Y2AB3C', 'QKV1Z8CD4E']", label: "Three transaction codes", failHint: "`re.match(r\"([A-Z0-9]{10}) Confirmed\", msg)`, and when there's a match, append `m.group(1)`." },
+        { expr: "amounts == [1500.0, 12000.0, 250.0]", label: "Three amounts, as floats", failHint: "`re.search(r\"Ksh([\\d,]+\\.\\d{2})\", msg)`, then remove the commas before `float()`." },
+        { expr: "total == 13750.0", label: "`total` is 13,750", failHint: "`sum(amounts)`." },
+        {
+          expr: "(lambda ns: ns['codes'] == ['AB12CD34EF'] and ns['amounts'] == [99.5])(_with(messages=['AB12CD34EF Confirmed. Ksh99.50 paid.', 'Hello']))",
+          label: "Works on other messages",
+          failHint: "Work everything out from `messages`, skipping any without a match.",
+        },
+      ],
+      hints: [
+        "`re.match` and `re.search` return `None` when there's no match, so check `if m:` before using it.",
+        "`float(\"12,000.00\".replace(\",\", \"\"))` is `12000.0`.",
+      ],
+      why:
+        "Two short patterns turned free text into structured data, the same job banks and fintech apps do when they read SMS confirmations. Checking for `None` first meant the message with no code or amount was skipped instead of crashing the loop.",
+      solution: MESSAGES + `
+codes = []
+amounts = []
+for msg in messages:
+    m = re.match(r"([A-Z0-9]{10}) Confirmed", msg)
+    if m:
+        codes.append(m.group(1))
+    a = re.search(r"Ksh([\\d,]+\\.\\d{2})", msg)
+    if a:
+        amounts.append(float(a.group(1).replace(",", "")))
+total = sum(amounts)
+
+print(codes, amounts, total)`,
+    },
+    {
+      id: "bug-raw",
+      kind: "bug",
+      title: "The pattern that never matches",
+      prompt: "This should find both prices, but `findall` returns an empty list. There's no error at all. Find the line with the bug.",
+      code: `import re
+
+text = "KSh 500 for maize, KSh 1200 for beans"
+prices = re.findall("\\bKSh [0-9]+", text)
+print(prices)     # expected ['KSh 500', 'KSh 1200']`,
+      line: 4,
+      fix: "prices = re.findall(r\"\\bKSh [0-9]+\", text)",
+      explanation:
+        "In a normal string, Python turns `\\b` into a **backspace** character before `re` ever sees it, so the pattern looks for a backspace that isn't there. In a raw string, `r\"\\bKSh\"`, the backslash survives, and `re` reads `\\b` as a word boundary. That's why every pattern should be a raw string.",
+      wrong: {
+        1: "Importing `re` is right.",
+        3: "The text clearly contains two prices.",
+        5: "The print only shows that nothing matched. Why didn't the pattern match?",
+      },
+    },
+    {
+      id: "normalise",
+      kind: "code",
+      challenge: true,
+      title: "Normalise phone numbers",
+      brief:
+        "Sign-up forms collect phone numbers in every style. Write `normalise(phone)`: remove spaces and dashes, then accept a Kenyan mobile number written as `07…`, `01…`, `2547…`, `+2547…` (or the `2541`/`+2541` equivalents) with 8 digits after the `7` or `1`, and return it in one standard form, `+254` followed by 9 digits. Return `None` for anything else.",
+      starterCode: `import re
+
+
+def normalise(phone):
+    pass
+
+
+for p in ["0712 345 678", "254733111222", "+254 110 222 333", "0812345678", "12345"]:
+    print(p, "->", normalise(p))
+`,
+      checks: [
+        { expr: "normalise('0712 345 678') == '+254712345678' and normalise('0712-345-678') == '+254712345678'", label: "Local numbers, with spaces or dashes", failHint: "First `re.sub(r\"[\\s-]\", \"\", phone)`, then match `0` followed by `[17]` and 8 digits." },
+        { expr: "normalise('254733111222') == '+254733111222' and normalise('+254 110 222 333') == '+254110222333'", label: "International numbers, with or without the +", failHint: "Allow the start to be `0`, `254` or `+254`: `(?:\\+?254|0)`." },
+        { expr: "normalise('0812345678') is None and normalise('12345') is None and normalise('+2547123456789') is None", label: "Anything else gives `None`", failHint: "Use `re.fullmatch`, so there can be nothing extra before or after." },
+      ],
+      hints: [
+        "Capture the 9 digits that matter: `re.fullmatch(r\"(?:\\+?254|0)([17]\\d{8})\", digits)`.",
+        "If the match is `None`, return `None`; otherwise return `\"+254\" + m.group(1)`.",
+      ],
+      why:
+        "Five messy spellings of the same number now collapse to one standard form, so duplicates can be spotted and messages actually get delivered. Clean first with `sub`, check the whole value with `fullmatch`, and capture just the part you need with a group: that's the core of most input validation.",
+      solution: `import re
+
+
+def normalise(phone):
+    digits = re.sub(r"[\\s-]", "", phone)
+    m = re.fullmatch(r"(?:\\+?254|0)([17]\\d{8})", digits)
+    if m is None:
+        return None
+    return "+254" + m.group(1)
+
+
+for p in ["0712 345 678", "254733111222", "+254 110 222 333", "0812345678", "12345"]:
+    print(p, "->", normalise(p))`,
+    },
+    {
+      id: "explain-regex",
+      kind: "explain",
+      title: "When to reach for a regex",
+      prompt:
+        "Explain what a regular expression is, how `search`, `findall`, `sub` and groups differ, and when you'd use plain string methods instead.",
+      ideas: [
+        { label: "A pattern, not exact text", patterns: ["pattern", "shape", "describ", "any digit", "\\\\d"], nudge: "What does a regex describe?" },
+        { label: "search finds one, findall finds all, sub replaces", patterns: ["search", "findall", "sub", "replace", "every match", "first match"], nudge: "What does each function give you back?" },
+        { label: "Groups capture parts of a match", patterns: ["group", "bracket", "parenthes", "capture"], nudge: "How do you pull out just one part of a match?" },
+        { label: "Use string methods for simple, exact jobs", patterns: ["string method", "split", "replace", "startswith", "in ", "simple", "readab", "exact"], nudge: "When is a regex overkill?" },
+      ],
+      modelAnswer:
+        "A regular expression describes a pattern rather than exact text, such as \"ten digits\" or \"Ksh followed by an amount\". `re.search` finds the first match anywhere and returns a match object or `None`, `findall` returns every match as a list, and `sub` replaces every match. Brackets make groups, which capture just part of a match, like the amount without the `Ksh`. For simple, exact jobs, such as checking whether a word is `in` a string, `split` or `replace`, string methods are clearer, so I'd save regexes for real patterns.",
+    },
+  ],
+};

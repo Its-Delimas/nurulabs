@@ -10,7 +10,7 @@ import { pyProjectChama, pyProjectMarket } from "./python-project";
 import { pyArguments, pyScope, pyFunctional, pyRecursion, pyDecorators } from "./python-functions-more";
 import { pyGenerators, pyItertools } from "./python-iteration";
 import { pyPaths, pyContext } from "./python-files-more";
-import { pyImports, pyDatetime } from "./python-stdlib";
+import { pyImports, pyDatetime, pyRegex } from "./python-stdlib";
 import { pyStrings, pyErrors, pyModules, pyClasses, pyDebugging } from "./python-more";
 import { aiMlLabs } from "./ai-ml";
 import { pythonToolsLabs } from "./python-tools";
@@ -73,6 +73,7 @@ export const pythonLabs: Lab[] = [
   pyModules,
   pyImports,
   pyDatetime,
+  pyRegex,
   pyClasses,
   pyDebugging,
   pyProjectMarket,

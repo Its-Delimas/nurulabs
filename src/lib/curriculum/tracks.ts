@@ -86,10 +86,7 @@ export const tracks: Track[] = [
         slug: "py-stdlib",
         title: "The standard library",
         summary: "Organising code into modules, and the batteries Python ships with.",
-        labs: ["py-imports", "py-datetime"],
-        planned: [
-          { title: "Regular Expressions", summary: "Finding and extracting patterns: phone numbers, M-Pesa codes and amounts." },
-        ],
+        labs: ["py-imports", "py-datetime", "py-regex"],
         milestone: {
           title: "Batteries included",
           description: "You can split a program into modules and reach for the standard library before writing code yourself.",
