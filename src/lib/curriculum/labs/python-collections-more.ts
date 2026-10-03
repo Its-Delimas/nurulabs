@@ -446,3 +446,232 @@ print(totals, big_sales, labels)`,
     },
   ],
 };
+
+export const pyCollectionsModule: Lab = {
+  slug: "py-collections-module",
+  runExamples: true,
+  number: "17",
+  title: "The collections Module",
+  subject: "Counter, defaultdict and deque",
+  summary:
+    "The standard library has power tools for jobs you've been doing by hand: Counter counts anything in one line, defaultdict starts every group for you, and deque makes a fast queue and a sliding window.",
+  minutes: 30,
+  kind: "lab",
+  skills: [
+    "Count things and find the most common with Counter",
+    "Group and total with defaultdict instead of setdefault or get",
+    "Use deque for fast queues and last-N windows",
+  ],
+  steps: [
+    {
+      id: "counter",
+      kind: "concept",
+      title: "Counter: counting in one line",
+      body: [
+        "You've counted with a dictionary and `get(key, 0) + 1`. `Counter` does it in one line: `Counter(crops)` counts every item. It's a dictionary underneath, so `counts[\"maize\"]` reads a count, but a missing item counts as **0** instead of raising a KeyError.",
+        "`most_common(n)` gives the `n` biggest counts, largest first, as a list of `(item, count)` pairs. When two items tie, the one seen first comes first. Counters can also be added together and updated with more data.",
+        "Import it first: `from collections import Counter`. The `collections` module is part of Python's standard library, so it's always there.",
+      ],
+      code: `from collections import Counter
+
+crops = ["maize", "tea", "maize", "beans", "tea", "maize"]
+counts = Counter(crops)
+print(counts)                    # Counter({'maize': 3, 'tea': 2, 'beans': 1})
+print(counts["maize"], counts["rice"])   # 3 0
+print(counts.most_common(2))     # [('maize', 3), ('tea', 2)]
+
+counts.update(["rice", "maize"]) # count some more
+print(counts["maize"], counts["rice"])   # 4 1`,
+      keyIdea: "`Counter(items)` counts everything; missing items count as 0; `most_common(n)` ranks them.",
+    },
+    {
+      id: "defaultdict-deque",
+      kind: "concept",
+      title: "defaultdict and deque",
+      body: [
+        "A `defaultdict` is a dictionary that creates a starting value the first time you use a missing key: `defaultdict(list)` starts each key with `[]`, and `defaultdict(int)` with `0`. Grouping becomes `by_county[county].append(crop)` and totalling becomes `totals[market] += kg`, with no `setdefault` or `get`. Wrap it in `dict(...)` to print it plainly.",
+        "A `deque` (say \"deck\") is a list built for both ends: `append` and `appendleft`, `pop` and `popleft` are all fast, whereas `list.pop(0)` gets slow on long lists. Give it `maxlen` and it keeps only the newest items: a ready-made sliding window.",
+      ],
+      code: `from collections import defaultdict, deque
+
+totals = defaultdict(int)       # missing keys start at 0
+for market, kg in [("Gikomba", 90), ("Kibuye", 50), ("Gikomba", 40)]:
+    totals[market] += kg
+print(dict(totals))             # {'Gikomba': 130, 'Kibuye': 50}
+
+queue = deque(["Achieng", "Otieno"])
+queue.append("Kamau")           # join the back
+first = queue.popleft()         # serve the front
+print(first, list(queue))
+
+last3 = deque(maxlen=3)         # keeps only the newest 3
+for reading in [12, 30, 45, 8, 22]:
+    last3.append(reading)
+print(list(last3))              # [45, 8, 22]`,
+      keyIdea: "`defaultdict(list)` or `defaultdict(int)` creates missing keys for you; `deque(maxlen=n)` keeps the last `n` items.",
+    },
+    {
+      id: "coll-playground",
+      kind: "experiment",
+      title: "Count, group, slide",
+      prompt: "The tools are already imported. Count the words in a batch of SMS replies, and try a sliding window on some readings.",
+      widget: "playground",
+      playground: {
+        setup: `from collections import Counter, defaultdict, deque
+
+replies = ["paid", "later", "paid", "help", "paid", "later", "stop", "paid"]
+readings = [12, 30, 45, 8, 22, 40]`,
+        goals: [
+          { text: "Count every reply with a `Counter`.", answer: "Counter(replies)", hint: "`Counter(replies)`." },
+          { text: "Get the two most common replies.", answer: "Counter(replies).most_common(2)", uses: "most_common", hint: "`Counter(replies).most_common(2)`." },
+          { text: "How many replies said `\"stop\"`? Use a Counter.", answer: "Counter(replies)['stop']", uses: "Counter", hint: "Look it up like a dict: `Counter(replies)[\"stop\"]`." },
+          {
+            text: "Get the last three readings, as a list, using a `deque` with `maxlen`.",
+            answer: "list(deque(readings, maxlen=3))",
+            uses: "deque",
+            hint: "`deque(readings, maxlen=3)` keeps only the newest 3; wrap it in `list(...)`.",
+          },
+        ],
+        suggestions: ["Counter(replies)['refund']", "sum(Counter(replies).values())", "Counter('banana')", "deque(readings, maxlen=2)"],
+      },
+      observe:
+        "`Counter` counted the whole list at once, `most_common` ranked it, and asking for a reply nobody sent, like `\"refund\"`, gave 0 instead of an error. A `deque` with `maxlen=3` quietly dropped the older readings as new ones arrived: the shape of every \"last N\" calculation.",
+    },
+    {
+      id: "predict-counter",
+      kind: "predict",
+      title: "Counting letters",
+      prompt: "A Counter can count the letters in a string. What's printed?",
+      code: `from collections import Counter
+
+c = Counter("banana")
+print(c["a"], c["z"], c.most_common(1))`,
+      options: ["3 0 [('a', 3)]", "3 KeyError", "3 None [('a', 3)]", "2 0 [('n', 2)]"],
+      answer: 0,
+      explanation:
+        "A string is a sequence of letters, so the Counter counts each one: a three times, n twice, b once. A letter that never appears counts as 0, not a KeyError. `most_common(1)` is a list holding the single biggest pair.",
+    },
+    {
+      id: "complaints",
+      kind: "code",
+      title: "Top complaints",
+      brief:
+        "A mobile-money provider tagged each customer complaint with a category. Use a `Counter` to find `top3`, the three most common categories with their counts, and `top_share`, the fraction of all complaints in the single top category, rounded to 2 decimals.",
+      starterCode: `from collections import Counter
+
+complaints = ["delay", "price", "delay", "rude", "delay", "price",
+              "quality", "delay", "price", "app", "quality"]
+
+top3 = []
+top_share = 0
+
+print(top3, top_share)
+`,
+      checks: [
+        { expr: "top3 == [('delay', 4), ('price', 3), ('quality', 2)]", label: "`top3` is delay, price, quality with their counts", failHint: "`Counter(complaints).most_common(3)`." },
+        { expr: "top_share == 0.36", label: "`top_share` is 0.36", failHint: "The top count (4) divided by the number of complaints (11), rounded to 2 decimals." },
+        { expr: "'Counter' in _source", label: "Uses a Counter", failHint: "Count with `Counter(complaints)` rather than by hand." },
+      ],
+      hints: ["`counts = Counter(complaints)` then `top3 = counts.most_common(3)`.", "`top3[0][1]` is the top count; divide by `len(complaints)`."],
+      why:
+        "Two lines replaced a loop and a dictionary of counts, and `most_common` handled the sorting. Delays are 36% of all complaints, which is the kind of single number that gets a problem fixed.",
+      solution: `from collections import Counter
+
+complaints = ["delay", "price", "delay", "rude", "delay", "price",
+              "quality", "delay", "price", "app", "quality"]
+
+counts = Counter(complaints)
+top3 = counts.most_common(3)
+top_share = round(top3[0][1] / len(complaints), 2)
+
+print(top3, top_share)`,
+    },
+    {
+      id: "market-kg",
+      kind: "code",
+      title: "Kilograms per market",
+      brief:
+        "Each sale is `(market, kg)`. Use `defaultdict` to build `kg_by_market` (total kilograms per market) and `sales_by_market` (the list of kg amounts per market, in order). Turn both into plain dictionaries at the end with `dict(...)`.",
+      starterCode: `from collections import defaultdict
+
+sales = [("Gikomba", 90), ("Kibuye", 50), ("Gikomba", 40), ("Kongowea", 75), ("Kibuye", 30)]
+
+kg_by_market = {}
+sales_by_market = {}
+
+print(kg_by_market, sales_by_market)
+`,
+      checks: [
+        { expr: "kg_by_market == {'Gikomba': 130, 'Kibuye': 80, 'Kongowea': 75}", label: "`kg_by_market` totals each market", failHint: "A `defaultdict(int)` lets you write `totals[market] += kg` straight away." },
+        { expr: "sales_by_market == {'Gikomba': [90, 40], 'Kibuye': [50, 30], 'Kongowea': [75]}", label: "`sales_by_market` lists each market's sales", failHint: "A `defaultdict(list)` lets you write `groups[market].append(kg)`." },
+        { expr: "type(kg_by_market) is dict and type(sales_by_market) is dict", label: "Both are plain dictionaries at the end", failHint: "Convert with `dict(...)` once you've finished building them." },
+      ],
+      hints: ["`totals = defaultdict(int)` and `groups = defaultdict(list)`, then one loop: `for market, kg in sales:`.", "At the end: `kg_by_market = dict(totals)`."],
+      why:
+        "With `defaultdict`, every key is ready the first time you touch it, so the loop body is just the arithmetic or the append. Converting to `dict` at the end means a typo'd key later raises a KeyError again instead of silently creating an empty entry.",
+      solution: `from collections import defaultdict
+
+sales = [("Gikomba", 90), ("Kibuye", 50), ("Gikomba", 40), ("Kongowea", 75), ("Kibuye", 30)]
+
+totals = defaultdict(int)
+groups = defaultdict(list)
+for market, kg in sales:
+    totals[market] += kg
+    groups[market].append(kg)
+
+kg_by_market = dict(totals)
+sales_by_market = dict(groups)
+
+print(kg_by_market, sales_by_market)`,
+    },
+    {
+      id: "rolling",
+      kind: "code",
+      challenge: true,
+      title: "A rolling three-day average",
+      brief:
+        "Smooth out noisy daily readings: for every day that has two days before it, compute the average of that day and the two before, rounded to 1 decimal, and collect them in `rolling`. Use a `deque` with `maxlen=3` as your window. It's tested on other readings too.",
+      starterCode: `from collections import deque
+
+readings = [12, 30, 45, 8, 22, 40, 18]
+
+rolling = []
+
+print(rolling)
+`,
+      checks: [
+        { expr: "rolling == [29.0, 27.7, 25.0, 23.3, 26.7]", label: "`rolling` holds the five three-day averages", failHint: "Append each reading to the window; once it holds 3, average it." },
+        { expr: "_with(readings=[3, 3, 3, 6])['rolling'] == [3.0, 4.0]", label: "Works on other readings", failHint: "Only average once the window is full: `if len(window) == 3:`." },
+        { expr: "'deque' in _source and 'maxlen' in _source", label: "Uses a deque with maxlen", failHint: "`window = deque(maxlen=3)` keeps exactly the last three readings." },
+      ],
+      hints: ["`window = deque(maxlen=3)`, then for each reading: `window.append(r)`.", "`if len(window) == 3:` append `round(sum(window) / 3, 1)`."],
+      why:
+        "The deque threw away the oldest reading each time a new one arrived, so the window slid along the data by itself. Rolling averages like this smooth prices, rainfall and sensor readings, and they're the first step of the forecasting labs in the AI track.",
+      solution: `from collections import deque
+
+readings = [12, 30, 45, 8, 22, 40, 18]
+
+rolling = []
+window = deque(maxlen=3)
+for r in readings:
+    window.append(r)
+    if len(window) == 3:
+        rolling.append(round(sum(window) / 3, 1))
+
+print(rolling)`,
+    },
+    {
+      id: "explain-collections",
+      kind: "explain",
+      title: "Which tool, when?",
+      prompt: "Explain what Counter, defaultdict and deque are each for, with an example of a job each one makes easier.",
+      ideas: [
+        { label: "Counter counts items / most_common", patterns: ["counter.*(count|most_common|frequen)", "(count|frequen).*counter"], nudge: "What does a Counter do?" },
+        { label: "defaultdict creates missing keys (groups, totals)", patterns: ["defaultdict.*(missing|default|group|total|start)", "(group|total).*defaultdict"], nudge: "What happens with a missing key in a defaultdict?" },
+        { label: "deque is a fast queue / keeps the last n", patterns: ["deque.*(queue|both ends|popleft|maxlen|last|window)", "(queue|window|maxlen).*deque"], nudge: "What is a deque good at?" },
+      ],
+      modelAnswer:
+        "A Counter counts how often each item appears and can rank them with `most_common`, for example finding the most common complaint category. A defaultdict creates a starting value for a missing key, so grouping with `defaultdict(list)` or totalling with `defaultdict(int)` needs no setup code, for example total kilograms per market. A deque is a queue that's fast at both ends, and with `maxlen` it keeps only the last few items, which makes a sliding window for a rolling average.",
+    },
+  ],
+};
