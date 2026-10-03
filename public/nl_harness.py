@@ -11,6 +11,7 @@ in nl_trace.py.
 import ast as _ast
 import base64 as _b64
 import contextlib as _ctx
+import inspect as _inspect
 import io as _io
 import sys as _sys
 import traceback as _tb
@@ -195,32 +196,58 @@ def _nl_fresh_imports():
     importlib.invalidate_caches()
 
 
-def _nl_run(code, ns, inputs=None):
+def _nl_start_run(code, ns, inputs):
     _nl_fresh_imports()
     _nl_state["source"] = code
+    _nl_state["inputs"] = list(inputs or [])
     # Let tracebacks quote the learner's lines, as they would from a real file.
     import linecache
 
     linecache.cache["main.py"] = (len(code), None, code.splitlines(True), "main.py")
-    _nl_state["inputs"] = list(inputs or [])
     # Learner code runs as the main program, so `if __name__ == "__main__":` works.
     ns.setdefault("__name__", "__main__")
+
+
+def _nl_error(e, ns):
+    te = _tb.TracebackException.from_exception(e)
+    frames = [f for f in te.stack if f.filename == "main.py"]
+    te.stack = _tb.StackSummary.from_list(frames)
+    line = frames[-1].lineno if frames else getattr(e, "lineno", None)
+    return {
+        "type": type(e).__name__,
+        "summary": "".join(te.format_exception_only()).strip().splitlines()[-1],
+        "traceback": "".join(te.format()).strip(),
+        "line": line,
+        "vars": _nl_snapshot(ns),
+    }
+
+
+def _nl_run(code, ns, inputs=None):
+    _nl_start_run(code, ns, inputs)
     try:
         with _nl_inputs(_nl_state["inputs"]):
             exec(compile(code, "main.py", "exec"), ns)
         return None
     except BaseException as e:
-        te = _tb.TracebackException.from_exception(e)
-        frames = [f for f in te.stack if f.filename == "main.py"]
-        te.stack = _tb.StackSummary.from_list(frames)
-        line = frames[-1].lineno if frames else getattr(e, "lineno", None)
-        return {
-            "type": type(e).__name__,
-            "summary": "".join(te.format_exception_only()).strip().splitlines()[-1],
-            "traceback": "".join(te.format()).strip(),
-            "line": line,
-            "vars": _nl_snapshot(ns),
-        }
+        return _nl_error(e, ns)
+
+
+async def _nl_run_async(code, ns, inputs=None):
+    """_nl_run, but the code may also use `await` at the top level, as in a
+    notebook. (asyncio.run() needs WebAssembly stack switching, which not every
+    browser has; top-level await works everywhere.) Code without a top-level
+    await runs exactly as in _nl_run."""
+    _nl_start_run(code, ns, inputs)
+    try:
+        compiled = compile(code, "main.py", "exec", flags=_ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        with _nl_inputs(_nl_state["inputs"]):
+            if compiled.co_flags & _inspect.CO_COROUTINE:
+                await eval(compiled, ns)
+            else:
+                exec(compiled, ns)
+        return None
+    except BaseException as e:
+        return _nl_error(e, ns)
 
 
 def _nl_make_with_inputs(source):

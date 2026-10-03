@@ -161,8 +161,9 @@ self.onmessage = async (event) => {
       const ns = pyodide.toPy({});
       stdoutLines = [];
       postMessage({ type: "run-start", runId });
-      const runner = pyodide.globals.get("_nl_run");
-      const result = runner(code, ns, pyodide.toPy(inputs || []));
+      // The async runner also allows a top-level await (see nl_harness.py).
+      const runner = pyodide.globals.get("_nl_run_async");
+      const result = await runner(code, ns, pyodide.toPy(inputs || []));
       runner.destroy();
       const figs = pyodide.globals.get("_nl_figures")(ns);
       const images = figs.toJs();

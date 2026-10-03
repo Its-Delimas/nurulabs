@@ -64,11 +64,11 @@ function writeLabFiles(files) {
   }
 }
 
-function run(code, files, inputs = []) {
+async function run(code, files, inputs = []) {
   writeLabFiles(files);
   out = [];
   const ns = py.toPy({});
-  const err = py.globals.get("_nl_run")(code, ns, py.toPy(inputs));
+  const err = await py.globals.get("_nl_run_async")(code, ns, py.toPy(inputs));
   py.globals.get("_nl_figures")(ns);
   ns.set("_stdout", out.join("\n"));
   ns.set("_source", code);
@@ -116,24 +116,24 @@ for (const lab of labs) {
   for (const s of lab.steps) {
     const tag = `${lab.slug}/${s.id}`;
     if (s.kind === "predict") {
-      const r = run(s.code, lab.files);
+      const r = await run(s.code, lab.files);
       const got = r.error ? r.error.summary : r.stdout;
       const want = s.options[s.answer];
       report(got === want, tag, `got ${JSON.stringify(got)} want ${JSON.stringify(want)}`);
     } else if (s.kind === "concept" && s.code && (s.run ?? lab.runExamples)) {
       // Runnable lesson samples run cleanly, or fail with exactly the error they're there to show.
-      const r = run(s.code, lab.files);
+      const r = await run(s.code, lab.files);
       const ok = s.runError ? r.error?.type === s.runError : !r.error;
       report(ok, tag, `sample ${s.runError ? `should raise ${s.runError}` : "should run"}: ${r.error?.summary ?? "no error"}`);
     } else if (s.kind === "code") {
       const exprs = s.checks.map((c) => c.expr);
-      const st = run(s.starterCode, lab.files, s.inputs);
+      const st = await run(s.starterCode, lab.files, s.inputs);
       const r0 = st.error ? exprs.map(() => false) : check(exprs, st.ns);
       if (!s.solution) {
         report(false, tag, "no solution");
         continue;
       }
-      const so = run(s.solution, lab.files, s.inputs);
+      const so = await run(s.solution, lab.files, s.inputs);
       const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
       const ok = r1.every(Boolean) && !r0.every(Boolean);
       report(ok, tag, `starter=${JSON.stringify(r0)} solution=${JSON.stringify(r1)} solutionError=${so.error?.summary ?? "none"}`);
@@ -164,9 +164,9 @@ for (const lab of labs) {
     } else if (s.kind === "parsons") {
       // The reference order passes every check; an empty program doesn't.
       const exprs = s.checks.map((c) => c.expr);
-      const so = run(s.lines.join("\n"), lab.files);
+      const so = await run(s.lines.join("\n"), lab.files);
       const r1 = so.error ? exprs.map(() => false) : check(exprs, so.ns);
-      const empty = run("", lab.files);
+      const empty = await run("", lab.files);
       const r0 = check(exprs, empty.ns);
       const clash = (s.distractors ?? []).some((d) => s.lines.some((l) => l.trim() === d.trim()));
       report(r1.every(Boolean) && !r0.every(Boolean) && !clash, tag, `solution=${JSON.stringify(r1)} empty=${JSON.stringify(r0)} error=${so.error?.summary ?? "none"}${clash ? " distractor duplicates a line" : ""}`);
@@ -178,7 +178,7 @@ for (const lab of labs) {
       report(!t.error && rows.length >= 2 && plain, tag, `rows=${JSON.stringify(rows)} error=${t.error?.summary ?? "none"}`);
     } else if (s.kind === "bug") {
       const lines = s.code.replace(/\n$/, "").split("\n");
-      const r = run(s.code, lab.files);
+      const r = await run(s.code, lab.files);
       const syntaxOk = r.error?.type !== "SyntaxError" && r.error?.type !== "IndentationError";
       report(s.line >= 1 && s.line <= lines.length && lines[s.line - 1].trim() !== "" && syntaxOk, tag, `line=${s.line} of ${lines.length}; ${r.error?.summary ?? "runs"}`);
     } else if (s.kind === "scenario") {
